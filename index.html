@@ -88,7 +88,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .protocol-header-btns { display: flex; gap: 6px; flex-shrink: 0; }
 
 /* ══ ІНЛАЙН ТАБЛИЦЯ ПУНКТІВ ══ */
-.items-wrap { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 4px; }
+.items-wrap { background: white; border-radius: 12px; overflow: visible; box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 4px; }
 .items-head {
   background: #1e3a5f;
   display: grid;
@@ -179,10 +179,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .executor-wrap { position: relative; width: 100%; }
 .executor-wrap input { width: 100%; }
 .executor-dropdown {
-  position: absolute; top: 100%; left: 0; right: 0;
+  position: absolute; bottom: 100%; left: 0; right: 0;
   background: white; border: 1.5px solid #2563eb;
-  border-radius: 0 0 8px 8px; z-index: 100;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  border-radius: 8px 8px 0 0; z-index: 1000;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.15);
   max-height: 160px; overflow-y: auto;
 }
 .executor-option {
