@@ -175,6 +175,24 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .block-divider { height: 28px; display: flex; align-items: center; justify-content: center; margin: 4px 0; }
 .block-divider::before { content: ''; width: 48px; height: 3px; background: #cbd5e1; border-radius: 2px; }
 
+/* ══ ВИПАДАЮЧИЙ СПИСОК ВИКОНАВЦІВ ══ */
+.executor-wrap { position: relative; width: 100%; }
+.executor-wrap input { width: 100%; }
+.executor-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: white; border: 1.5px solid #2563eb;
+  border-radius: 0 0 8px 8px; z-index: 100;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  max-height: 160px; overflow-y: auto;
+}
+.executor-option {
+  padding: 8px 10px; font-size: 12px; color: #1e293b;
+  cursor: pointer; border-bottom: 1px solid #f1f5f9;
+  font-family: 'Arsenal', Arial, sans-serif;
+}
+.executor-option:last-child { border-bottom: none; }
+.executor-option:hover, .executor-option:active { background: #eff6ff; color: #2563eb; }
+
 /* ══ НИЖНЯ СТРІЧКА ══ */
 .proto-bottom { background: white; border-top: 2px solid #e2e8f0; padding: 10px 14px; display: flex; gap: 8px; flex-shrink: 0; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
 .proto-bottom-btn { flex: 1; padding: 11px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; border: none; cursor: pointer; }
@@ -306,7 +324,6 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   <div class="scroll-area no-fab" id="meeting-scroll">
 
     <!-- ПУНКТИ -->
-    <div class="proto-block-head"><span>📋 Пункти протоколу</span></div>
     <div class="items-wrap">
       <div class="items-head">
         <span>№</span>
@@ -644,13 +661,15 @@ async function saveActiveItem() {
   if (activeItemIdx === null) return;
   const row = document.querySelector('.item-row.active');
   if (!row) return;
-  const ins = row.querySelectorAll('textarea, input');
+  const textarea = row.querySelector('textarea');
+  const execInput = row.querySelector('.executor-input');
+  const inputs = row.querySelectorAll('.item-cell input:not(.executor-input)');
   const item = localItems[activeItemIdx];
   if (!item) return;
-  item.description = ins[0]?.value.trim() || '';
-  item.executor    = ins[1]?.value.trim() || '';
-  item.decision    = ins[2]?.value.trim() || '';
-  item.note        = ins[3]?.value.trim() || '';
+  item.description = textarea?.value.trim() || '';
+  item.executor    = execInput?.value.trim() || '';
+  item.decision    = inputs[0]?.value.trim() || '';
+  item.note        = inputs[1]?.value.trim() || '';
   // Зберігаємо в Firestore
   try {
     const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
@@ -688,22 +707,49 @@ function renderItems() {
     row.className = cls;
 
     if (idx === activeItemIdx) {
-      // Будуємо список підказок з учасників
-      const attendeeOptions = localAttendees
-        .filter(a => a.name)
-        .map(a => `<option value="${esc(a.name)}">`)
-        .join('');
-
       row.innerHTML = `
         <div class="item-cell" style="color:#94a3b8;font-size:11px;justify-content:center;">${item.number}</div>
         <div class="item-cell"><textarea placeholder="Опис питання...">${esc(item.description||'')}</textarea></div>
         <div class="item-cell">
-          <input type="text" list="executors-list-${idx}" value="${esc(item.executor||'')}" placeholder="Виконавець...">
-          <datalist id="executors-list-${idx}">${attendeeOptions}</datalist>
+          <div class="executor-wrap">
+            <input type="text" class="executor-input" value="${esc(item.executor||'')}" placeholder="Виконавець..." autocomplete="off">
+            <div class="executor-dropdown" style="display:none;"></div>
+          </div>
         </div>
         <div class="item-cell"><input type="text" value="${esc(item.decision||'')}" placeholder="Рішення..."></div>
         <div class="item-cell"><input type="text" value="${esc(item.note||'')}" placeholder="Примітка..."></div>`;
-      setTimeout(() => row.querySelector('textarea')?.focus(), 30);
+
+      setTimeout(() => {
+        row.querySelector('textarea')?.focus();
+        // Підключаємо dropdown для виконавця
+        const execInput = row.querySelector('.executor-input');
+        const dropdown  = row.querySelector('.executor-dropdown');
+        if (!execInput || !dropdown) return;
+
+        function showDropdown(filter) {
+          const names = localAttendees.filter(a => a.name).map(a => a.name);
+          const filtered = filter
+            ? names.filter(n => n.toLowerCase().includes(filter.toLowerCase()))
+            : names;
+          if (filtered.length === 0) { dropdown.style.display = 'none'; return; }
+          dropdown.innerHTML = filtered.map(n =>
+            `<div class="executor-option">${esc(n)}</div>`
+          ).join('');
+          dropdown.style.display = 'block';
+          dropdown.querySelectorAll('.executor-option').forEach(opt => {
+            const select = () => {
+              execInput.value = opt.textContent;
+              dropdown.style.display = 'none';
+            };
+            opt.addEventListener('mousedown', e => { e.preventDefault(); select(); });
+            opt.addEventListener('touchend',  e => { e.preventDefault(); select(); });
+          });
+        }
+
+        execInput.addEventListener('focus', () => showDropdown(execInput.value));
+        execInput.addEventListener('input', () => showDropdown(execInput.value));
+        execInput.addEventListener('blur',  () => setTimeout(() => { dropdown.style.display = 'none'; }, 150));
+      }, 30);
     } else {
       row.innerHTML = `
         <div class="item-cell" style="color:#94a3b8;font-size:11px;justify-content:center;">${item.number}</div>
