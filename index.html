@@ -81,11 +81,12 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
   line-height: 1.4;
 }
 
-/* ══ КНОПКА + (FAB) ══ */
+/* ══ КНОПКА + (по центру під хедером) ══ */
 .fab {
   position: fixed;
-  top: 118px;
-  right: 20px;
+  top: 62px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 52px; height: 52px;
   background: #2563eb;
   border-radius: 14px;
@@ -99,7 +100,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
   z-index: 10;
   line-height: 1;
 }
-.fab:active { transform: scale(0.93); }
+.fab:active { transform: translateX(-50%) scale(0.93); }
 
 /* ══ SCROLL AREA ══ */
 .scroll-area {
