@@ -12,323 +12,134 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { height: 100%; }
-body {
-  font-family: 'Arsenal', Arial, sans-serif;
-  background: #f0f2f0;
-  color: #1a1a2e;
-  height: 100vh;
-  overflow: hidden;
-  /* FIX 1: приховуємо будь-який текст поза екранами */
-}
-
-/* Приховуємо все що не є screen або modal */
-body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
-  display: none !important;
-}
-
+body { font-family: 'Arsenal', Arial, sans-serif; background: #f0f2f0; color: #1a1a2e; height: 100vh; overflow: hidden; }
+body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { display: none !important; }
 .screen { display: none; flex-direction: column; height: 100vh; overflow: hidden; }
 .screen.active { display: flex; }
 
-/* ══ КОЛЬОРИ ОБ'ЄКТІВ ══ */
-:root {
-  --color-0: #1e3a5f;
-  --color-1: #166534;
-  --color-2: #7c2d12;
-  --color-3: #4c1d95;
-  --color-4: #0f766e;
-  --color-5: #9f1239;
-  --color-6: #854d0e;
-  --color-7: #1e40af;
-}
-
-/* ══ ВЕРХНЯ СТРІЧКА (постійна для всіх екранів) ══ */
-.app-header {
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
-  transition: background 0.4s;
-}
-.app-header.neutral  { background: #64748b; }
-.app-header.colored  { /* color set via inline style */ }
-
+/* ══ ХЕДЕР ══ */
+.app-header { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; transition: background 0.4s; }
+.app-header.neutral { background: #64748b; }
 .app-header-left  { display: flex; align-items: center; gap: 10px; }
 .app-header-right { display: flex; gap: 8px; }
 .app-header-title { color: white; font-size: 17px; font-weight: 700; }
 .app-header-sub   { color: rgba(255,255,255,0.65); font-size: 11px; margin-top: 1px; }
+.back-btn { color: rgba(255,255,255,0.85); font-size: 14px; cursor: pointer; padding: 4px 8px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); font-family: inherit; }
+.icon-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; font-size: 20px; padding: 4px 10px; cursor: pointer; font-family: inherit; white-space: nowrap; line-height: 1.4; }
 
-.back-btn {
-  color: rgba(255,255,255,0.85);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
-  border: none;
-  background: rgba(255,255,255,0.12);
-  font-family: inherit;
-}
-.icon-btn {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 8px;
-  color: white;
-  font-size: 20px;
-  padding: 4px 10px;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  line-height: 1.4;
-}
-
-/* ══ КНОПКА + (по центру під хедером) ══ */
-.fab {
-  position: fixed;
-  top: 72px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 52px; height: 52px;
-  background: #2563eb;
-  border-radius: 14px;
-  border: none;
-  color: white;
-  font-size: 28px;
-  cursor: pointer;
-  box-shadow: 0 4px 16px rgba(37,99,235,0.4);
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.15s;
-  z-index: 10;
-  line-height: 1;
-}
+/* ══ FAB ══ */
+.fab { position: fixed; top: 72px; left: 50%; transform: translateX(-50%); width: 52px; height: 52px; background: #2563eb; border-radius: 14px; border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 4px 16px rgba(37,99,235,0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.15s; z-index: 10; line-height: 1; }
 .fab:active { transform: translateX(-50%) scale(0.93); }
 
-/* ══ SCROLL AREA ══ */
-.scroll-area {
-  flex: 1;
-  overflow-y: auto;
-  padding: 84px 16px 24px;
-  -webkit-overflow-scrolling: touch;
-}
+/* ══ SCROLL ══ */
+.scroll-area { flex: 1; overflow-y: auto; padding: 84px 16px 24px; -webkit-overflow-scrolling: touch; }
+.scroll-area.no-fab { padding: 16px 16px 24px; }
 
 /* ══ LOADER ══ */
-#screen-loader {
-  background: linear-gradient(160deg, #1e3a5f 0%, #0f2744 100%);
-  align-items: center;
-  justify-content: center;
-}
+#screen-loader { background: linear-gradient(160deg, #1e3a5f 0%, #0f2744 100%); align-items: center; justify-content: center; }
 .loader-icon { font-size: 52px; margin-bottom: 16px; }
 .loader-text { color: rgba(255,255,255,0.6); font-size: 15px; }
-.spinner {
-  width: 32px; height: 32px;
-  border: 3px solid rgba(255,255,255,0.15);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin: 20px auto 0;
-}
+.spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.15); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ══ AUTH ══ */
-#screen-auth {
-  background: linear-gradient(160deg, #1e3a5f 0%, #0f2744 60%, #1a1a2e 100%);
-  align-items: center;
-  justify-content: center;
-  padding: 32px 24px;
-  overflow-y: auto;
-}
+#screen-auth { background: linear-gradient(160deg, #1e3a5f 0%, #0f2744 60%, #1a1a2e 100%); align-items: center; justify-content: center; padding: 32px 24px; overflow-y: auto; }
 .auth-logo { text-align: center; margin-bottom: 40px; }
-.auth-logo-icon {
-  width: 72px; height: 72px;
-  background: rgba(255,255,255,0.1);
-  border: 2px solid rgba(255,255,255,0.2);
-  border-radius: 20px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 32px;
-  margin: 0 auto 14px;
-}
+.auth-logo-icon { width: 72px; height: 72px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 14px; }
 .auth-logo h1 { color: white; font-size: 28px; font-weight: 700; }
 .auth-logo p  { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 4px; }
-.auth-card {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.13);
-  border-radius: 20px;
-  padding: 28px 24px;
-  width: 100%; max-width: 380px;
-}
+.auth-card { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.13); border-radius: 20px; padding: 28px 24px; width: 100%; max-width: 380px; }
 .auth-card h2 { color: white; font-size: 17px; margin-bottom: 20px; text-align: center; }
 .form-group { margin-bottom: 14px; }
-.form-group label {
-  display: block; color: rgba(255,255,255,0.6);
-  font-size: 11px; margin-bottom: 5px;
-  letter-spacing: 0.5px; text-transform: uppercase;
-}
-.form-group input {
-  width: 100%;
-  background: rgba(255,255,255,0.1);
-  border: 1.5px solid rgba(255,255,255,0.15);
-  border-radius: 10px; padding: 12px 14px;
-  color: white; font-size: 15px; font-family: inherit; outline: none;
-}
+.form-group label { display: block; color: rgba(255,255,255,0.6); font-size: 11px; margin-bottom: 5px; letter-spacing: 0.5px; text-transform: uppercase; }
+.form-group input { width: 100%; background: rgba(255,255,255,0.1); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 10px; padding: 12px 14px; color: white; font-size: 15px; font-family: inherit; outline: none; }
 .form-group input:focus { border-color: rgba(255,255,255,0.4); }
 .form-group input::placeholder { color: rgba(255,255,255,0.3); }
-.btn-primary {
-  width: 100%; padding: 13px;
-  background: #2563eb; border: none; border-radius: 12px;
-  color: white; font-size: 15px; font-weight: 700; font-family: inherit;
-  cursor: pointer; margin-top: 6px;
-}
-.btn-secondary {
-  width: 100%; padding: 13px;
-  background: rgba(255,255,255,0.1); border: none; border-radius: 12px;
-  color: white; font-size: 15px; font-family: inherit;
-  cursor: pointer; margin-top: 6px;
-}
+.btn-primary { width: 100%; padding: 13px; background: #2563eb; border: none; border-radius: 12px; color: white; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 6px; }
+.btn-secondary { width: 100%; padding: 13px; background: rgba(255,255,255,0.1); border: none; border-radius: 12px; color: white; font-size: 15px; font-family: inherit; cursor: pointer; margin-top: 6px; }
 .auth-error { color: #fca5a5; font-size: 13px; text-align: center; margin-top: 10px; min-height: 18px; }
 
-/* ══ ПРОЕКТИ — ПЛИТКИ ══ */
-.projects-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-.project-tile {
-  border-radius: 16px;
-  padding: 20px 16px;
-  cursor: pointer;
-  min-height: 130px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-  transition: transform 0.15s, box-shadow 0.15s;
-  position: relative;
-  overflow: hidden;
-}
+/* ══ ПЛИТКИ ══ */
+.projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.project-tile { border-radius: 16px; padding: 20px 16px; cursor: pointer; min-height: 130px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.18); transition: transform 0.15s; position: relative; overflow: hidden; }
 .project-tile:active { transform: scale(0.97); }
-.project-tile::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
-  pointer-events: none;
-}
-.project-tile-name {
-  color: white;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.3;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.3);
-}
-.project-tile-address {
-  color: rgba(255,255,255,0.65);
-  font-size: 11px;
-  margin-top: 4px;
-}
-.project-tile-footer {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  margin-top: 16px;
-}
-.project-tile-count {
-  color: rgba(255,255,255,0.9);
-  font-size: 28px;
-  font-weight: 700;
-  line-height: 1;
-}
-.project-tile-label {
-  color: rgba(255,255,255,0.6);
-  font-size: 11px;
-}
+.project-tile::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%); pointer-events: none; }
+.project-tile-name { color: white; font-size: 22px; font-weight: 700; line-height: 1.3; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.project-tile-address { color: rgba(255,255,255,0.65); font-size: 11px; margin-top: 4px; }
+.project-tile-footer { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 16px; }
+.project-tile-count { color: rgba(255,255,255,0.9); font-size: 28px; font-weight: 700; line-height: 1; }
+.project-tile-label { color: rgba(255,255,255,0.6); font-size: 11px; }
 
-/* ══ ПРОТОКОЛИ ══ */
-.meeting-card {
-  background: white;
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.07);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  transition: transform 0.15s;
-  border-left: 4px solid #e2e8f0;
-}
+/* ══ КАРТКИ ПРОТОКОЛІВ ══ */
+.meeting-card { background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: transform 0.15s; border-left: 4px solid #e2e8f0; }
 .meeting-card:active { transform: scale(0.99); }
 .meeting-card-left h3 { font-size: 15px; font-weight: 700; color: #1e3a5f; }
 .meeting-card-left p  { font-size: 12px; color: #64748b; margin-top: 2px; }
-.open-badge {
-  font-size: 11px; font-weight: 700;
-  padding: 3px 10px; border-radius: 8px;
-}
+.open-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 8px; }
 .open-badge.has  { background: #fee2e2; color: #991b1b; }
 .open-badge.none { background: #dcfce7; color: #166534; }
 
-/* ══ EMPTY STATE ══ */
+/* ══ ЕКРАН ПРОТОКОЛУ ══ */
+.protocol-header { flex-shrink: 0; padding: 10px 14px 12px; display: flex; align-items: center; justify-content: space-between; }
+.protocol-header-center { text-align: center; flex: 1; margin: 0 8px; }
+.protocol-header-num  { color: white; font-size: 16px; font-weight: 700; }
+.protocol-header-date { color: white; font-size: 13px; font-weight: 700; margin-top: 2px; }
+.protocol-header-loc  { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 1px; }
+.protocol-header-btns { display: flex; gap: 6px; flex-shrink: 0; }
+
+.proto-table-wrap { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 4px; }
+.proto-table { width: 100%; border-collapse: collapse; }
+.proto-table th { background: #1e3a5f; color: white; font-size: 12px; font-weight: 700; padding: 0 8px; height: 36px; text-align: left; border-right: 1px solid rgba(255,255,255,0.1); }
+.proto-table th:last-child { border-right: none; }
+.proto-table td { font-size: 12px; color: #1e293b; padding: 8px 8px; border-bottom: 1px solid #f1f5f9; border-right: 1px solid #f1f5f9; vertical-align: top; line-height: 1.4; }
+.proto-table td:last-child { border-right: none; }
+.proto-table tr:last-child td { border-bottom: none; }
+.proto-table tr:nth-child(even) td { background: #f8faff; }
+.proto-table tr { cursor: pointer; }
+.proto-table tr:active td { background: #eff6ff; }
+
+.block-divider { height: 28px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin: 4px 0; }
+.block-divider::before { content: ''; width: 48px; height: 3px; background: #cbd5e1; border-radius: 2px; }
+
+.center-btn { width: 48px; height: 48px; border-radius: 14px; border: none; color: white; font-size: 26px; display: flex; align-items: center; justify-content: center; margin: 4px auto 0; cursor: pointer; flex-shrink: 0; }
+.center-btn.blue { background: #2563eb; box-shadow: 0 4px 14px rgba(37,99,235,0.4); }
+.center-btn.gray { background: #475569; box-shadow: 0 4px 14px rgba(71,85,105,0.4); }
+
+.proto-block { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 4px; }
+.proto-block-header { background: #1e3a5f; padding: 0 12px; height: 36px; display: flex; align-items: center; }
+.proto-block-header span { color: white; font-size: 12px; font-weight: 700; line-height: 1; }
+.proto-block-row { display: flex; align-items: center; padding: 9px 12px; border-bottom: 1px solid #f1f5f9; gap: 8px; }
+.proto-block-row:last-child { border-bottom: none; }
+.proto-block-name { font-size: 13px; font-weight: 700; color: #1e293b; flex: 1; }
+.proto-block-role { font-size: 11px; color: #64748b; flex: 1; }
+
+.proto-bottom { background: white; border-top: 2px solid #e2e8f0; padding: 10px 14px; display: flex; gap: 8px; flex-shrink: 0; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
+.proto-bottom-btn { flex: 1; padding: 11px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; border: none; cursor: pointer; }
+.proto-bottom-btn.orange { background: #fff7ed; color: #c2410c; border: 1.5px solid #fed7aa !important; }
+
+/* ══ EMPTY / TOAST / MODAL / SETTINGS ══ */
 .empty-state { text-align: center; padding: 60px 24px; color: #94a3b8; }
 .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
 .empty-state p { font-size: 15px; line-height: 1.6; }
 
-/* ══ TOAST ══ */
-#toast {
-  position: fixed; bottom: 32px; left: 50%;
-  transform: translateX(-50%) translateY(16px);
-  background: #1e3a5f; color: white;
-  padding: 10px 22px; border-radius: 20px;
-  font-size: 13px; opacity: 0;
-  transition: opacity 0.3s, transform 0.3s;
-  pointer-events: none; z-index: 200; white-space: nowrap;
-}
+#toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(16px); background: #1e3a5f; color: white; padding: 10px 22px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; z-index: 200; white-space: nowrap; }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ══ MODAL ══ */
-.modal-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.55);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100; align-items: center; justify-content: center; padding: 24px; }
 .modal-overlay.active { display: flex; }
-.modal {
-  background: white;
-  border-radius: 20px;
-  padding: 28px 22px;
-  width: 100%; max-width: 480px;
-}
-.modal-title {
-  font-size: 18px; font-weight: 700; color: #1e3a5f;
-  margin-bottom: 20px; text-align: center;
-}
-.modal-input {
-  width: 100%;
-  border: 1.5px solid #e2e8f0; border-radius: 10px;
-  padding: 12px 14px; font-size: 15px;
-  font-family: inherit; color: #1a1a2e;
-  outline: none; margin-bottom: 12px;
-}
+.modal { background: white; border-radius: 20px; padding: 28px 22px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+.modal-title { font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 20px; text-align: center; }
+.modal-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: inherit; color: #1a1a2e; outline: none; margin-bottom: 12px; }
 .modal-input:focus { border-color: #2563eb; }
-.modal-btn {
-  width: 100%; padding: 13px; border-radius: 12px;
-  border: none; font-size: 15px; font-weight: 700;
-  font-family: inherit; cursor: pointer; margin-bottom: 8px;
-}
+.modal-select { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: inherit; color: #1a1a2e; outline: none; margin-bottom: 12px; background: white; }
+.modal-label { font-size: 12px; color: #64748b; margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+.modal-btn { width: 100%; padding: 13px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-bottom: 8px; }
 .modal-btn-primary { background: #2563eb; color: white; }
 .modal-btn-cancel  { background: #f1f5f9; color: #64748b; }
 
-/* ══ SETTINGS ══ */
 .settings-section { margin-bottom: 24px; }
-.settings-label {
-  font-size: 11px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px; padding: 0 4px;
-}
-.settings-row {
-  background: white; border-radius: 12px;
-  padding: 14px 16px; display: flex;
-  align-items: center; justify-content: space-between;
-  margin-bottom: 2px; cursor: pointer;
-}
+.settings-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px; padding: 0 4px; }
+.settings-row { background: white; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; cursor: pointer; }
 .settings-row span { font-size: 14px; color: #1a1a2e; }
 .settings-val { font-size: 13px; color: #94a3b8; }
 .settings-danger span { color: #ef4444; }
@@ -336,7 +147,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
 </head>
 <body>
 
-<!-- ══ LOADER ══ -->
+<!-- LOADER -->
 <div id="screen-loader" class="screen active">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;">
     <div class="loader-icon">📋</div>
@@ -345,7 +156,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
   </div>
 </div>
 
-<!-- ══ AUTH ══ -->
+<!-- AUTH -->
 <div id="screen-auth" class="screen">
   <div class="auth-logo">
     <div class="auth-logo-icon">📋</div>
@@ -368,9 +179,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
   </div>
 </div>
 
-<!-- ══ ЕКРАН 1 — ПРОЕКТИ ══ -->
+<!-- ЕКРАН 1 — ПРОЕКТИ -->
 <div id="screen-home" class="screen">
-  <div class="app-header neutral" id="header-home">
+  <div class="app-header neutral">
     <div class="app-header-left">
       <div>
         <div class="app-header-title">📋 Control Point</div>
@@ -385,16 +196,16 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
     <div class="projects-grid" id="projects-list">
       <div class="empty-state" style="grid-column:1/-1">
         <div class="icon">🏗️</div>
-        <p>Немає об'єктів.<br>Натисніть <strong>+</strong> щоб додати перший.</p>
+        <p>Немає об'єктів.<br>Натисніть <strong>+</strong></p>
       </div>
     </div>
   </div>
   <button class="fab" onclick="openAddProject()">＋</button>
 </div>
 
-<!-- ══ ЕКРАН 2 — ПРОТОКОЛИ ══ -->
+<!-- ЕКРАН 2 — ПРОТОКОЛИ -->
 <div id="screen-project" class="screen">
-  <div class="app-header color-0" id="header-project">
+  <div class="app-header neutral" id="header-project">
     <div class="app-header-left">
       <button class="back-btn" onclick="showScreen('screen-home')">◀</button>
       <div>
@@ -408,16 +219,79 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
       <button class="icon-btn" onclick="showToast('Налаштування — в розробці')">⚙️</button>
     </div>
   </div>
-  <div class="scroll-area" id="meetings-list">
-    <div class="empty-state">
-      <div class="icon">📄</div>
-      <p>Протоколів ще немає.</p>
-    </div>
-  </div>
+  <div class="scroll-area" id="meetings-list"></div>
   <button class="fab" onclick="openAddMeeting()">＋</button>
 </div>
 
-<!-- ══ НАЛАШТУВАННЯ ══ -->
+<!-- ЕКРАН 3 — ПРОТОКОЛ -->
+<div id="screen-meeting" class="screen">
+  <div id="meeting-header" class="protocol-header">
+    <button class="back-btn" onclick="showScreen('screen-project')">◀</button>
+    <div class="protocol-header-center">
+      <div class="protocol-header-num"  id="meeting-header-num">Протокол №—</div>
+      <div class="protocol-header-date" id="meeting-header-date">—</div>
+      <div class="protocol-header-loc"  id="meeting-header-loc">—</div>
+    </div>
+    <div class="protocol-header-btns">
+      <button class="icon-btn" onclick="showToast('Редагування — в розробці')">✏️</button>
+      <button class="icon-btn" onclick="printMeeting()">🖨</button>
+      <button class="icon-btn" onclick="showToast('Поділитись — в розробці')">📤</button>
+    </div>
+  </div>
+  <div class="scroll-area no-fab">
+    <!-- ТАБЛИЦЯ ПУНКТІВ -->
+    <div class="proto-table-wrap">
+      <table class="proto-table">
+        <thead>
+          <tr>
+            <th style="width:32px">№</th>
+            <th>Опис / питання</th>
+            <th style="width:18%">Виконавець</th>
+            <th style="width:22%">Рішення</th>
+            <th style="width:15%">Примітка</th>
+          </tr>
+        </thead>
+        <tbody id="items-tbody">
+          <tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:20px;">Пунктів ще немає</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <button class="center-btn blue" onclick="openAddItem()">＋</button>
+
+    <div class="block-divider"></div>
+
+    <!-- УЧАСНИКИ -->
+    <div class="proto-block">
+      <div class="proto-block-header">
+        <span>✅ Погоджено та затверджено присутніми</span>
+      </div>
+      <div id="attendees-list">
+        <div style="text-align:center;color:#94a3b8;font-size:12px;padding:14px;">Учасників ще немає</div>
+      </div>
+    </div>
+    <button class="center-btn blue" onclick="openAddAttendee()">＋</button>
+
+    <div class="block-divider"></div>
+
+    <!-- ДОДАТКИ -->
+    <div class="proto-block">
+      <div class="proto-block-header">
+        <span>📎 Додатки до протоколу <span id="attachments-num"></span></span>
+      </div>
+      <div id="attachments-list">
+        <div style="text-align:center;color:#94a3b8;font-size:12px;padding:14px;">Додатків ще немає</div>
+      </div>
+    </div>
+    <button class="center-btn gray" onclick="showToast('Додатки — в розробці')">📎</button>
+
+    <div style="height:20px;"></div>
+  </div>
+  <div class="proto-bottom">
+    <button class="proto-bottom-btn orange" onclick="showToast('Перенесення — в розробці')">🔄 Перенести невиконані</button>
+  </div>
+</div>
+
+<!-- НАЛАШТУВАННЯ -->
 <div id="screen-settings" class="screen">
   <div class="app-header neutral">
     <div class="app-header-left">
@@ -425,61 +299,44 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
       <div class="app-header-title">Налаштування</div>
     </div>
   </div>
-  <div class="scroll-area">
+  <div class="scroll-area no-fab">
     <div class="settings-section">
       <div class="settings-label">Акаунт</div>
-      <div class="settings-row">
-        <span id="settings-email">—</span>
-        <span class="settings-val">email</span>
-      </div>
+      <div class="settings-row"><span id="settings-email">—</span><span class="settings-val">email</span></div>
     </div>
     <div class="settings-section">
       <div class="settings-label">Резервне копіювання</div>
-      <div class="settings-row" onclick="manualBackup()">
-        <span>💾 Зробити резервну копію</span>
-        <span class="settings-val">→</span>
-      </div>
-      <div class="settings-row" onclick="showToast('Відновлення — в розробці')">
-        <span>🔄 Відновити з резервної копії</span>
-        <span class="settings-val">→</span>
-      </div>
+      <div class="settings-row" onclick="manualBackup()"><span>💾 Зробити резервну копію</span><span class="settings-val">→</span></div>
+      <div class="settings-row" onclick="showToast('Відновлення — в розробці')"><span>🔄 Відновити з резервної копії</span><span class="settings-val">→</span></div>
     </div>
     <div class="settings-section">
       <div class="settings-label">AI Аналітика</div>
-      <div class="settings-row" onclick="showToast('Налаштування AI — в розробці')">
-        <span>🤖 AI провайдер</span>
-        <span class="settings-val">Claude API</span>
-      </div>
+      <div class="settings-row" onclick="showToast('Налаштування AI — в розробці')"><span>🤖 AI провайдер</span><span class="settings-val">Claude API</span></div>
     </div>
     <div class="settings-section">
       <div class="settings-label">Небезпечна зона</div>
-      <div class="settings-row settings-danger" onclick="logout()">
-        <span>Вийти з акаунту</span>
-      </div>
+      <div class="settings-row settings-danger" onclick="logout()"><span>Вийти з акаунту</span></div>
     </div>
   </div>
 </div>
 
-<!-- ══ АНАЛІТИКА ══ -->
+<!-- АНАЛІТИКА -->
 <div id="screen-analytics" class="screen">
-  <div class="app-header neutral" id="header-analytics">
+  <div class="app-header neutral">
     <div class="app-header-left">
       <button class="back-btn" onclick="showScreen('screen-project')">◀ Назад</button>
       <div class="app-header-title">📊 Аналітика</div>
     </div>
   </div>
-  <div class="scroll-area">
-    <div class="empty-state">
-      <div class="icon">🤖</div>
-      <p>AI аналітика — в розробці</p>
-    </div>
+  <div class="scroll-area no-fab">
+    <div class="empty-state"><div class="icon">🤖</div><p>AI аналітика — в розробці</p></div>
   </div>
 </div>
 
-<!-- ══ TOAST ══ -->
+<!-- TOAST -->
 <div id="toast"></div>
 
-<!-- ══ MODAL — НОВИЙ ОБ'ЄКТ ══ -->
+<!-- MODAL — НОВИЙ ОБ'ЄКТ -->
 <div class="modal-overlay" id="modal-project">
   <div class="modal">
     <div class="modal-title">Додати новий об'єкт</div>
@@ -490,7 +347,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
   </div>
 </div>
 
-<!-- ══ MODAL — НОВИЙ ПРОТОКОЛ ══ -->
+<!-- MODAL — НОВИЙ ПРОТОКОЛ -->
 <div class="modal-overlay" id="modal-meeting">
   <div class="modal">
     <div class="modal-title">Додати новий протокол</div>
@@ -500,11 +357,40 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) {
   </div>
 </div>
 
+<!-- MODAL — НОВИЙ ПУНКТ -->
+<div class="modal-overlay" id="modal-item">
+  <div class="modal">
+    <div class="modal-title">Пункт протоколу</div>
+    <label class="modal-label">Опис / питання</label>
+    <textarea class="modal-input" id="item-description" placeholder="Опис питання..." rows="3" style="resize:none;"></textarea>
+    <label class="modal-label">Виконавець</label>
+    <select class="modal-select" id="item-executor"></select>
+    <input class="modal-input" id="item-executor-manual" placeholder="або вписати вручну" type="text">
+    <label class="modal-label">Прийняте рішення</label>
+    <textarea class="modal-input" id="item-decision" placeholder="Прийняте рішення..." rows="2" style="resize:none;"></textarea>
+    <label class="modal-label">Примітка</label>
+    <input class="modal-input" id="item-note" placeholder="Примітка..." type="text">
+    <button class="modal-btn modal-btn-primary" onclick="saveItem()">Зберегти пункт</button>
+    <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-item')">Скасувати</button>
+  </div>
+</div>
+
+<!-- MODAL — УЧАСНИК -->
+<div class="modal-overlay" id="modal-attendee">
+  <div class="modal">
+    <div class="modal-title">Додати учасника</div>
+    <input class="modal-input" id="att-name" placeholder="ПІБ" type="text">
+    <input class="modal-input" id="att-role" placeholder="Посада / Організація" type="text">
+    <button class="modal-btn modal-btn-primary" onclick="saveAttendee()">Додати</button>
+    <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-attendee')">Скасувати</button>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp }
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, increment }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -522,45 +408,32 @@ const db   = getFirestore(app);
 
 let currentUser    = null;
 let currentProject = null;
+let currentMeeting = null;
 
-// Кольори для плиток об'єктів
-const TILE_COLORS = [
-  '#1e3a5f','#166534','#7c2d12','#4c1d95',
-  '#0f766e','#9f1239','#854d0e','#1e40af'
-];
+const TILE_COLORS = ['#1e3a5f','#166534','#7c2d12','#4c1d95','#0f766e','#9f1239','#854d0e','#1e40af'];
 
 // ── HELPERS ──
 window.showScreen = function(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 };
-
 window.showToast = function(msg, dur = 2500) {
   const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
+  t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), dur);
 };
-
 window.openModal  = id => document.getElementById(id).classList.add('active');
 window.closeModal = id => document.getElementById(id).classList.remove('active');
 
 function formatDate(ts) {
   if (!ts) return '—';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' });
+  return d.toLocaleDateString('uk-UA', { day:'2-digit', month:'long', year:'numeric' });
 }
-
-function setHeaderColor(headerId, color) {
-  const h = document.getElementById(headerId);
-  if (!h) return;
-  if (color) {
-    h.classList.remove('neutral');
-    h.style.background = color;
-  } else {
-    h.style.background = '';
-    h.classList.add('neutral');
-  }
+function formatDateShort(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' });
 }
 
 // ── AUTH ──
@@ -570,9 +443,7 @@ onAuthStateChanged(auth, user => {
     document.getElementById('settings-email').textContent = user.email;
     loadProjects();
     showScreen('screen-home');
-  } else {
-    showScreen('screen-auth');
-  }
+  } else { showScreen('screen-auth'); }
 });
 
 document.getElementById('btn-login').addEventListener('click', async () => {
@@ -580,11 +451,8 @@ document.getElementById('btn-login').addEventListener('click', async () => {
   const pass  = document.getElementById('auth-password').value;
   const err   = document.getElementById('auth-error');
   err.textContent = '';
-  try {
-    await signInWithEmailAndPassword(auth, email, pass);
-  } catch(e) {
-    err.textContent = 'Невірний email або пароль';
-  }
+  try { await signInWithEmailAndPassword(auth, email, pass); }
+  catch(e) { err.textContent = 'Невірний email або пароль'; }
 });
 
 document.getElementById('btn-register').addEventListener('click', async () => {
@@ -593,47 +461,32 @@ document.getElementById('btn-register').addEventListener('click', async () => {
   const err   = document.getElementById('auth-error');
   err.textContent = '';
   if (pass.length < 6) { err.textContent = 'Пароль мінімум 6 символів'; return; }
-  try {
-    await createUserWithEmailAndPassword(auth, email, pass);
-    showToast('✅ Акаунт створено!');
-  } catch(e) {
-    err.textContent = e.code === 'auth/email-already-in-use'
-      ? 'Email вже використовується' : 'Помилка реєстрації';
-  }
+  try { await createUserWithEmailAndPassword(auth, email, pass); showToast('✅ Акаунт створено!'); }
+  catch(e) { err.textContent = e.code === 'auth/email-already-in-use' ? 'Email вже використовується' : 'Помилка реєстрації'; }
 });
 
 window.logout = async function() {
-  if (confirm('Вийти з акаунту?')) {
-    await signOut(auth);
-    showScreen('screen-auth');
-  }
+  if (confirm('Вийти з акаунту?')) { await signOut(auth); showScreen('screen-auth'); }
 };
 
 // ── PROJECTS ──
 async function loadProjects() {
   const uid  = currentUser.uid;
-  const ref  = collection(db, 'users', uid, 'projects');
-  const snap = await getDocs(query(ref, orderBy('createdAt', 'asc')));
+  const snap = await getDocs(query(collection(db,'users',uid,'projects'), orderBy('createdAt','asc')));
   const grid = document.getElementById('projects-list');
-
   if (snap.empty) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
-      <div class="icon">🏗️</div>
-      <p>Немає об'єктів.<br>Натисніть <strong>+ Додати новий об'єкт</strong></p>
-    </div>`;
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🏗️</div><p>Немає об'єктів.<br>Натисніть <strong>+</strong></p></div>`;
     return;
   }
-
   grid.innerHTML = '';
   let idx = 0;
   snap.forEach(d => {
     const p = d.data();
-    const color = TILE_COLORS[idx % TILE_COLORS.length];
+    const color    = TILE_COLORS[idx % TILE_COLORS.length];
     const gradient = `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`;
     const tile = document.createElement('div');
     tile.className = 'project-tile';
     tile.style.background = gradient;
-    tile.dataset.colorIdx = idx;
     tile.innerHTML = `
       <div>
         <div class="project-tile-name">${p.name}</div>
@@ -646,7 +499,7 @@ async function loadProjects() {
         </div>
         <div style="font-size:28px;opacity:0.4">📋</div>
       </div>`;
-    tile.onclick = () => openProject(d.id, p, gradient);
+    tile.onclick = () => openProject(d.id, p, gradient, color);
     grid.appendChild(tile);
     idx++;
   });
@@ -663,22 +516,16 @@ window.saveProject = async function() {
   const address = document.getElementById('new-project-address').value.trim();
   if (!name) { showToast('Введіть назву об\'єкту'); return; }
   try {
-    await addDoc(collection(db, 'users', currentUser.uid, 'projects'), {
-      name, address, createdAt: serverTimestamp(), meetingsCount: 0
-    });
-    closeModal('modal-project');
-    showToast('✅ Об\'єкт додано');
-    loadProjects();
+    await addDoc(collection(db,'users',currentUser.uid,'projects'), { name, address, createdAt: serverTimestamp(), meetingsCount: 0 });
+    closeModal('modal-project'); showToast('✅ Об\'єкт додано'); loadProjects();
   } catch(e) { showToast('Помилка збереження'); }
 };
 
-function openProject(id, data, gradient) {
-  currentProject = { id, ...data, gradient };
-  document.getElementById('project-header-name').textContent = data.name;
+function openProject(id, data, gradient, color) {
+  currentProject = { id, ...data, gradient, color };
+  document.getElementById('project-header-name').textContent    = data.name;
   document.getElementById('project-header-address').textContent = data.address || '';
-  // Точно той самий градієнт що і на плитці екрану 1
-  const h = document.getElementById('header-project');
-  h.style.background = gradient;
+  document.getElementById('header-project').style.background    = gradient;
   loadMeetings();
   showScreen('screen-project');
 }
@@ -687,88 +534,177 @@ function openProject(id, data, gradient) {
 async function loadMeetings() {
   if (!currentProject) return;
   const uid  = currentUser.uid;
-  const ref  = collection(db, 'users', uid, 'projects', currentProject.id, 'meetings');
-  const snap = await getDocs(query(ref, orderBy('number', 'desc')));
+  const snap = await getDocs(query(collection(db,'users',uid,'projects',currentProject.id,'meetings'), orderBy('number','desc')));
   const list = document.getElementById('meetings-list');
-
   if (snap.empty) {
-    list.innerHTML = `<div class="empty-state">
-      <div class="icon">📄</div>
-      <p>Протоколів ще немає.</p>
-    </div>`;
+    list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Протоколів ще немає.</p></div>`;
     return;
   }
-
-  const color = TILE_COLORS[(currentProject.colorIdx || 0) % 8];
   list.innerHTML = '';
   snap.forEach(d => {
-    const m = d.data();
+    const m    = d.data();
     const open = m.openItemsCount || 0;
     const card = document.createElement('div');
     card.className = 'meeting-card';
-    card.style.borderLeftColor = color;
+    card.style.borderLeftColor = currentProject.color;
     card.innerHTML = `
       <div class="meeting-card-left">
         <h3>Протокол №${m.number}</h3>
-        <p>${formatDate(m.date)} · ${m.location || '—'}</p>
+        <p>${formatDateShort(m.date)} · ${m.location || '—'}</p>
       </div>
-      <div>
-        <span class="open-badge ${open === 0 ? 'none' : 'has'}">
-          ${open === 0 ? '✓ Виконано' : open + ' відкритих'}
-        </span>
-      </div>`;
-    card.onclick = () => showToast('Екран протоколу — в розробці');
+      <span class="open-badge ${open === 0 ? 'none' : 'has'}">${open === 0 ? '✓ Виконано' : open + ' відкритих'}</span>`;
+    card.onclick = () => openMeeting(d.id, m);
     list.appendChild(card);
   });
 }
 
-window.openAddMeeting = () => {
-  document.getElementById('new-meeting-location').value = '';
-  openModal('modal-meeting');
-};
+window.openAddMeeting = () => { document.getElementById('new-meeting-location').value = ''; openModal('modal-meeting'); };
 
 window.saveMeeting = async function() {
   const location = document.getElementById('new-meeting-location').value.trim();
   if (!location) { showToast('Вкажіть місце проведення'); return; }
   try {
-    const uid     = currentUser.uid;
-    const projRef = collection(db, 'users', uid, 'projects', currentProject.id, 'meetings');
-    const snap    = await getDocs(projRef);
-    const number  = snap.size + 1;
+    const uid    = currentUser.uid;
+    const ref    = collection(db,'users',uid,'projects',currentProject.id,'meetings');
+    const snap   = await getDocs(ref);
+    const number = snap.size + 1;
     await autoBackup('протокол-' + number);
-    await addDoc(projRef, {
-      number, location,
-      date: serverTimestamp(),
-      status: 'draft',
-      openItemsCount: 0,
-      createdAt: serverTimestamp()
-    });
-    closeModal('modal-meeting');
-    showToast(`✅ Протокол №${number} створено`);
-    loadMeetings();
+    await addDoc(ref, { number, location, date: serverTimestamp(), status: 'draft', openItemsCount: 0, createdAt: serverTimestamp() });
+    closeModal('modal-meeting'); showToast(`✅ Протокол №${number} створено`); loadMeetings();
   } catch(e) { showToast('Помилка збереження'); }
+};
+
+// ── MEETING SCREEN ──
+function openMeeting(id, data) {
+  currentMeeting = { id, ...data };
+  const h = document.getElementById('meeting-header');
+  h.style.background = currentProject.gradient;
+  document.getElementById('meeting-header-num').textContent  = `Протокол №${data.number}`;
+  document.getElementById('meeting-header-date').textContent = formatDate(data.date);
+  document.getElementById('meeting-header-loc').textContent  = data.location || '—';
+  document.getElementById('attachments-num').textContent     = `№${data.number}`;
+  loadItems();
+  loadAttendees();
+  showScreen('screen-meeting');
+}
+
+// ── ITEMS ──
+async function loadItems() {
+  const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
+  const snap = await getDocs(query(collection(db,'users',uid,'projects',pid,'meetings',mid,'items'), orderBy('number','asc')));
+  const tbody = document.getElementById('items-tbody');
+  if (snap.empty) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:20px;">Пунктів ще немає</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = '';
+  snap.forEach(d => {
+    const it = d.data();
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${it.number}</td><td>${it.description||'—'}</td><td>${it.executor||'—'}</td><td>${it.decision||'—'}</td><td>${it.note||''}</td>`;
+    tr.onclick = () => showToast('Редагування пункту — в розробці');
+    tbody.appendChild(tr);
+  });
+}
+
+window.openAddItem = async function() {
+  const sel = document.getElementById('item-executor');
+  sel.innerHTML = '<option value="">— Вибрати з довідника —</option>';
+  try {
+    const snap = await getDocs(collection(db,'users',currentUser.uid,'projects',currentProject.id,'executors'));
+    snap.forEach(d => {
+      const e = d.data();
+      const opt = document.createElement('option');
+      opt.value = e.name;
+      opt.textContent = `${e.name}${e.role ? ' · '+e.role : ''}`;
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+  ['item-description','item-executor-manual','item-decision','item-note'].forEach(id => document.getElementById(id).value = '');
+  openModal('modal-item');
+};
+
+window.saveItem = async function() {
+  const description = document.getElementById('item-description').value.trim();
+  if (!description) { showToast('Введіть опис питання'); return; }
+  const executorSel    = document.getElementById('item-executor').value;
+  const executorManual = document.getElementById('item-executor-manual').value.trim();
+  const executor = executorSel || executorManual || '—';
+  const decision = document.getElementById('item-decision').value.trim();
+  const note     = document.getElementById('item-note').value.trim();
+  try {
+    const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
+    const ref = collection(db,'users',uid,'projects',pid,'meetings',mid,'items');
+    const snap = await getDocs(ref);
+    const number = snap.size + 1;
+    await addDoc(ref, { number, description, executor, decision, note, createdAt: serverTimestamp() });
+    await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid), { openItemsCount: increment(1) });
+    closeModal('modal-item'); showToast(`✅ Пункт №${number} додано`); loadItems();
+  } catch(e) { showToast('Помилка збереження'); }
+};
+
+// ── ATTENDEES ──
+async function loadAttendees() {
+  const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
+  const snap = await getDocs(collection(db,'users',uid,'projects',pid,'meetings',mid,'attendees'));
+  const list = document.getElementById('attendees-list');
+  if (snap.empty) {
+    list.innerHTML = `<div style="text-align:center;color:#94a3b8;font-size:12px;padding:14px;">Учасників ще немає</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  snap.forEach(d => {
+    const a = d.data();
+    const row = document.createElement('div');
+    row.className = 'proto-block-row';
+    row.innerHTML = `<div class="proto-block-name">${a.name}</div><div class="proto-block-role">${a.role||'—'}</div>`;
+    list.appendChild(row);
+  });
+}
+
+window.openAddAttendee = () => {
+  document.getElementById('att-name').value = '';
+  document.getElementById('att-role').value = '';
+  openModal('modal-attendee');
+};
+
+window.saveAttendee = async function() {
+  const name = document.getElementById('att-name').value.trim();
+  if (!name) { showToast('Введіть ПІБ учасника'); return; }
+  const role = document.getElementById('att-role').value.trim();
+  try {
+    const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
+    await addDoc(collection(db,'users',uid,'projects',pid,'meetings',mid,'attendees'), { name, role, createdAt: serverTimestamp() });
+    closeModal('modal-attendee'); showToast('✅ Учасника додано'); loadAttendees();
+  } catch(e) { showToast('Помилка збереження'); }
+};
+
+// ── PRINT ──
+window.printMeeting = function() {
+  autoBackup('друк-' + currentMeeting.number);
+  showToast('Друк — в розробці');
 };
 
 // ── BACKUP ──
 async function autoBackup(trigger) {
   try {
     const uid      = currentUser.uid;
-    const projSnap = await getDocs(collection(db, 'users', uid, 'projects'));
+    const projSnap = await getDocs(collection(db,'users',uid,'projects'));
     const backup   = { exportDate: new Date().toISOString(), appVersion: '1.0', trigger, projects: [] };
     for (const p of projSnap.docs) {
       const proj  = { id: p.id, ...p.data(), meetings: [] };
-      const mSnap = await getDocs(collection(db, 'users', uid, 'projects', p.id, 'meetings'));
+      const mSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings'));
       for (const m of mSnap.docs) {
         const meet  = { id: m.id, ...m.data(), items: [], attendees: [] };
-        const iSnap = await getDocs(collection(db, 'users', uid, 'projects', p.id, 'meetings', m.id, 'items'));
+        const iSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings',m.id,'items'));
         iSnap.forEach(i => meet.items.push({ id: i.id, ...i.data() }));
-        const aSnap = await getDocs(collection(db, 'users', uid, 'projects', p.id, 'meetings', m.id, 'attendees'));
+        const aSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings',m.id,'attendees'));
         aSnap.forEach(a => meet.attendees.push({ id: a.id, ...a.data() }));
         proj.meetings.push(meet);
       }
       backup.projects.push(proj);
     }
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(backup,null,2)], { type:'application/json' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
     a.href = url;
