@@ -1,0 +1,881 @@
+!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Control Point">
+<title>Control Point</title>
+
+<style>
+  /* ── RESET & BASE ── */
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Arsenal', Arial, sans-serif;
+    background: #f0f2f0;
+    color: #1a1a2e;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* ── GOOGLE FONT ── */
+  @import url('https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400&display=swap');
+
+  /* ── SCREENS ── */
+  .screen { display: none; flex-direction: column; height: 100vh; }
+  .screen.active { display: flex; }
+
+  /* ════════════════════════════════
+     ЕКРАН АВТОРИЗАЦІЇ
+  ════════════════════════════════ */
+  #screen-auth {
+    background: linear-gradient(160deg, #1e3a5f 0%, #0f2744 60%, #1a1a2e 100%);
+    align-items: center;
+    justify-content: center;
+    padding: 32px 24px;
+  }
+
+  .auth-logo {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .auth-logo-icon {
+    width: 72px; height: 72px;
+    background: rgba(255,255,255,0.1);
+    border: 2px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px;
+    margin: 0 auto 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  .auth-logo h1 {
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .auth-logo p {
+    color: rgba(255,255,255,0.55);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+
+  .auth-card {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 20px;
+    padding: 32px 28px;
+    width: 100%;
+    max-width: 380px;
+    backdrop-filter: blur(12px);
+  }
+
+  .auth-card h2 {
+    color: white;
+    font-size: 18px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .form-group { margin-bottom: 16px; }
+  .form-group label {
+    display: block;
+    color: rgba(255,255,255,0.65);
+    font-size: 12px;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .form-group input {
+    width: 100%;
+    background: rgba(255,255,255,0.1);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: white;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus { border-color: rgba(255,255,255,0.4); }
+  .form-group input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .btn-primary {
+    width: 100%;
+    padding: 14px;
+    background: #2563eb;
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+  }
+  .btn-primary:active { transform: scale(0.98); background: #1d4ed8; }
+
+  .auth-error {
+    color: #fca5a5;
+    font-size: 13px;
+    text-align: center;
+    margin-top: 12px;
+    min-height: 20px;
+  }
+
+  /* ════════════════════════════════
+     ЗАГАЛЬНІ КОМПОНЕНТИ
+  ════════════════════════════════ */
+
+  /* Object Banner */
+  .object-banner {
+    background: #0f2744;
+    padding: 6px 16px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .object-banner span {
+    color: #93c5fd;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  /* Top Bar */
+  .top-bar {
+    background: #1e3a5f;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  .top-bar-left { display: flex; align-items: center; gap: 12px; }
+  .back-btn {
+    color: #93c5fd;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    font-family: inherit;
+  }
+  .top-bar-title { color: white; font-size: 16px; font-weight: 700; }
+  .top-bar-sub { color: #93c5fd; font-size: 11px; }
+  .top-bar-right { display: flex; gap: 8px; }
+  .icon-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+
+  /* Scroll area */
+  .scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Bottom Bar */
+  .bottom-bar {
+    background: white;
+    border-top: 2px solid #e2e8f0;
+    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+  }
+  .bottom-btn {
+    flex: 1;
+    padding: 10px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: center;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: none;
+    transition: opacity 0.15s;
+  }
+  .bottom-btn:active { opacity: 0.75; }
+  .btn-blue { background: #eff6ff; color: #2563eb; border: 1.5px solid #93c5fd !important; }
+  .btn-orange { background: #fff7ed; color: #c2410c; border: 1.5px solid #fed7aa !important; }
+  .btn-dark { background: #1e3a5f; color: white; flex: 2; }
+
+  /* Cards */
+  .card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+    margin-bottom: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .card:active { transform: scale(0.99); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+  /* FAB */
+  .fab {
+    position: fixed;
+    bottom: 84px;
+    right: 20px;
+    width: 56px; height: 56px;
+    background: #2563eb;
+    border-radius: 16px;
+    border: none;
+    color: white;
+    font-size: 26px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.15s;
+    z-index: 10;
+  }
+  .fab:active { transform: scale(0.93); }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: #94a3b8;
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state p { font-size: 15px; line-height: 1.6; }
+
+  /* Status pills */
+  .pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .pill-work { background: #fef9c3; color: #854d0e; }
+  .pill-done { background: #dcfce7; color: #166534; }
+  .pill-no   { background: #fee2e2; color: #991b1b; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #1e3a5f;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 50;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px 32px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1e3a5f;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .modal-input {
+    width: 100%;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #1a1a2e;
+    outline: none;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+  .modal-input:focus { border-color: #2563eb; }
+  .modal-btn {
+    width: 100%;
+    padding: 13px;
+    border-radius: 12px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+  .modal-btn-primary { background: #2563eb; color: white; }
+  .modal-btn-cancel  { background: #f1f5f9; color: #64748b; }
+
+  /* ════════════════════════════════
+     ЕКРАН 1 — ГОЛОВНА (ПРОЕКТИ)
+  ════════════════════════════════ */
+  #screen-home .top-bar-title { font-size: 18px; }
+
+  .project-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    cursor: pointer;
+    transition: transform 0.15s;
+    border-left: 4px solid #2563eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .project-card:active { transform: scale(0.99); }
+  .project-card-info h3 { font-size: 16px; font-weight: 700; color: #1e3a5f; margin-bottom: 4px; }
+  .project-card-info p  { font-size: 12px; color: #64748b; }
+  .project-card-stats {
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+  .project-card-stats .num { font-size: 22px; font-weight: 700; color: #2563eb; }
+  .project-card-stats .lbl { font-size: 11px; color: #94a3b8; }
+
+  /* ════════════════════════════════
+     ЕКРАН 2 — СПИСОК ПРОТОКОЛІВ
+  ════════════════════════════════ */
+  .meeting-card {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.07);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.15s;
+  }
+  .meeting-card:active { transform: scale(0.99); }
+  .meeting-card-left h3 { font-size: 15px; font-weight: 700; color: #1e3a5f; }
+  .meeting-card-left p  { font-size: 12px; color: #64748b; margin-top: 2px; }
+  .meeting-card-right { text-align: right; flex-shrink: 0; }
+  .meeting-open-count {
+    background: #fee2e2;
+    color: #991b1b;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 8px;
+  }
+  .meeting-open-count.none { background: #dcfce7; color: #166534; }
+
+  /* ════════════════════════════════
+     LOADER
+  ════════════════════════════════ */
+  #screen-loader {
+    background: linear-gradient(160deg, #1e3a5f 0%, #0f2744 100%);
+    align-items: center;
+    justify-content: center;
+  }
+  .loader-icon { font-size: 48px; margin-bottom: 16px; }
+  .loader-text { color: rgba(255,255,255,0.6); font-size: 14px; }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(255,255,255,0.15);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 16px auto 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Settings screen */
+  .settings-section { margin-bottom: 24px; }
+  .settings-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+  .settings-row {
+    background: white;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2px;
+    cursor: pointer;
+  }
+  .settings-row span { font-size: 14px; color: #1a1a2e; }
+  .settings-row .settings-value { font-size: 13px; color: #94a3b8; }
+  .settings-row-danger span { color: #ef4444; }
+</style>
+</head>
+<body>
+
+<!-- ══ LOADER ══ -->
+<div id="screen-loader" class="screen active">
+  <div class="loader-icon">📋</div>
+  <div class="loader-text">Control Point</div>
+  <div class="spinner"></div>
+</div>
+
+<!-- ══ АВТОРИЗАЦІЯ ══ -->
+<div id="screen-auth" class="screen">
+  <div class="auth-logo">
+    <div class="auth-logo-icon">📋</div>
+    <h1>Control Point</h1>
+    <p>Протоколи нарад</p>
+  </div>
+  <div class="auth-card">
+    <h2>Вхід в систему</h2>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="auth-email" placeholder="your@email.com" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>Пароль</label>
+      <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="btn-primary" id="btn-login">Увійти</button>
+    <button class="btn-primary" id="btn-register" style="margin-top:8px; background: rgba(255,255,255,0.1); box-shadow:none;">
+      Зареєструватись
+    </button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+</div>
+
+<!-- ══ ЕКРАН 1 — ГОЛОВНА (ПРОЕКТИ) ══ -->
+<div id="screen-home" class="screen">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <div>
+        <div class="top-bar-title">📋 Control Point</div>
+      </div>
+    </div>
+    <div class="top-bar-right">
+      <button class="icon-btn" onclick="showScreen('screen-settings')">⚙️</button>
+    </div>
+  </div>
+  <div class="scroll-area" id="projects-list">
+    <div class="empty-state">
+      <div class="icon">🏗️</div>
+      <p>Немає об'єктів.<br>Натисніть <strong>+</strong> щоб додати перший.</p>
+    </div>
+  </div>
+  <button class="fab" onclick="openAddProject()">＋</button>
+</div>
+
+<!-- ══ ЕКРАН 2 — ПРОТОКОЛИ ОБ'ЄКТУ ══ -->
+<div id="screen-project" class="screen">
+  <div class="object-banner">
+    <span id="project-banner-name">—</span>
+  </div>
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <button class="back-btn" onclick="showScreen('screen-home')">◀ Об'єкти</button>
+      <div>
+        <div class="top-bar-title">Протоколи</div>
+      </div>
+    </div>
+    <div class="top-bar-right">
+      <button class="icon-btn" onclick="showScreen('screen-analytics')">📊</button>
+      <button class="icon-btn" onclick="alert('Пошук — в розробці')">🔍</button>
+      <button class="icon-btn" onclick="alert('Налаштування об\'єкту — в розробці')">⚙️</button>
+    </div>
+  </div>
+  <div class="scroll-area" id="meetings-list">
+    <div class="empty-state">
+      <div class="icon">📄</div>
+      <p>Протоколів ще немає.<br>Натисніть <strong>+</strong> щоб створити перший.</p>
+    </div>
+  </div>
+  <button class="fab" onclick="openAddMeeting()">＋</button>
+</div>
+
+<!-- ══ ЕКРАН НАЛАШТУВАНЬ ══ -->
+<div id="screen-settings" class="screen">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <button class="back-btn" onclick="showScreen('screen-home')">◀ Назад</button>
+      <div class="top-bar-title">Налаштування</div>
+    </div>
+  </div>
+  <div class="scroll-area">
+    <div class="settings-section">
+      <div class="settings-label">Акаунт</div>
+      <div class="settings-row">
+        <span id="settings-email">—</span>
+        <span class="settings-value">email</span>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">Резервне копіювання</div>
+      <div class="settings-row" onclick="manualBackup()">
+        <span>💾 Зробити резервну копію</span>
+        <span class="settings-value">→</span>
+      </div>
+      <div class="settings-row" onclick="alert('Відновлення — в розробці')">
+        <span>🔄 Відновити з резервної копії</span>
+        <span class="settings-value">→</span>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">AI Аналітика</div>
+      <div class="settings-row" onclick="alert('Налаштування AI — в розробці')">
+        <span>🤖 AI провайдер</span>
+        <span class="settings-value">Claude API</span>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">Небезпечна зона</div>
+      <div class="settings-row settings-row-danger" onclick="logout()">
+        <span>Вийти з акаунту</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ АНАЛІТИКА (заглушка) ══ -->
+<div id="screen-analytics" class="screen">
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <button class="back-btn" onclick="showScreen('screen-project')">◀ Назад</button>
+      <div class="top-bar-title">📊 Аналітика</div>
+    </div>
+  </div>
+  <div class="scroll-area">
+    <div class="empty-state">
+      <div class="icon">🤖</div>
+      <p>AI аналітика — в розробці</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══ MODAL — НОВИЙ ОБ'ЄКТ ══ -->
+<div class="modal-overlay" id="modal-project">
+  <div class="modal">
+    <div class="modal-title">Новий об'єкт</div>
+    <input class="modal-input" id="new-project-name" placeholder="Назва об'єкту" type="text">
+    <input class="modal-input" id="new-project-address" placeholder="Адреса" type="text">
+    <button class="modal-btn modal-btn-primary" onclick="saveProject()">Зберегти</button>
+    <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-project')">Скасувати</button>
+  </div>
+</div>
+
+<!-- ══ MODAL — НОВИЙ ПРОТОКОЛ ══ -->
+<div class="modal-overlay" id="modal-meeting">
+  <div class="modal">
+    <div class="modal-title">Новий протокол</div>
+    <input class="modal-input" id="new-meeting-location" placeholder="Місце проведення (напр. м. Львів)" type="text">
+    <button class="modal-btn modal-btn-primary" onclick="saveMeeting()">Створити протокол</button>
+    <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-meeting')">Скасувати</button>
+  </div>
+</div>
+
+<!-- ══ FIREBASE + APP LOGIC ══ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import { getFirestore, collection, doc, addDoc, getDocs, query, orderBy, serverTimestamp, getDoc }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+// ── CONFIG ──
+const firebaseConfig = {
+  apiKey: "AIzaSyCKE_X9DaSHEH7tpJ07mfPSKJUJH7ZxTkM",
+  authDomain: "control-point-app.firebaseapp.com",
+  projectId: "control-point-app",
+  storageBucket: "control-point-app.firebasestorage.app",
+  messagingSenderId: "756000624671",
+  appId: "1:756000624671:web:55a70d705b332dcc4f452a"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// ── STATE ──
+let currentUser    = null;
+let currentProject = null;
+
+// ── HELPERS ──
+window.showScreen = function(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+};
+
+window.showToast = function(msg, dur = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+};
+
+window.openModal  = id => document.getElementById(id).classList.add('active');
+window.closeModal = id => document.getElementById(id).classList.remove('active');
+
+function formatDate(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('uk-UA', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+// ── AUTH ──
+onAuthStateChanged(auth, user => {
+  if (user) {
+    currentUser = user;
+    document.getElementById('settings-email').textContent = user.email;
+    loadProjects();
+    showScreen('screen-home');
+  } else {
+    showScreen('screen-auth');
+  }
+});
+
+document.getElementById('btn-login').addEventListener('click', async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass  = document.getElementById('auth-password').value;
+  const err   = document.getElementById('auth-error');
+  err.textContent = '';
+  try {
+    await signInWithEmailAndPassword(auth, email, pass);
+  } catch(e) {
+    err.textContent = 'Невірний email або пароль';
+  }
+});
+
+document.getElementById('btn-register').addEventListener('click', async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass  = document.getElementById('auth-password').value;
+  const err   = document.getElementById('auth-error');
+  err.textContent = '';
+  if (pass.length < 6) { err.textContent = 'Пароль мінімум 6 символів'; return; }
+  try {
+    await createUserWithEmailAndPassword(auth, email, pass);
+    showToast('Акаунт створено!');
+  } catch(e) {
+    err.textContent = e.code === 'auth/email-already-in-use' ? 'Email вже використовується' : 'Помилка реєстрації';
+  }
+});
+
+window.logout = async function() {
+  if (confirm('Вийти з акаунту?')) {
+    await signOut(auth);
+    showScreen('screen-auth');
+  }
+};
+
+// ── PROJECTS ──
+async function loadProjects() {
+  const uid  = currentUser.uid;
+  const ref  = collection(db, 'users', uid, 'projects');
+  const snap = await getDocs(query(ref, orderBy('createdAt', 'desc')));
+  const list = document.getElementById('projects-list');
+
+  if (snap.empty) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">🏗️</div><p>Немає об'єктів.<br>Натисніть <strong>+</strong> щоб додати перший.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = '';
+  snap.forEach(d => {
+    const p = d.data();
+    const card = document.createElement('div');
+    card.className = 'project-card';
+    card.innerHTML = `
+      <div class="project-card-info">
+        <h3>${p.name}</h3>
+        <p>${p.address || '—'}</p>
+      </div>
+      <div class="project-card-stats">
+        <div class="num">${p.meetingsCount || 0}</div>
+        <div class="lbl">протоколів</div>
+      </div>`;
+    card.onclick = () => openProject(d.id, p);
+    list.appendChild(card);
+  });
+}
+
+window.openAddProject = () => {
+  document.getElementById('new-project-name').value = '';
+  document.getElementById('new-project-address').value = '';
+  openModal('modal-project');
+};
+
+window.saveProject = async function() {
+  const name    = document.getElementById('new-project-name').value.trim();
+  const address = document.getElementById('new-project-address').value.trim();
+  if (!name) { showToast('Введіть назву об\'єкту'); return; }
+  try {
+    const uid = currentUser.uid;
+    await addDoc(collection(db, 'users', uid, 'projects'), {
+      name, address,
+      createdAt: serverTimestamp(),
+      meetingsCount: 0
+    });
+    closeModal('modal-project');
+    showToast('✅ Об\'єкт додано');
+    loadProjects();
+  } catch(e) { showToast('Помилка збереження'); }
+};
+
+function openProject(id, data) {
+  currentProject = { id, ...data };
+  document.getElementById('project-banner-name').textContent = data.name;
+  loadMeetings();
+  showScreen('screen-project');
+}
+
+// ── MEETINGS ──
+async function loadMeetings() {
+  if (!currentProject) return;
+  const uid  = currentUser.uid;
+  const ref  = collection(db, 'users', uid, 'projects', currentProject.id, 'meetings');
+  const snap = await getDocs(query(ref, orderBy('number', 'desc')));
+  const list = document.getElementById('meetings-list');
+
+  if (snap.empty) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Протоколів ще немає.<br>Натисніть <strong>+</strong> щоб створити перший.</p></div>`;
+    return;
+  }
+
+  list.innerHTML = '';
+  snap.forEach(d => {
+    const m = d.data();
+    const openCount = m.openItemsCount || 0;
+    const card = document.createElement('div');
+    card.className = 'meeting-card';
+    card.innerHTML = `
+      <div class="meeting-card-left">
+        <h3>Протокол №${m.number}</h3>
+        <p>${formatDate(m.date)} · ${m.location || '—'}</p>
+      </div>
+      <div class="meeting-card-right">
+        <span class="meeting-open-count ${openCount === 0 ? 'none' : ''}">
+          ${openCount === 0 ? '✓ Виконано' : openCount + ' відкритих'}
+        </span>
+      </div>`;
+    card.onclick = () => showToast('Екран протоколу — в розробці');
+    list.appendChild(card);
+  });
+}
+
+window.openAddMeeting = () => {
+  document.getElementById('new-meeting-location').value = '';
+  openModal('modal-meeting');
+};
+
+window.saveMeeting = async function() {
+  const location = document.getElementById('new-meeting-location').value.trim();
+  if (!location) { showToast('Вкажіть місце проведення'); return; }
+  try {
+    const uid = currentUser.uid;
+    const projRef = collection(db, 'users', uid, 'projects', currentProject.id, 'meetings');
+    const snap = await getDocs(projRef);
+    const number = snap.size + 1;
+
+    // Резервна копія перед створенням протоколу
+    await autoBackup('протокол-' + number);
+
+    await addDoc(projRef, {
+      number,
+      location,
+      date: serverTimestamp(),
+      status: 'draft',
+      openItemsCount: 0,
+      createdAt: serverTimestamp()
+    });
+    closeModal('modal-meeting');
+    showToast(`✅ Протокол №${number} створено`);
+    loadMeetings();
+  } catch(e) { showToast('Помилка збереження'); }
+};
+
+// ── AUTO BACKUP ──
+async function autoBackup(trigger) {
+  try {
+    const uid  = currentUser.uid;
+    const projSnap = await getDocs(collection(db, 'users', uid, 'projects'));
+    const backup = {
+      exportDate: new Date().toISOString(),
+      appVersion: '1.0',
+      trigger,
+      projects: []
+    };
+    for (const p of projSnap.docs) {
+      const proj = { id: p.id, ...p.data(), meetings: [] };
+      const mSnap = await getDocs(collection(db, 'users', uid, 'projects', p.id, 'meetings'));
+      for (const m of mSnap.docs) {
+        const meet = { id: m.id, ...m.data(), items: [], attendees: [] };
+        const iSnap = await getDocs(collection(db, 'users', uid, 'projects', p.id, 'meetings', m.id, 'items'));
+        iSnap.forEach(i => meet.items.push({ id: i.id, ...i.data() }));
+        const aSnap = await getDocs(collection(db, 'users', uid, 'projects', p.id, 'meetings', m.id, 'attendees'));
+        aSnap.forEach(a => meet.attendees.push({ id: a.id, ...a.data() }));
+        proj.meetings.push(meet);
+      }
+      backup.projects.push(proj);
+    }
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    const date = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `backup_${date}_${trigger}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✓ Резервну копію збережено');
+  } catch(e) {
+    console.warn('Backup failed:', e);
+  }
+}
+
+window.manualBackup = () => autoBackup('ручна');
+
+</script>
+</body>
+</html>
