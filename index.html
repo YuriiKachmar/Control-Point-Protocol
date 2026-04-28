@@ -130,6 +130,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   font-family: inherit;
 }
 .item-row.deleting .item-del-btn { display: flex; align-items: center; gap: 3px; }
+.item-row:hover .item-del-btn    { display: flex; align-items: center; gap: 3px; }
 
 /* ══ ІНЛАЙН УЧАСНИКИ ══ */
 .att-wrap { background: white; border-radius: 0 0 12px 12px; overflow: hidden; margin-bottom: 4px; }
@@ -159,6 +160,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   font-family: inherit;
 }
 .att-row.deleting .att-del-btn { display: flex; align-items: center; gap: 3px; }
+.att-row:hover .att-del-btn    { display: flex; align-items: center; gap: 3px; }
 
 /* ══ БЛОК ЗАГОЛОВОК ══ */
 .proto-block-head { background: #1e3a5f; height: 36px; display: flex; align-items: center; padding: 0 12px; border-radius: 12px 12px 0 0; }
@@ -642,7 +644,7 @@ async function saveActiveItem() {
   if (activeItemIdx === null) return;
   const row = document.querySelector('.item-row.active');
   if (!row) return;
-  const ins = row.querySelectorAll('input, textarea, select');
+  const ins = row.querySelectorAll('textarea, input');
   const item = localItems[activeItemIdx];
   if (!item) return;
   item.description = ins[0]?.value.trim() || '';
@@ -686,10 +688,19 @@ function renderItems() {
     row.className = cls;
 
     if (idx === activeItemIdx) {
+      // Будуємо список підказок з учасників
+      const attendeeOptions = localAttendees
+        .filter(a => a.name)
+        .map(a => `<option value="${esc(a.name)}">`)
+        .join('');
+
       row.innerHTML = `
         <div class="item-cell" style="color:#94a3b8;font-size:11px;justify-content:center;">${item.number}</div>
         <div class="item-cell"><textarea placeholder="Опис питання...">${esc(item.description||'')}</textarea></div>
-        <div class="item-cell"><input type="text" value="${esc(item.executor||'')}" placeholder="Виконавець..."></div>
+        <div class="item-cell">
+          <input type="text" list="executors-list-${idx}" value="${esc(item.executor||'')}" placeholder="Виконавець...">
+          <datalist id="executors-list-${idx}">${attendeeOptions}</datalist>
+        </div>
         <div class="item-cell"><input type="text" value="${esc(item.decision||'')}" placeholder="Рішення..."></div>
         <div class="item-cell"><input type="text" value="${esc(item.note||'')}" placeholder="Примітка..."></div>`;
       setTimeout(() => row.querySelector('textarea')?.focus(), 30);
