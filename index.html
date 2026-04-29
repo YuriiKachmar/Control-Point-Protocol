@@ -810,15 +810,25 @@ function renderItems() {
 async function deleteItem(idx) {
   const item = localItems[idx];
   try {
+    const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
     if (item.id) {
-      const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
       await deleteDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'items',item.id));
       await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid), { openItemsCount: increment(-1) });
     }
-  } catch(e) { console.warn('Delete error:', e); }
-  localItems.splice(idx, 1);
-  // Перенумеровуємо
-  localItems.forEach((it, i) => it.number = i + 1);
+    // Видаляємо з локального масиву і перенумеровуємо
+    localItems.splice(idx, 1);
+    localItems.forEach((it, i) => it.number = i + 1);
+    // Оновлюємо номери в Firestore для всіх рядків що залишились
+    for (const it of localItems) {
+      if (it.id) {
+        await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'items',it.id), { number: it.number });
+      }
+    }
+  } catch(e) {
+    console.warn('Delete error:', e);
+    localItems.splice(idx, 1);
+    localItems.forEach((it, i) => it.number = i + 1);
+  }
   activeItemIdx   = null;
   deletingItemIdx = null;
   renderItems();
