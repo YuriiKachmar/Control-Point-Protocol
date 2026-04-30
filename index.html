@@ -12,13 +12,18 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { height: 100%; }
-body { font-family: 'Arsenal', Arial, sans-serif; background: #f0f2f0; color: #1a1a2e; height: 100vh; overflow: hidden; user-select: none; }
+body { font-family: 'Arsenal', Arial, sans-serif; background: #f0f2f0; color: #1a1a2e; height: 100vh; height: 100dvh; overflow: hidden; user-select: none; }
 body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { display: none !important; }
-.screen { display: none; flex-direction: column; height: 100vh; overflow: hidden; }
+.screen { display: none; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
 .screen.active { display: flex; }
 
 /* ══ ХЕДЕР ══ */
-.app-header { padding: 10px 16px; padding-top: calc(10px + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; transition: background 0.4s; }
+.app-header {
+  padding: 10px 16px;
+  padding-top: max(10px, calc(env(safe-area-inset-top) + 6px));
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0; transition: background 0.4s;
+}
 .app-header.neutral { background: #64748b; }
 .app-header-left  { display: flex; align-items: center; gap: 10px; }
 .app-header-right { display: flex; gap: 8px; }
@@ -39,10 +44,11 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
 /* Ландшафтний режим телефону */
 @media (max-height: 500px) {
-  .app-header { padding: 6px 12px; }
-  .app-header-title { font-size: 15px; }
-  .fab { width: 40px; height: 40px; font-size: 22px; margin: 4px auto; }
-  .protocol-header { padding: 6px 10px 8px; }
+  .app-header { padding: 4px 12px; padding-top: max(4px, calc(env(safe-area-inset-top) + 2px)); }
+  .app-header-title { font-size: 14px; }
+  .app-header-sub { display: none; }
+  .fab { width: 36px; height: 36px; font-size: 20px; margin: 3px auto; }
+  .protocol-header { padding: 4px 10px 6px; padding-top: max(4px, calc(env(safe-area-inset-top) + 2px)); }
 }
 
 /* ══ SCROLL ══ */
@@ -94,7 +100,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .open-badge.none { background: #dcfce7; color: #166534; }
 
 /* ══ ЕКРАН ПРОТОКОЛУ ══ */
-.protocol-header { flex-shrink: 0; padding: 10px 14px 12px; padding-top: calc(10px + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; }
+.protocol-header { flex-shrink: 0; padding: 10px 14px 12px; padding-top: max(10px, calc(env(safe-area-inset-top) + 6px)); display: flex; align-items: center; justify-content: space-between; }
 .protocol-header-center { text-align: center; flex: 1; margin: 0 8px; }
 .protocol-header-num  { color: white; font-size: 16px; font-weight: 700; }
 .protocol-header-date { color: white; font-size: 13px; font-weight: 700; margin-top: 2px; }
