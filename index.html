@@ -493,7 +493,6 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
           <label class="settings-field-label">Офіційна назва (для друку)</label>
           <textarea class="settings-field-input" id="ps-official" rows="3" placeholder="Повна юридична назва об'єкту..."></textarea>
         </div>
-        <button class="settings-save-btn" onclick="saveProjectSettings()">Зберегти</button>
       </div>
     </div>
 
@@ -1140,24 +1139,28 @@ document.addEventListener('touchstart', e => {
 let localExecutors = [];
 
 window.openProjectSettings = async function() {
-  // Заповнюємо поля
-  document.getElementById('ps-name').value    = currentProject.name    || '';
-  document.getElementById('ps-address').value = currentProject.address || '';
+  document.getElementById('ps-name').value     = currentProject.name         || '';
+  document.getElementById('ps-address').value  = currentProject.address      || '';
   document.getElementById('ps-official').value = currentProject.officialName || '';
-  // Колір хедера
   document.getElementById('header-project-settings').style.background = currentProject.gradient;
-  // Завантажуємо виконавців
   await loadExecutorsLocal();
   renderExecutors();
   showScreen('screen-project-settings');
   attachExecutorBlur();
+
+  // Автозбереження основних даних при виході з поля
+  ['ps-name','ps-address','ps-official'].forEach(id => {
+    const el = document.getElementById(id);
+    // Видаляємо старий listener щоб не дублювався
+    el.onblur = () => saveBasicData();
+  });
 };
 
-window.saveProjectSettings = async function() {
+async function saveBasicData() {
   const name         = document.getElementById('ps-name').value.trim();
   const address      = document.getElementById('ps-address').value.trim();
   const officialName = document.getElementById('ps-official').value.trim();
-  if (!name) { showToast('Введіть назву об\'єкту'); return; }
+  if (!name) return;
   try {
     const uid = currentUser.uid;
     await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { name, address, officialName });
@@ -1166,10 +1169,10 @@ window.saveProjectSettings = async function() {
     currentProject.officialName = officialName;
     document.getElementById('project-header-name').textContent    = name;
     document.getElementById('project-header-address').textContent = address;
-    showToast('✅ Основні дані збережено');
+    showToast('✓ Збережено');
     loadProjects();
-  } catch(e) { showToast('Помилка збереження'); }
-};
+  } catch(e) { console.warn('Save basic data error:', e); }
+}
 
 // ── ВИКОНАВЦІ ──
 async function loadExecutorsLocal() {
@@ -1189,12 +1192,50 @@ function renderExecutors() {
   localExecutors.forEach((ex, idx) => {
     const row = document.createElement('div');
     row.className = 'executor-row';
-    row.innerHTML = `
-      <div style="flex:1;">
-        <div style="font-size:14px;font-weight:700;color:#1e293b;">${esc(ex.name||'')}</div>
-        <div style="font-size:12px;color:#64748b;">${esc(ex.phone||'')}</div>
-      </div>
-      <button class="exec-del" onclick="deleteExecutor(${idx})">✕</button>`;
+    row.dataset.idx = idx;
+    row.dataset.editing = 'false';
+
+    function showView() {
+      row.dataset.editing = 'false';
+      row.innerHTML = `
+        <div style="flex:1;cursor:pointer;">
+          <div style="font-size:14px;font-weight:700;color:#1e293b;">${esc(ex.name||'—')}</div>
+          <div style="font-size:12px;color:#64748b;">${esc(ex.phone||'')}</div>
+        </div>
+        <button class="exec-del" onclick="event.stopPropagation();deleteExecutor(${idx})">✕</button>`;
+      row.querySelector('div[style*="cursor"]').onclick = () => showEdit();
+    }
+
+    function showEdit() {
+      row.dataset.editing = 'true';
+      row.innerHTML = `
+        <input type="text" value="${esc(ex.name||'')}" placeholder="ПІБ..." style="flex:1;font-size:16px;">
+        <input type="tel"  value="${esc(ex.phone||'')}" placeholder="Телефон" style="max-width:130px;font-size:16px;">
+        <button class="exec-del" onclick="event.stopPropagation();deleteExecutor(${idx})">✕</button>`;
+      const [nameIn, phoneIn] = row.querySelectorAll('input');
+
+      async function saveEx() {
+        const newName  = nameIn.value.trim();
+        const newPhone = phoneIn.value.trim();
+        if (!newName) return;
+        ex.name  = newName;
+        ex.phone = newPhone;
+        try {
+          const uid = currentUser.uid;
+          if (ex.id) {
+            await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), { name: ex.name, phone: ex.phone });
+          }
+          showToast('✓ Збережено');
+        } catch(e) { console.warn(e); }
+        showView();
+      }
+
+      phoneIn.addEventListener('blur', () => setTimeout(saveEx, 150));
+      nameIn.addEventListener('keydown', e => { if (e.key === 'Enter') phoneIn.focus(); });
+      nameIn.focus();
+    }
+
+    showView();
     wrap.appendChild(row);
   });
 }
