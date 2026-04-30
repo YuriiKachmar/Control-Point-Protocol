@@ -423,7 +423,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="toast"></div>
 
 <!-- MODAL — НОВИЙ ОБ'ЄКТ -->
-<div class="modal-overlay" id="modal-project">
+<div class="modal-overlay" id="modal-project" onclick="handleModalClick(event,'modal-project')">
   <div class="modal">
     <div class="modal-title">Додати новий об'єкт</div>
     <input class="modal-input" id="new-project-name" placeholder="Назва об'єкту" type="text">
@@ -434,11 +434,11 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 </div>
 
 <!-- MODAL — НОВИЙ ПРОТОКОЛ -->
-<div class="modal-overlay" id="modal-meeting">
+<div class="modal-overlay" id="modal-meeting" onclick="handleModalClick(event,'modal-meeting')">
   <div class="modal">
     <div class="modal-title">Додати новий протокол</div>
-    <input class="modal-input" id="new-meeting-location" placeholder="Місце проведення (напр. м. Львів)" type="text">
     <button class="modal-btn modal-btn-primary" onclick="saveMeeting()">Створити протокол</button>
+    <input class="modal-input" id="new-meeting-location" placeholder="Місце проведення (необов'язково)" type="text">
     <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-meeting')">Скасувати</button>
   </div>
 </div>
@@ -488,6 +488,10 @@ window.showToast = function(msg, dur = 2500) {
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), dur);
 };
+window.handleModalClick = function(e, id) {
+  if (e.target === document.getElementById(id)) closeModal(id);
+};
+
 window.openModal  = id => document.getElementById(id).classList.add('active');
 window.closeModal = id => document.getElementById(id).classList.remove('active');
 
@@ -548,10 +552,14 @@ async function loadProjects() {
   }
   grid.innerHTML = '';
   let idx = 0;
-  snap.forEach(d => {
+  const uid = currentUser.uid;
+  for (const d of snap.docs) {
     const p = d.data();
     const color    = TILE_COLORS[idx % TILE_COLORS.length];
     const gradient = `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`;
+    // Рахуємо протоколи напряму
+    const mSnap = await getDocs(collection(db,'users',uid,'projects',d.id,'meetings'));
+    const count = mSnap.size;
     const tile = document.createElement('div');
     tile.className = 'project-tile';
     tile.style.background = gradient;
@@ -562,7 +570,7 @@ async function loadProjects() {
       </div>
       <div class="project-tile-footer">
         <div>
-          <div class="project-tile-count">${p.meetingsCount||0}</div>
+          <div class="project-tile-count">${count}</div>
           <div class="project-tile-label">протоколів</div>
         </div>
         <div style="font-size:28px;opacity:0.4">📋</div>
@@ -570,7 +578,7 @@ async function loadProjects() {
     tile.onclick = () => openProject(d.id, p, gradient, color);
     grid.appendChild(tile);
     idx++;
-  });
+  }
 }
 
 window.openAddProject = () => {
@@ -630,7 +638,6 @@ window.openAddMeeting = () => { document.getElementById('new-meeting-location').
 
 window.saveMeeting = async function() {
   const location = document.getElementById('new-meeting-location').value.trim();
-  if (!location) { showToast('Вкажіть місце проведення'); return; }
   try {
     const uid    = currentUser.uid;
     const ref    = collection(db,'users',uid,'projects',currentProject.id,'meetings');
