@@ -93,9 +93,11 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 /* ══ КАРТКИ ПРОТОКОЛІВ ══ */
 .meeting-card { background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: transform 0.15s; border-left: 4px solid #e2e8f0; }
 .meeting-card:active { transform: scale(0.99); }
-.meeting-card-left h3 { font-size: 15px; font-weight: 700; color: #1e3a5f; }
-.meeting-card-left p  { font-size: 12px; color: #64748b; margin-top: 2px; }
-.open-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 8px; }
+.meeting-card-left { display: flex; flex-direction: column; gap: 2px; }
+.meeting-card-title { display: flex; align-items: center; gap: 10px; }
+.meeting-card-title h3 { font-size: 15px; font-weight: 700; color: #1e3a5f; }
+.meeting-card-title p  { font-size: 12px; color: #64748b; }
+.open-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 8px; flex-shrink: 0; }
 .open-badge.has  { background: #fee2e2; color: #991b1b; }
 .open-badge.none { background: #dcfce7; color: #166534; }
 
@@ -112,7 +114,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .items-head {
   background: #1e3a5f;
   display: grid;
-  grid-template-columns: 28px 1fr 22% 24% 16%;
+  grid-template-columns: 28px 1fr 22% 24% 16% 36px;
   height: 36px;
 }
 .items-head span { color: white; font-size: 11px; font-weight: 700; padding: 0 6px; display: flex; align-items: center; border-right: 1px solid rgba(255,255,255,0.1); }
@@ -120,7 +122,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
 .item-row {
   display: grid;
-  grid-template-columns: 28px 1fr 22% 24% 16%;
+  grid-template-columns: 28px 1fr 22% 24% 16% 36px;
   border-bottom: 1px solid #f1f5f9;
   background: white;
   cursor: pointer;
@@ -194,6 +196,16 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 /* ══ РОЗДІЛЮВАЧ ══ */
 .block-divider { height: 28px; display: flex; align-items: center; justify-content: center; margin: 4px 0; }
 .block-divider::before { content: ''; width: 48px; height: 3px; background: #cbd5e1; border-radius: 2px; }
+
+/* ══ КНОПКА КОНТРОЛЮ ══ */
+.ctrl-btn {
+  display: flex; align-items: center; justify-content: center;
+  border: none; background: transparent; cursor: pointer;
+  padding: 0; font-size: 18px; opacity: 0.25;
+  transition: opacity 0.2s;
+}
+.ctrl-btn.on { opacity: 1; }
+.ctrl-btn:active { transform: scale(0.85); }
 
 /* ══ ВИПАДАЮЧИЙ СПИСОК ВИКОНАВЦІВ ══ */
 .executor-wrap { position: relative; width: 100%; }
@@ -356,6 +368,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
         <span>Виконавець</span>
         <span>Рішення</span>
         <span>Примітка</span>
+        <span></span>
       </div>
       <div id="items-body"></div>
     </div>
@@ -630,8 +643,10 @@ async function loadMeetings() {
     card.style.borderLeftColor = currentProject.color;
     card.innerHTML = `
       <div class="meeting-card-left">
-        <h3>Протокол №${m.number}</h3>
-        <p>${formatDateShort(m.date)} · ${esc(m.location||'—')}</p>
+        <div class="meeting-card-title">
+          <h3>Протокол №${m.number}</h3>
+          <p>${formatDateShort(m.date)}${m.location ? ' · ' + esc(m.location) : ''}</p>
+        </div>
       </div>
       <span class="open-badge ${open===0?'none':'has'}">${open===0?'✓ Виконано':open+' відкритих'}</span>`;
     card.onclick = () => openMeeting(d.id, m);
@@ -750,7 +765,10 @@ function renderItems() {
           </div>
         </div>
         <div class="item-cell"><input type="text" value="${esc(item.decision||'')}" placeholder="Рішення..."></div>
-        <div class="item-cell"><input type="text" value="${esc(item.note||'')}" placeholder="Примітка..."></div>`;
+        <div class="item-cell"><input type="text" value="${esc(item.note||'')}" placeholder="Примітка..."></div>
+        <div class="item-cell" style="padding:0;justify-content:center;">
+          <button class="ctrl-btn ${item.control?'on':''}" title="На контроль">🕐</button>
+        </div>`;
 
       setTimeout(() => {
         row.querySelector('textarea')?.focus();
@@ -805,6 +823,9 @@ function renderItems() {
         <div class="item-cell">${esc(item.executor)||'—'}</div>
         <div class="item-cell">${esc(item.decision)||'—'}</div>
         <div class="item-cell">${esc(item.note)||''}</div>
+        <div class="item-cell" style="padding:0;justify-content:center;">
+          <button class="ctrl-btn ${item.control?'on':''}" title="На контроль">🕐</button>
+        </div>
         <button class="item-del-btn">🗑 Видалити</button>`;
 
       // Клік — редагування
@@ -818,7 +839,21 @@ function renderItems() {
         });
       });
 
-      // Кнопка видалити
+      // Кнопка контролю
+      const ctrlBtn = row.querySelector('.ctrl-btn');
+      if (ctrlBtn) {
+        ctrlBtn.addEventListener('click', e => {
+          e.stopPropagation();
+          item.control = !item.control;
+          ctrlBtn.classList.toggle('on', item.control);
+          // Зберігаємо в Firestore
+          if (item.id) {
+            const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
+            updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'items',item.id), { control: item.control });
+          }
+        });
+        ctrlBtn.addEventListener('touchend', e => { e.stopPropagation(); });
+      }
       const delBtn = row.querySelector('.item-del-btn');
       if (delBtn) {
         delBtn.addEventListener('click', e => { e.stopPropagation(); deleteItem(idx); });
@@ -869,7 +904,7 @@ async function deleteItem(idx) {
 document.getElementById('add-item-btn').addEventListener('click', () => {
   saveActiveItem().then(() => {
     const num = localItems.length + 1;
-    localItems.push({ id: null, number: num, description:'', executor:'', decision:'', note:'' });
+    localItems.push({ id: null, number: num, description:'', executor:'', decision:'', note:'', control: false });
     activeItemIdx   = localItems.length - 1;
     deletingItemIdx = null;
     renderItems();
