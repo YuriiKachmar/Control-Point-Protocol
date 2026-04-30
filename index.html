@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Control Point">
@@ -18,7 +18,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .screen.active { display: flex; }
 
 /* ══ ХЕДЕР ══ */
-.app-header { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; transition: background 0.4s; }
+.app-header { padding: 10px 16px; padding-top: calc(10px + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; transition: background 0.4s; }
 .app-header.neutral { background: #64748b; }
 .app-header-left  { display: flex; align-items: center; gap: 10px; }
 .app-header-right { display: flex; gap: 8px; }
@@ -94,7 +94,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .open-badge.none { background: #dcfce7; color: #166534; }
 
 /* ══ ЕКРАН ПРОТОКОЛУ ══ */
-.protocol-header { flex-shrink: 0; padding: 10px 14px 12px; display: flex; align-items: center; justify-content: space-between; }
+.protocol-header { flex-shrink: 0; padding: 10px 14px 12px; padding-top: calc(10px + env(safe-area-inset-top)); display: flex; align-items: center; justify-content: space-between; }
 .protocol-header-center { text-align: center; flex: 1; margin: 0 8px; }
 .protocol-header-num  { color: white; font-size: 16px; font-weight: 700; }
 .protocol-header-date { color: white; font-size: 13px; font-weight: 700; margin-top: 2px; }
