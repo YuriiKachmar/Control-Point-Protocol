@@ -500,10 +500,16 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <!-- ДОВІДНИК ВИКОНАВЦІВ -->
     <div class="settings-section">
       <div class="settings-label">Довідник виконавців</div>
-      <div class="settings-card" id="executors-list-wrap">
-        <div style="text-align:center;color:#94a3b8;font-size:13px;padding:12px;">Виконавців ще немає</div>
+      <div class="settings-card" id="executors-list-wrap"></div>
+      <div id="executor-new-wrap" style="display:none;">
+        <div class="settings-card" style="margin-top:8px;">
+          <div class="executor-row">
+            <input type="text" id="new-exec-name" placeholder="ПІБ виконавця...">
+            <input type="tel"  id="new-exec-phone" placeholder="Телефон" style="max-width:140px;">
+          </div>
+        </div>
       </div>
-      <button class="center-btn blue" onclick="addExecutor()">＋</button>
+      <button class="center-btn blue" id="add-executor-btn" onclick="toggleAddExecutor()" style="margin-top:8px;">＋</button>
     </div>
 
   </div>
@@ -1144,6 +1150,7 @@ window.openProjectSettings = async function() {
   await loadExecutorsLocal();
   renderExecutors();
   showScreen('screen-project-settings');
+  attachExecutorBlur();
 };
 
 window.saveProjectSettings = async function() {
@@ -1154,18 +1161,13 @@ window.saveProjectSettings = async function() {
   try {
     const uid = currentUser.uid;
     await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { name, address, officialName });
-    // Оновлюємо локальний стан
     currentProject.name         = name;
     currentProject.address      = address;
     currentProject.officialName = officialName;
-    // Оновлюємо хедер екрану 2
     document.getElementById('project-header-name').textContent    = name;
     document.getElementById('project-header-address').textContent = address;
-    // Зберігаємо виконавців
-    await saveExecutors();
-    showToast('✅ Збережено');
-    showScreen('screen-project');
-    loadProjects(); // оновлюємо плитки
+    showToast('✅ Основні дані збережено');
+    loadProjects();
   } catch(e) { showToast('Помилка збереження'); }
 };
 
@@ -1188,61 +1190,74 @@ function renderExecutors() {
     const row = document.createElement('div');
     row.className = 'executor-row';
     row.innerHTML = `
-      <input type="text" value="${esc(ex.name||'')}" placeholder="ПІБ..." data-idx="${idx}" data-field="name">
-      <input type="tel"  value="${esc(ex.phone||'')}" placeholder="Телефон" data-idx="${idx}" data-field="phone" style="max-width:140px;">
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:#1e293b;">${esc(ex.name||'')}</div>
+        <div style="font-size:12px;color:#64748b;">${esc(ex.phone||'')}</div>
+      </div>
       <button class="exec-del" onclick="deleteExecutor(${idx})">✕</button>`;
-    // Оновлення при введенні
-    row.querySelectorAll('input').forEach(inp => {
-      inp.addEventListener('input', () => {
-        const i = parseInt(inp.dataset.idx);
-        localExecutors[i][inp.dataset.field] = inp.value;
-      });
-    });
     wrap.appendChild(row);
   });
 }
 
-window.addExecutor = function() {
-  localExecutors.push({ id: null, name: '', phone: '' });
-  renderExecutors();
-  // Фокус на останньому полі
-  const inputs = document.querySelectorAll('#executors-list-wrap .executor-row input');
-  if (inputs.length) inputs[inputs.length - 2].focus();
+window.toggleAddExecutor = function() {
+  const wrap = document.getElementById('executor-new-wrap');
+  const isOpen = wrap.style.display !== 'none';
+  if (isOpen) {
+    wrap.style.display = 'none';
+  } else {
+    wrap.style.display = 'block';
+    document.getElementById('new-exec-name').value  = '';
+    document.getElementById('new-exec-phone').value = '';
+    setTimeout(() => document.getElementById('new-exec-name').focus(), 50);
+  }
+};
+
+// Автозбереження при виході з поля телефону
+function attachExecutorBlur() {
+  const phoneInput = document.getElementById('new-exec-phone');
+  const nameInput  = document.getElementById('new-exec-name');
+  if (phoneInput) {
+    phoneInput.addEventListener('blur', () => setTimeout(saveNewExecutor, 150));
+  }
+  if (nameInput) {
+    nameInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('new-exec-phone').focus();
+    });
+  }
+}
+
+window.saveNewExecutor = async function() {
+  const name  = document.getElementById('new-exec-name')?.value.trim();
+  const phone = document.getElementById('new-exec-phone')?.value.trim();
+  if (!name) return; // нічого не робимо якщо немає імені
+  // Перевіряємо чи не збережено вже
+  if (localExecutors.find(e => e.name === name && !e._saving)) {
+    // вже є — пропускаємо
+  }
+  try {
+    const uid = currentUser.uid;
+    const ref = await addDoc(
+      collection(db,'users',uid,'projects',currentProject.id,'executors'),
+      { name, phone: phone||'', createdAt: serverTimestamp() }
+    );
+    localExecutors.push({ id: ref.id, name, phone: phone||'' });
+    renderExecutors();
+    document.getElementById('executor-new-wrap').style.display = 'none';
+    showToast(`✅ ${name} додано`);
+  } catch(e) { console.warn(e); }
 };
 
 window.deleteExecutor = async function(idx) {
   const ex = localExecutors[idx];
-  if (ex.id) {
-    try {
+  try {
+    if (ex.id) {
       const uid = currentUser.uid;
       await deleteDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id));
-    } catch(e) { console.warn(e); }
-  }
-  localExecutors.splice(idx, 1);
-  renderExecutors();
+    }
+    localExecutors.splice(idx, 1);
+    renderExecutors();
+  } catch(e) { showToast('Помилка видалення'); }
 };
-
-async function saveExecutors() {
-  // Спочатку збираємо актуальні значення з полів введення
-  const rows = document.querySelectorAll('#executors-list-wrap .executor-row');
-  rows.forEach((row, idx) => {
-    if (localExecutors[idx]) {
-      const inputs = row.querySelectorAll('input');
-      localExecutors[idx].name  = inputs[0]?.value.trim() || '';
-      localExecutors[idx].phone = inputs[1]?.value.trim() || '';
-    }
-  });
-  const uid = currentUser.uid;
-  for (const ex of localExecutors) {
-    if (!ex.name) continue;
-    if (ex.id) {
-      await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), { name: ex.name, phone: ex.phone || '' });
-    } else {
-      const ref = await addDoc(collection(db,'users',uid,'projects',currentProject.id,'executors'), { name: ex.name, phone: ex.phone || '', createdAt: serverTimestamp() });
-      ex.id = ref.id;
-    }
-  }
-}
 window.printMeeting = function() {
   autoBackup('друк-' + currentMeeting.number);
   showToast('Друк — в розробці');
