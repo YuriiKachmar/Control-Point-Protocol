@@ -33,9 +33,17 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   width: 52px; height: 52px; background: #2563eb; border-radius: 14px;
   border: none; color: white; font-size: 28px; cursor: pointer;
   box-shadow: 0 4px 16px rgba(37,99,235,0.4);
-  margin: 10px auto 4px; line-height: 1; flex-shrink: 0;
+  margin: 8px auto 4px; line-height: 1; flex-shrink: 0;
 }
 .fab:active { opacity: 0.85; }
+
+/* Ландшафтний режим телефону */
+@media (max-height: 500px) {
+  .app-header { padding: 6px 12px; }
+  .app-header-title { font-size: 15px; }
+  .fab { width: 40px; height: 40px; font-size: 22px; margin: 4px auto; }
+  .protocol-header { padding: 6px 10px 8px; }
+}
 
 /* ══ SCROLL ══ */
 .scroll-area { flex: 1; overflow-y: auto; padding: 16px 16px 24px; -webkit-overflow-scrolling: touch; }
@@ -630,6 +638,8 @@ window.saveMeeting = async function() {
     const number = snap.size + 1;
     await autoBackup('протокол-'+number);
     await addDoc(ref, { number, location, date: serverTimestamp(), status:'draft', openItemsCount:0, createdAt: serverTimestamp() });
+    // Оновлюємо лічильник протоколів на плитці об'єкту
+    await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { meetingsCount: increment(1) });
     closeModal('modal-meeting'); showToast(`✅ Протокол №${number} створено`); loadMeetings();
   } catch(e) { showToast('Помилка збереження'); }
 };
