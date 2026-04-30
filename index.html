@@ -198,24 +198,33 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .block-divider::before { content: ''; width: 48px; height: 3px; background: #cbd5e1; border-radius: 2px; }
 
 /* ══ ПОПЕРЕДНІЙ ПЕРЕГЛЯД ДРУКУ ══ */
+#print-preview-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 .print-page {
+  width: 210mm;
+  min-height: 297mm;
   background: white;
-  padding: 16mm 14mm 16mm 18mm;
-  border-radius: 4px;
+  padding: 18mm 15mm 18mm 20mm;
+  border-radius: 2px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.15);
-  font-family: Arial, sans-serif;
+  font-family: 'Arsenal', Arial, sans-serif;
   font-size: 10pt;
   color: #000;
   margin-bottom: 16px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
-.print-title { text-align:center; font-size:13pt; font-weight:bold; text-transform:uppercase; margin-bottom:6px; }
-.print-subtitle { text-align:center; font-size:9.5pt; margin-bottom:14px; line-height:1.5; }
-.print-meta { display:flex; justify-content:space-between; font-size:9.5pt; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid #000; }
-.print-table { width:100%; border-collapse:collapse; margin-bottom:18px; font-size:9.5pt; }
-.print-table th { background:#1e3a5f; color:white; padding:5px 7px; text-align:left; font-size:8.5pt; border:1px solid #1e3a5f; }
-.print-table td { padding:5px 7px; border:1px solid #ccc; vertical-align:top; line-height:1.4; }
+.print-title { text-align:center; font-size:13pt; font-weight:bold; text-transform:uppercase; margin-bottom:6px; font-family:'Arsenal',Arial,sans-serif; }
+.print-subtitle { text-align:center; font-size:9.5pt; margin-bottom:14px; line-height:1.5; font-family:'Arsenal',Arial,sans-serif; }
+.print-meta { display:flex; justify-content:space-between; font-size:9.5pt; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid #000; font-family:'Arsenal',Arial,sans-serif; }
+.print-table { width:100%; border-collapse:collapse; margin-bottom:18px; font-size:9.5pt; table-layout:fixed; font-family:'Arsenal',Arial,sans-serif; }
+.print-table th { background:#1e3a5f; color:white; padding:5px 7px; text-align:left; font-size:8.5pt; border:1px solid #1e3a5f; word-wrap:break-word; font-family:'Arsenal',Arial,sans-serif; }
+.print-table td { padding:5px 7px; border:1px solid #ccc; vertical-align:top; line-height:1.4; word-wrap:break-word; overflow-wrap:break-word; font-family:'Arsenal',Arial,sans-serif; }
 .print-table tr:nth-child(even) td { background:#f8f8f8; }
-.print-sig-section { margin-top:16px; border-top:1px solid #000; padding-top:10px; }
+.print-sig-section { margin-top:16px; border-top:1px solid #000; padding-top:10px; font-family:'Arsenal',Arial,sans-serif; }
 .print-sig-title { font-weight:bold; font-size:9.5pt; margin-bottom:8px; }
 .print-sig-row { display:grid; grid-template-columns:1fr 110px 90px; gap:6px; padding:6px 0; border-bottom:1px solid #eee; align-items:center; }
 .print-sig-row:last-child { border-bottom:none; }
@@ -224,11 +233,12 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .print-sig-line { border-bottom:1px solid #000; height:22px; text-align:center; font-size:7.5pt; color:#aaa; padding-top:4px; }
 
 @media print {
+  @page { size: A4; margin: 15mm 15mm 15mm 20mm; }
   body > *:not(#screen-print) { display: none !important; }
   #screen-print { display: flex !important; height: auto !important; }
   .app-header, #float-print-btn { display: none !important; }
-  .scroll-area { overflow: visible !important; padding: 0 !important; background: white !important; }
-  .print-page { box-shadow: none; padding: 0; border-radius: 0; }
+  #print-preview-area { overflow: visible !important; padding: 0 !important; background: white !important; align-items: flex-start; }
+  .print-page { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; border-radius: 0; }
 }
 .ctrl-btn {
   display: flex; align-items: center; justify-content: center;
@@ -240,16 +250,25 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .ctrl-btn.on svg { opacity: 1; }
 .ctrl-btn:active { transform: scale(0.85); }
 
-/* Кнопка видалення — поверх рядка але не поверх ctrl колонки */
+/* Кнопка видалення — в комірці номера */
+.item-num-cell {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.item-num-cell .num-text { font-size: 11px; color: #94a3b8; }
 .item-del-btn {
   display: none;
-  position: absolute; right: 40px; top: 50%; transform: translateY(-50%);
-  background: #ef4444; color: white; border: none; border-radius: 6px;
-  padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; z-index: 5;
+  position: absolute; inset: 0;
+  background: rgba(239,68,68,0.12);
+  border: none; border-radius: 4px;
+  color: #ef4444; font-size: 16px; font-weight: bold;
+  cursor: pointer; z-index: 5;
+  align-items: center; justify-content: center;
   font-family: inherit;
 }
-.item-row.deleting .item-del-btn { display: flex; align-items: center; gap: 3px; }
-.item-row:hover .item-del-btn    { display: flex; align-items: center; gap: 3px; }
+.item-row.deleting .item-del-btn { display: flex; }
+.item-row:hover .item-del-btn    { display: flex; }
 
 /* ══ ВИПАДАЮЧИЙ СПИСОК ВИКОНАВЦІВ ══ */
 .executor-wrap { position: relative; width: 100%; }
@@ -890,7 +909,10 @@ function renderItems() {
 
     if (idx === activeItemIdx) {
       row.innerHTML = `
-        <div class="item-cell" style="color:#94a3b8;font-size:11px;justify-content:center;">${item.number}</div>
+        <div class="item-cell item-num-cell">
+          <span class="num-text">${item.number}</span>
+          <button class="item-del-btn" title="Видалити">✕</button>
+        </div>
         <div class="item-cell"><textarea placeholder="Опис питання...">${esc(item.description||'')}</textarea></div>
         <div class="item-cell">
           <div class="executor-wrap">
@@ -968,7 +990,10 @@ function renderItems() {
       }, 30);
     } else {
       row.innerHTML = `
-        <div class="item-cell" style="color:#94a3b8;font-size:11px;justify-content:center;">${item.number}</div>
+        <div class="item-cell item-num-cell">
+          <span class="num-text">${item.number}</span>
+          <button class="item-del-btn" title="Видалити">✕</button>
+        </div>
         <div class="item-cell">${esc(item.description)||'—'}</div>
         <div class="item-cell">${esc(item.executor)||'—'}</div>
         <div class="item-cell">${esc(item.decision)||'—'}</div>
@@ -976,7 +1001,7 @@ function renderItems() {
         <div class="item-cell" style="padding:0;justify-content:center;">
           <button class="ctrl-btn ${item.control?'on':''}" title="На контроль"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="#1e3a5f" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="#1e3a5f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg></button>
         </div>
-        <button class="item-del-btn">🗑 Видалити</button>`;
+        `;
 
       // Клік — редагування
       row.addEventListener('click', e => {
@@ -1376,26 +1401,23 @@ window.deleteExecutor = async function(idx) {
 window.printMeeting = function() {
   autoBackup('друк-' + currentMeeting.number);
 
-  // Пріоритет: офіційна назва → коротка назва
-  const displayName  = currentProject.officialName || currentProject.name || '';
-  const address      = currentProject.address || '';
-  const meetingNum   = currentMeeting.number || '—';
-  const meetingDate  = formatDateFull(currentMeeting.date);
-  const meetingLoc   = currentMeeting.location || '';
+  const displayName = currentProject.officialName || currentProject.name || '';
+  const address     = currentProject.address || '';
+  const meetingNum  = currentMeeting.number || '—';
+  const meetingDate = formatDateFull(currentMeeting.date);
+  const meetingLoc  = currentMeeting.location || '';
 
-  // Рядки таблиці
   const itemsRows = localItems.length === 0
     ? `<tr><td colspan="5" style="text-align:center;color:#999;padding:12px;">Пунктів немає</td></tr>`
     : localItems.map(it => `
         <tr>
-          <td style="text-align:center;">${it.number}</td>
+          <td style="text-align:center;width:28px;">${it.number}</td>
           <td>${esc(it.description||'')}</td>
-          <td>${esc(it.executor||'')}</td>
-          <td>${esc(it.decision||'')}</td>
-          <td>${esc(it.note||'')}</td>
+          <td style="width:18%;">${esc(it.executor||'')}</td>
+          <td style="width:27%;">${esc(it.decision||'')}</td>
+          <td style="width:13%;">${esc(it.note||'')}</td>
         </tr>`).join('');
 
-  // Підписи
   const sigRows = localAttendees.length === 0
     ? '<p style="color:#999;font-size:9pt;padding:8px 0;">Учасників не вказано</p>'
     : localAttendees.map(a => `
@@ -1422,9 +1444,9 @@ window.printMeeting = function() {
       <table class="print-table">
         <thead>
           <tr>
-            <th style="width:26px;">№</th>
+            <th style="width:28px;">№</th>
             <th>Опис / питання</th>
-            <th style="width:17%;">Виконавець</th>
+            <th style="width:18%;">Виконавець</th>
             <th style="width:27%;">Прийняте рішення</th>
             <th style="width:13%;">Примітка</th>
           </tr>
