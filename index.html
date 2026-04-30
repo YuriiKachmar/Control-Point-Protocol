@@ -848,6 +848,22 @@ function renderItems() {
 
       setTimeout(() => {
         row.querySelector('textarea')?.focus();
+
+        // Кнопка контролю в режимі редагування
+        const ctrlBtnEdit = row.querySelector('.ctrl-btn');
+        if (ctrlBtnEdit) {
+          ctrlBtnEdit.addEventListener('mousedown', e => e.stopPropagation());
+          ctrlBtnEdit.addEventListener('touchstart', e => e.stopPropagation(), {passive:true});
+          ctrlBtnEdit.addEventListener('click', e => {
+            e.stopPropagation();
+            item.control = !item.control;
+            ctrlBtnEdit.classList.toggle('on', item.control);
+            if (item.id) {
+              const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
+              updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'items',item.id), { control: item.control });
+            }
+          });
+        }
         // Підключаємо dropdown для виконавця
         const execInput = row.querySelector('.executor-input');
         const dropdown  = row.querySelector('.executor-dropdown');
