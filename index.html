@@ -482,7 +482,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <div class="settings-label">Основні дані</div>
       <div class="settings-card">
         <div class="settings-field">
-          <label class="settings-field-label">Коротка назва</label>
+          <label class="settings-field-label">Об'єкт (коротка назва)</label>
           <input class="settings-field-input" id="ps-name" type="text" placeholder="Назва об'єкту">
         </div>
         <div class="settings-field">
@@ -503,7 +503,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <div class="settings-card" id="executors-list-wrap">
         <div style="text-align:center;color:#94a3b8;font-size:13px;padding:12px;">Виконавців ще немає</div>
       </div>
-      <button class="settings-add-btn" onclick="addExecutor()">＋ Додати виконавця</button>
+      <button class="center-btn blue" onclick="addExecutor()">＋</button>
     </div>
 
   </div>
@@ -1189,7 +1189,7 @@ function renderExecutors() {
     row.className = 'executor-row';
     row.innerHTML = `
       <input type="text" value="${esc(ex.name||'')}" placeholder="ПІБ..." data-idx="${idx}" data-field="name">
-      <input type="tel"  value="${esc(ex.phone||'')}" placeholder="+380..." data-idx="${idx}" data-field="phone" style="max-width:140px;">
+      <input type="tel"  value="${esc(ex.phone||'')}" placeholder="Телефон" data-idx="${idx}" data-field="phone" style="max-width:140px;">
       <button class="exec-del" onclick="deleteExecutor(${idx})">✕</button>`;
     // Оновлення при введенні
     row.querySelectorAll('input').forEach(inp => {
@@ -1223,9 +1223,18 @@ window.deleteExecutor = async function(idx) {
 };
 
 async function saveExecutors() {
+  // Спочатку збираємо актуальні значення з полів введення
+  const rows = document.querySelectorAll('#executors-list-wrap .executor-row');
+  rows.forEach((row, idx) => {
+    if (localExecutors[idx]) {
+      const inputs = row.querySelectorAll('input');
+      localExecutors[idx].name  = inputs[0]?.value.trim() || '';
+      localExecutors[idx].phone = inputs[1]?.value.trim() || '';
+    }
+  });
   const uid = currentUser.uid;
   for (const ex of localExecutors) {
-    if (!ex.name.trim()) continue;
+    if (!ex.name) continue;
     if (ex.id) {
       await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), { name: ex.name, phone: ex.phone || '' });
     } else {
