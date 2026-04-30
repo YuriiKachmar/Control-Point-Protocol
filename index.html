@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Control Point">
@@ -28,11 +28,17 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .icon-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; font-size: 20px; padding: 4px 10px; cursor: pointer; font-family: inherit; white-space: nowrap; line-height: 1.4; }
 
 /* ══ FAB ══ */
-.fab { position: fixed; top: 72px; left: 50%; transform: translateX(-50%); width: 52px; height: 52px; background: #2563eb; border-radius: 14px; border: none; color: white; font-size: 28px; cursor: pointer; box-shadow: 0 4px 16px rgba(37,99,235,0.4); display: flex; align-items: center; justify-content: center; transition: transform 0.15s; z-index: 10; line-height: 1; }
-.fab:active { transform: translateX(-50%) scale(0.93); }
+.fab {
+  display: flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px; background: #2563eb; border-radius: 14px;
+  border: none; color: white; font-size: 28px; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+  margin: 10px auto 4px; line-height: 1; flex-shrink: 0;
+}
+.fab:active { opacity: 0.85; }
 
 /* ══ SCROLL ══ */
-.scroll-area { flex: 1; overflow-y: auto; padding: 84px 16px 24px; -webkit-overflow-scrolling: touch; }
+.scroll-area { flex: 1; overflow-y: auto; padding: 16px 16px 24px; -webkit-overflow-scrolling: touch; }
 .scroll-area.no-fab { padding: 16px 16px 24px; }
 
 /* ══ LOADER ══ */
@@ -194,10 +200,14 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .executor-option:last-child { border-bottom: none; }
 .executor-option:hover, .executor-option:active { background: #eff6ff; color: #2563eb; }
 
-/* ══ НИЖНЯ СТРІЧКА ══ */
-.proto-bottom { background: white; border-top: 2px solid #e2e8f0; padding: 10px 14px; display: flex; gap: 8px; flex-shrink: 0; box-shadow: 0 -2px 8px rgba(0,0,0,0.06); }
-.proto-bottom-btn { flex: 1; padding: 11px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 5px; border: none; cursor: pointer; }
-.proto-bottom-btn.orange { background: #fff7ed; color: #c2410c; border: 1.5px solid #fed7aa !important; }
+/* ══ КНОПКА ПЕРЕНЕСТИ ══ */
+.proto-transfer-btn {
+  width: 100%; padding: 13px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; font-family: inherit;
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; border: none; cursor: pointer; margin-top: 8px;
+  background: #fff7ed; color: #c2410c; border: 1.5px solid #fed7aa !important;
+}
 
 /* ══ ДОДАТКИ ══ */
 .att-empty { text-align: center; color: #94a3b8; font-size: 12px; padding: 14px; background: white; border-radius: 0 0 12px 12px; }
@@ -275,6 +285,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <button class="icon-btn" onclick="showScreen('screen-settings')">⚙️</button>
     </div>
   </div>
+  <button class="fab" onclick="openAddProject()">＋</button>
   <div class="scroll-area">
     <div class="projects-grid" id="projects-list">
       <div class="empty-state" style="grid-column:1/-1">
@@ -283,7 +294,6 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       </div>
     </div>
   </div>
-  <button class="fab" onclick="openAddProject()">＋</button>
 </div>
 
 <!-- ЕКРАН 2 — ПРОТОКОЛИ -->
@@ -302,8 +312,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <button class="icon-btn" onclick="showToast('Налаштування — в розробці')">⚙️</button>
     </div>
   </div>
-  <div class="scroll-area" id="meetings-list"></div>
   <button class="fab" onclick="openAddMeeting()">＋</button>
+  <div class="scroll-area" id="meetings-list"></div>
 </div>
 
 <!-- ЕКРАН 3 — ПРОТОКОЛ -->
@@ -351,11 +361,11 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="att-empty">Додатків ще немає</div>
     <button class="center-btn gray" onclick="showToast('Додатки — в розробці')">📎</button>
 
-    <div style="height:20px;"></div>
-  </div>
+    <div class="block-divider"></div>
 
-  <div class="proto-bottom">
-    <button class="proto-bottom-btn orange" onclick="showToast('Перенесення — в розробці')">🔄 Перенести невиконані</button>
+    <button class="proto-transfer-btn" onclick="showToast('Перенесення — в розробці')">🔄 Перенести невиконані</button>
+
+    <div style="height:24px;"></div>
   </div>
 </div>
 
