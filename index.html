@@ -274,6 +274,23 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .settings-row span { font-size: 14px; color: #1a1a2e; }
 .settings-val { font-size: 13px; color: #94a3b8; }
 .settings-danger span { color: #ef4444; }
+
+/* Налаштування об'єкту */
+.settings-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); margin-bottom: 8px; }
+.settings-field { margin-bottom: 14px; }
+.settings-field:last-of-type { margin-bottom: 16px; }
+.settings-field-label { display: block; font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+.settings-field-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 16px; font-family: inherit; color: #1a1a2e; outline: none; resize: none; }
+.settings-field-input:focus { border-color: #2563eb; }
+.settings-save-btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; }
+.settings-add-btn { width: 100%; padding: 11px; background: white; color: #2563eb; border: 1.5px dashed #93c5fd; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 4px; }
+
+/* Рядок виконавця */
+.executor-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
+.executor-row:last-of-type { border-bottom: none; }
+.executor-row input { border: none; background: transparent; font-size: 14px; font-family: inherit; color: #1a1a2e; outline: none; flex: 1; padding: 2px; }
+.executor-row input::placeholder { color: #94a3b8; }
+.executor-row .exec-del { background: none; border: none; color: #ef4444; font-size: 16px; cursor: pointer; padding: 0 4px; flex-shrink: 0; }
 </style>
 </head>
 <body>
@@ -347,7 +364,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="app-header-right">
       <button class="icon-btn" onclick="showScreen('screen-analytics')">📊</button>
       <button class="icon-btn" onclick="showToast('Пошук — в розробці')">🔍</button>
-      <button class="icon-btn" onclick="showToast('Налаштування — в розробці')">⚙️</button>
+      <button class="icon-btn" onclick="openProjectSettings()">⚙️</button>
     </div>
   </div>
   <button class="fab" onclick="openAddMeeting()">＋</button>
@@ -447,6 +464,48 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   </div>
   <div class="scroll-area no-fab">
     <div class="empty-state"><div class="icon">🤖</div><p>AI аналітика — в розробці</p></div>
+  </div>
+</div>
+
+<!-- НАЛАШТУВАННЯ ОБ'ЄКТУ -->
+<div id="screen-project-settings" class="screen">
+  <div class="app-header neutral" id="header-project-settings">
+    <div class="app-header-left">
+      <button class="back-btn" onclick="showScreen('screen-project')">◀ Назад</button>
+      <div class="app-header-title">⚙️ Налаштування об'єкту</div>
+    </div>
+  </div>
+  <div class="scroll-area no-fab">
+
+    <!-- ОСНОВНІ ДАНІ -->
+    <div class="settings-section">
+      <div class="settings-label">Основні дані</div>
+      <div class="settings-card">
+        <div class="settings-field">
+          <label class="settings-field-label">Коротка назва</label>
+          <input class="settings-field-input" id="ps-name" type="text" placeholder="Назва об'єкту">
+        </div>
+        <div class="settings-field">
+          <label class="settings-field-label">Адреса</label>
+          <input class="settings-field-input" id="ps-address" type="text" placeholder="Адреса">
+        </div>
+        <div class="settings-field">
+          <label class="settings-field-label">Офіційна назва (для друку)</label>
+          <textarea class="settings-field-input" id="ps-official" rows="3" placeholder="Повна юридична назва об'єкту..."></textarea>
+        </div>
+        <button class="settings-save-btn" onclick="saveProjectSettings()">Зберегти</button>
+      </div>
+    </div>
+
+    <!-- ДОВІДНИК ВИКОНАВЦІВ -->
+    <div class="settings-section">
+      <div class="settings-label">Довідник виконавців</div>
+      <div class="settings-card" id="executors-list-wrap">
+        <div style="text-align:center;color:#94a3b8;font-size:13px;padding:12px;">Виконавців ще немає</div>
+      </div>
+      <button class="settings-add-btn" onclick="addExecutor()">＋ Додати виконавця</button>
+    </div>
+
   </div>
 </div>
 
@@ -1071,7 +1130,110 @@ document.addEventListener('touchstart', e => {
   }
 }, {passive:true});
 
-// ── PRINT ──
+// ── НАЛАШТУВАННЯ ОБ'ЄКТУ ──
+let localExecutors = [];
+
+window.openProjectSettings = async function() {
+  // Заповнюємо поля
+  document.getElementById('ps-name').value    = currentProject.name    || '';
+  document.getElementById('ps-address').value = currentProject.address || '';
+  document.getElementById('ps-official').value = currentProject.officialName || '';
+  // Колір хедера
+  document.getElementById('header-project-settings').style.background = currentProject.gradient;
+  // Завантажуємо виконавців
+  await loadExecutorsLocal();
+  renderExecutors();
+  showScreen('screen-project-settings');
+};
+
+window.saveProjectSettings = async function() {
+  const name         = document.getElementById('ps-name').value.trim();
+  const address      = document.getElementById('ps-address').value.trim();
+  const officialName = document.getElementById('ps-official').value.trim();
+  if (!name) { showToast('Введіть назву об\'єкту'); return; }
+  try {
+    const uid = currentUser.uid;
+    await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { name, address, officialName });
+    // Оновлюємо локальний стан
+    currentProject.name         = name;
+    currentProject.address      = address;
+    currentProject.officialName = officialName;
+    // Оновлюємо хедер екрану 2
+    document.getElementById('project-header-name').textContent    = name;
+    document.getElementById('project-header-address').textContent = address;
+    // Зберігаємо виконавців
+    await saveExecutors();
+    showToast('✅ Збережено');
+    showScreen('screen-project');
+    loadProjects(); // оновлюємо плитки
+  } catch(e) { showToast('Помилка збереження'); }
+};
+
+// ── ВИКОНАВЦІ ──
+async function loadExecutorsLocal() {
+  const uid = currentUser.uid;
+  const snap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'executors'));
+  localExecutors = [];
+  snap.forEach(d => localExecutors.push({ id: d.id, ...d.data() }));
+}
+
+function renderExecutors() {
+  const wrap = document.getElementById('executors-list-wrap');
+  if (localExecutors.length === 0) {
+    wrap.innerHTML = `<div style="text-align:center;color:#94a3b8;font-size:13px;padding:12px;">Виконавців ще немає</div>`;
+    return;
+  }
+  wrap.innerHTML = '';
+  localExecutors.forEach((ex, idx) => {
+    const row = document.createElement('div');
+    row.className = 'executor-row';
+    row.innerHTML = `
+      <input type="text" value="${esc(ex.name||'')}" placeholder="ПІБ..." data-idx="${idx}" data-field="name">
+      <input type="tel"  value="${esc(ex.phone||'')}" placeholder="+380..." data-idx="${idx}" data-field="phone" style="max-width:140px;">
+      <button class="exec-del" onclick="deleteExecutor(${idx})">✕</button>`;
+    // Оновлення при введенні
+    row.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const i = parseInt(inp.dataset.idx);
+        localExecutors[i][inp.dataset.field] = inp.value;
+      });
+    });
+    wrap.appendChild(row);
+  });
+}
+
+window.addExecutor = function() {
+  localExecutors.push({ id: null, name: '', phone: '' });
+  renderExecutors();
+  // Фокус на останньому полі
+  const inputs = document.querySelectorAll('#executors-list-wrap .executor-row input');
+  if (inputs.length) inputs[inputs.length - 2].focus();
+};
+
+window.deleteExecutor = async function(idx) {
+  const ex = localExecutors[idx];
+  if (ex.id) {
+    try {
+      const uid = currentUser.uid;
+      await deleteDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id));
+    } catch(e) { console.warn(e); }
+  }
+  localExecutors.splice(idx, 1);
+  renderExecutors();
+};
+
+async function saveExecutors() {
+  const uid = currentUser.uid;
+  for (const ex of localExecutors) {
+    if (!ex.name.trim()) continue;
+    if (ex.id) {
+      await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), { name: ex.name, phone: ex.phone || '' });
+    } else {
+      const ref = await addDoc(collection(db,'users',uid,'projects',currentProject.id,'executors'), { name: ex.name, phone: ex.phone || '', createdAt: serverTimestamp() });
+      ex.id = ref.id;
+    }
+  }
+}
 window.printMeeting = function() {
   autoBackup('друк-' + currentMeeting.number);
   showToast('Друк — в розробці');
