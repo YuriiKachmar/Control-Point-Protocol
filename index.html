@@ -592,6 +592,11 @@ window.closeModal = id => document.getElementById(id).classList.remove('active')
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+function formatDateFull(ts) {
+  if (!ts) return '—';
+  const d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('uk-UA', { day:'2-digit', month:'long', year:'numeric' });
+}
 function formatDate(ts) {
   if (!ts) return '—';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -1317,7 +1322,98 @@ window.deleteExecutor = async function(idx) {
 };
 window.printMeeting = function() {
   autoBackup('друк-' + currentMeeting.number);
-  showToast('Друк — в розробці');
+
+  const projectName    = esc(currentProject.name || '');
+  const officialName   = esc(currentProject.officialName || currentProject.name || '');
+  const address        = esc(currentProject.address || '');
+  const meetingNum     = currentMeeting.number || '—';
+  const meetingDate    = formatDateFull(currentMeeting.date);
+  const meetingLoc     = esc(currentMeeting.location || '');
+
+  // Рядки таблиці
+  const itemsRows = localItems.length === 0
+    ? `<tr><td colspan="5" style="text-align:center;color:#999;padding:12px;">Пунктів немає</td></tr>`
+    : localItems.map(it => `
+        <tr>
+          <td style="text-align:center;">${it.number}</td>
+          <td>${esc(it.description||'')}</td>
+          <td>${esc(it.executor||'')}</td>
+          <td>${esc(it.decision||'')}</td>
+          <td>${esc(it.note||'')}</td>
+        </tr>`).join('');
+
+  // Підписи
+  const sigRows = localAttendees.length === 0
+    ? '<p style="color:#999;font-size:10pt;">Учасників не вказано</p>'
+    : localAttendees.map(a => `
+        <div style="display:grid;grid-template-columns:1fr 130px 110px;gap:8px;padding:8px 0;border-bottom:1px solid #eee;align-items:center;">
+          <div>
+            <div style="font-weight:bold;font-size:10pt;">${esc(a.name||'')}</div>
+            <div style="color:#555;font-size:9pt;">${esc(a.role||'')}</div>
+          </div>
+          <div style="border-bottom:1px solid #000;height:24px;text-align:center;font-size:8pt;color:#aaa;padding-top:4px;">підпис</div>
+          <div style="border-bottom:1px solid #000;height:24px;text-align:center;font-size:8pt;color:#aaa;padding-top:4px;">дата</div>
+        </div>`).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Протокол №${meetingNum}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; padding: 20mm 20mm 20mm 25mm; }
+  .title { text-align:center; font-size:14pt; font-weight:bold; text-transform:uppercase; margin-bottom:6px; }
+  .subtitle { text-align:center; font-size:10pt; margin-bottom:16px; line-height:1.5; }
+  .meta { display:flex; justify-content:space-between; font-size:10pt; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid #000; }
+  table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:10pt; }
+  th { background:#1e3a5f; color:white; padding:6px 8px; text-align:left; font-size:9pt; border:1px solid #1e3a5f; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  td { padding:6px 8px; border:1px solid #ccc; vertical-align:top; line-height:1.4; }
+  tr:nth-child(even) td { background:#f8f8f8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .sig-section { margin-top:20px; border-top:1px solid #000; padding-top:12px; }
+  .sig-title { font-weight:bold; font-size:10pt; margin-bottom:10px; }
+  @media print { body { padding: 15mm 15mm 15mm 20mm; } }
+</style>
+</head>
+<body>
+  <div class="title">Протокол наради №${meetingNum}</div>
+  <div class="subtitle">
+    Щодо ходу робіт на об'єкті:<br>
+    <strong>${officialName || projectName}</strong>${address ? '<br>' + address : ''}
+  </div>
+  <div class="meta">
+    <span>«${meetingDate}»</span>
+    <span>${meetingLoc}</span>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:28px;">№</th>
+        <th>Опис / питання</th>
+        <th style="width:18%;">Виконавець</th>
+        <th style="width:28%;">Прийняте рішення</th>
+        <th style="width:13%;">Примітка</th>
+      </tr>
+    </thead>
+    <tbody>${itemsRows}</tbody>
+  </table>
+
+  <div class="sig-section">
+    <div class="sig-title">Погоджено та затверджено присутніми:</div>
+    ${sigRows}
+  </div>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+    setTimeout(() => win.print(), 500);
+  } else {
+    showToast('Дозвольте спливаючі вікна в браузері');
+  }
 };
 
 // ── BACKUP ──
