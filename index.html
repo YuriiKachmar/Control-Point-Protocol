@@ -197,7 +197,39 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .block-divider { height: 28px; display: flex; align-items: center; justify-content: center; margin: 4px 0; }
 .block-divider::before { content: ''; width: 48px; height: 3px; background: #cbd5e1; border-radius: 2px; }
 
-/* ══ КНОПКА КОНТРОЛЮ ══ */
+/* ══ ПОПЕРЕДНІЙ ПЕРЕГЛЯД ДРУКУ ══ */
+.print-page {
+  background: white;
+  padding: 16mm 14mm 16mm 18mm;
+  border-radius: 4px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.15);
+  font-family: Arial, sans-serif;
+  font-size: 10pt;
+  color: #000;
+  margin-bottom: 16px;
+}
+.print-title { text-align:center; font-size:13pt; font-weight:bold; text-transform:uppercase; margin-bottom:6px; }
+.print-subtitle { text-align:center; font-size:9.5pt; margin-bottom:14px; line-height:1.5; }
+.print-meta { display:flex; justify-content:space-between; font-size:9.5pt; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid #000; }
+.print-table { width:100%; border-collapse:collapse; margin-bottom:18px; font-size:9.5pt; }
+.print-table th { background:#1e3a5f; color:white; padding:5px 7px; text-align:left; font-size:8.5pt; border:1px solid #1e3a5f; }
+.print-table td { padding:5px 7px; border:1px solid #ccc; vertical-align:top; line-height:1.4; }
+.print-table tr:nth-child(even) td { background:#f8f8f8; }
+.print-sig-section { margin-top:16px; border-top:1px solid #000; padding-top:10px; }
+.print-sig-title { font-weight:bold; font-size:9.5pt; margin-bottom:8px; }
+.print-sig-row { display:grid; grid-template-columns:1fr 110px 90px; gap:6px; padding:6px 0; border-bottom:1px solid #eee; align-items:center; }
+.print-sig-row:last-child { border-bottom:none; }
+.print-sig-name { font-size:9.5pt; font-weight:bold; }
+.print-sig-role { font-size:8.5pt; color:#555; }
+.print-sig-line { border-bottom:1px solid #000; height:22px; text-align:center; font-size:7.5pt; color:#aaa; padding-top:4px; }
+
+@media print {
+  body > *:not(#screen-print) { display: none !important; }
+  #screen-print { display: flex !important; height: auto !important; }
+  .app-header, #float-print-btn { display: none !important; }
+  .scroll-area { overflow: visible !important; padding: 0 !important; background: white !important; }
+  .print-page { box-shadow: none; padding: 0; border-radius: 0; }
+}
 .ctrl-btn {
   display: flex; align-items: center; justify-content: center;
   border: none; background: transparent; cursor: pointer;
@@ -454,7 +486,28 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   </div>
 </div>
 
-<!-- АНАЛІТИКА -->
+<!-- ЕКРАН ПОПЕРЕДНЬОГО ПЕРЕГЛЯДУ ДРУКУ -->
+<div id="screen-print" class="screen">
+  <div class="app-header neutral" id="header-print">
+    <div class="app-header-left">
+      <button class="back-btn" onclick="showScreen('screen-meeting')">◀ Назад</button>
+      <div class="app-header-title">Попередній перегляд</div>
+    </div>
+  </div>
+  <div class="scroll-area no-fab" id="print-preview-area" style="background:#e2e8f0;padding:16px;">
+    <!-- Сюди вставляється HTML протоколу -->
+  </div>
+  <!-- Плаваюча кнопка друку -->
+  <button id="float-print-btn" onclick="executePrint()" style="
+    position:fixed; bottom:32px; right:24px;
+    background:#2563eb; color:white;
+    border:none; border-radius:16px;
+    padding:14px 24px; font-size:15px; font-weight:700;
+    font-family:inherit; cursor:pointer;
+    box-shadow:0 4px 20px rgba(37,99,235,0.45);
+    display:flex; align-items:center; gap:8px; z-index:50;
+  ">🖨 Друкувати</button>
+</div>
 <div id="screen-analytics" class="screen">
   <div class="app-header neutral">
     <div class="app-header-left">
@@ -1323,12 +1376,12 @@ window.deleteExecutor = async function(idx) {
 window.printMeeting = function() {
   autoBackup('друк-' + currentMeeting.number);
 
-  const projectName    = esc(currentProject.name || '');
-  const officialName   = esc(currentProject.officialName || currentProject.name || '');
-  const address        = esc(currentProject.address || '');
-  const meetingNum     = currentMeeting.number || '—';
-  const meetingDate    = formatDateFull(currentMeeting.date);
-  const meetingLoc     = esc(currentMeeting.location || '');
+  // Пріоритет: офіційна назва → коротка назва
+  const displayName  = currentProject.officialName || currentProject.name || '';
+  const address      = currentProject.address || '';
+  const meetingNum   = currentMeeting.number || '—';
+  const meetingDate  = formatDateFull(currentMeeting.date);
+  const meetingLoc   = currentMeeting.location || '';
 
   // Рядки таблиці
   const itemsRows = localItems.length === 0
@@ -1344,76 +1397,53 @@ window.printMeeting = function() {
 
   // Підписи
   const sigRows = localAttendees.length === 0
-    ? '<p style="color:#999;font-size:10pt;">Учасників не вказано</p>'
+    ? '<p style="color:#999;font-size:9pt;padding:8px 0;">Учасників не вказано</p>'
     : localAttendees.map(a => `
-        <div style="display:grid;grid-template-columns:1fr 130px 110px;gap:8px;padding:8px 0;border-bottom:1px solid #eee;align-items:center;">
+        <div class="print-sig-row">
           <div>
-            <div style="font-weight:bold;font-size:10pt;">${esc(a.name||'')}</div>
-            <div style="color:#555;font-size:9pt;">${esc(a.role||'')}</div>
+            <div class="print-sig-name">${esc(a.name||'')}</div>
+            <div class="print-sig-role">${esc(a.role||'')}</div>
           </div>
-          <div style="border-bottom:1px solid #000;height:24px;text-align:center;font-size:8pt;color:#aaa;padding-top:4px;">підпис</div>
-          <div style="border-bottom:1px solid #000;height:24px;text-align:center;font-size:8pt;color:#aaa;padding-top:4px;">дата</div>
+          <div class="print-sig-line">підпис</div>
+          <div class="print-sig-line">дата</div>
         </div>`).join('');
 
-  const html = `<!DOCTYPE html>
-<html lang="uk">
-<head>
-<meta charset="UTF-8">
-<title>Протокол №${meetingNum}</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; font-size: 11pt; color: #000; padding: 20mm 20mm 20mm 25mm; }
-  .title { text-align:center; font-size:14pt; font-weight:bold; text-transform:uppercase; margin-bottom:6px; }
-  .subtitle { text-align:center; font-size:10pt; margin-bottom:16px; line-height:1.5; }
-  .meta { display:flex; justify-content:space-between; font-size:10pt; margin-bottom:16px; padding-bottom:8px; border-bottom:1px solid #000; }
-  table { width:100%; border-collapse:collapse; margin-bottom:20px; font-size:10pt; }
-  th { background:#1e3a5f; color:white; padding:6px 8px; text-align:left; font-size:9pt; border:1px solid #1e3a5f; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  td { padding:6px 8px; border:1px solid #ccc; vertical-align:top; line-height:1.4; }
-  tr:nth-child(even) td { background:#f8f8f8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-  .sig-section { margin-top:20px; border-top:1px solid #000; padding-top:12px; }
-  .sig-title { font-weight:bold; font-size:10pt; margin-bottom:10px; }
-  @media print { body { padding: 15mm 15mm 15mm 20mm; } }
-</style>
-</head>
-<body>
-  <div class="title">Протокол наради №${meetingNum}</div>
-  <div class="subtitle">
-    Щодо ходу робіт на об'єкті:<br>
-    <strong>${officialName || projectName}</strong>${address ? '<br>' + address : ''}
-  </div>
-  <div class="meta">
-    <span>«${meetingDate}»</span>
-    <span>${meetingLoc}</span>
-  </div>
+  const content = `
+    <div class="print-page">
+      <div class="print-title">Протокол наради №${meetingNum}</div>
+      <div class="print-subtitle">
+        Щодо ходу робіт на об'єкті:<br>
+        <strong>${esc(displayName)}</strong>${address ? '<br>' + esc(address) : ''}
+      </div>
+      <div class="print-meta">
+        <span>${meetingDate}</span>
+        <span>${esc(meetingLoc)}</span>
+      </div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th style="width:26px;">№</th>
+            <th>Опис / питання</th>
+            <th style="width:17%;">Виконавець</th>
+            <th style="width:27%;">Прийняте рішення</th>
+            <th style="width:13%;">Примітка</th>
+          </tr>
+        </thead>
+        <tbody>${itemsRows}</tbody>
+      </table>
+      <div class="print-sig-section">
+        <div class="print-sig-title">Погоджено та затверджено присутніми:</div>
+        ${sigRows}
+      </div>
+    </div>`;
 
-  <table>
-    <thead>
-      <tr>
-        <th style="width:28px;">№</th>
-        <th>Опис / питання</th>
-        <th style="width:18%;">Виконавець</th>
-        <th style="width:28%;">Прийняте рішення</th>
-        <th style="width:13%;">Примітка</th>
-      </tr>
-    </thead>
-    <tbody>${itemsRows}</tbody>
-  </table>
+  document.getElementById('print-preview-area').innerHTML = content;
+  document.getElementById('header-print').style.background = currentProject.gradient;
+  showScreen('screen-print');
+};
 
-  <div class="sig-section">
-    <div class="sig-title">Погоджено та затверджено присутніми:</div>
-    ${sigRows}
-  </div>
-</body>
-</html>`;
-
-  const win = window.open('', '_blank');
-  if (win) {
-    win.document.write(html);
-    win.document.close();
-    setTimeout(() => win.print(), 500);
-  } else {
-    showToast('Дозвольте спливаючі вікна в браузері');
-  }
+window.executePrint = function() {
+  window.print();
 };
 
 // ── BACKUP ──
