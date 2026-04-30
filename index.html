@@ -552,7 +552,6 @@ async function loadProjects() {
   }
   grid.innerHTML = '';
   let idx = 0;
-  const uid = currentUser.uid;
   for (const d of snap.docs) {
     const p = d.data();
     const color    = TILE_COLORS[idx % TILE_COLORS.length];
