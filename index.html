@@ -270,7 +270,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   #screen-print { display: flex !important; height: auto !important; }
   .app-header, #float-print-btn { display: none !important; }
   #print-preview-area { overflow: visible !important; padding: 0 !important; background: white !important; align-items: flex-start; }
-  .print-page { box-shadow: none; margin: 0; padding: 0; width: 100%; min-height: auto; border-radius: 0; }
+  .print-page { box-shadow: none; margin: 0; padding: 0 !important; width: 100%; min-height: auto; border-radius: 0; max-width: 100%; transform: none !important; }
 }
 .ctrl-btn {
   display: flex; align-items: center; justify-content: center;
@@ -850,12 +850,21 @@ async function loadMeetings() {
     return;
   }
   list.innerHTML = '';
-  snap.forEach(d => {
-    const m       = d.data();
-    const control = m.controlCount || 0;
+  list.innerHTML = '';
+  for (const d of snap.docs) {
+    const m = d.data();
+    // Рахуємо пункти на контролі напряму
+    const uid2 = currentUser.uid;
+    const iSnap = await getDocs(collection(db,'users',uid2,'projects',currentProject.id,'meetings',d.id,'items'));
+    let controlCount = 0;
+    iSnap.forEach(i => { if (i.data().control) controlCount++; });
+
     const card = document.createElement('div');
     card.className = 'meeting-card';
     card.style.borderLeftColor = currentProject.color;
+
+    const ctrlSvg = `<svg viewBox="0 0 24 24" fill="none" width="14" height="14" style="vertical-align:middle;margin-right:3px;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg>`;
+
     card.innerHTML = `
       <div class="meeting-card-left">
         <div class="meeting-card-title">
@@ -863,13 +872,12 @@ async function loadMeetings() {
           <p>${formatDateShort(m.date)}${m.location ? ' · ' + esc(m.location) : ''}</p>
         </div>
       </div>
-      ${control > 0
-        ? `<span class="open-badge has"><svg viewBox="0 0 24 24" fill="none" width="14" height="14" style="vertical-align:middle;margin-right:3px;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg>${control}</span>`
-        : `<span class="open-badge none">✓</span>`
-      }`;
+      ${controlCount > 0
+        ? `<span class="open-badge has">${ctrlSvg}${controlCount}</span>`
+        : `<span class="open-badge none">✓</span>`}`;
     card.onclick = () => openMeeting(d.id, m);
     list.appendChild(card);
-  });
+  }
 }
 
 window.openAddMeeting = () => { document.getElementById('new-meeting-location').value = ''; openModal('modal-meeting'); };
@@ -1545,7 +1553,14 @@ window.printMeeting = function() {
 };
 
 window.executePrint = function() {
-  window.print();
+  // iOS Safari потребує невеликої затримки
+  setTimeout(() => {
+    try {
+      window.print();
+    } catch(e) {
+      showToast('Використайте меню браузера → Поділитись → Друк');
+    }
+  }, 100);
 };
 
 // ── ПОДІЛИТИСЬ ──
@@ -1571,66 +1586,62 @@ window.shareMeeting = function() {
   if (localAttendees.length > 0) {
     text += `\nПРИСУТНІ: ${localAttendees.map(a => a.name).join(', ')}`;
   }
+  window._shareText    = text;
+  window._shareWhatsapp = whatsapp;
 
-  const encodedText = encodeURIComponent(text);
-
-  // Показуємо модалку вибору каналу
+  // Показуємо модалку
   const overlay = document.createElement('div');
-  overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:16px;`;
+  overlay.className = 'share-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
 
   const box = document.createElement('div');
-  box.style.cssText = `background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;`;
+  box.style.cssText = 'background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;';
+
+  const btnStyle = (bg, color='white') =>
+    `width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:${bg};color:${color};font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;`;
+
   box.innerHTML = `
     <div style="font-size:17px;font-weight:700;color:#1e3a5f;text-align:center;margin-bottom:16px;">📤 Поділитись протоколом</div>
-    ${whatsapp ? `<button onclick="openWhatsAppGroup()" style="width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:#25D366;color:white;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">📱 WhatsApp група</button>` : ''}
-    <button onclick="sendViber('${encodedText}')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:#7360f2;color:white;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">📱 Viber</button>
-    <button onclick="sendSMS('${encodedText}')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:#16a34a;color:white;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">💬 SMS</button>
-    <button onclick="sendShareNative('${encodedText}')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:#f1f5f9;color:#475569;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;border:1.5px solid #e2e8f0;">📤 Інший месенджер</button>
-    <button onclick="this.closest('[data-overlay]').remove()" style="width:100%;padding:13px;border-radius:12px;border:none;background:#f1f5f9;color:#94a3b8;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Скасувати</button>
-    <div style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;">Натискання відкриє відповідний додаток з заповненим текстом</div>`;
-  box.dataset.overlay = '1';
-  overlay.dataset.overlay = '1';
+    ${whatsapp ? `<button id="sh-whatsapp" style="${btnStyle('#25D366')}">📱 WhatsApp група</button>` : ''}
+    <button id="sh-viber"  style="${btnStyle('#7360f2')}">📱 Viber</button>
+    <button id="sh-sms"    style="${btnStyle('#16a34a')}">💬 SMS</button>
+    <button id="sh-other"  style="${btnStyle('#f1f5f9','#475569')}border:1.5px solid #e2e8f0;">📤 Інший месенджер</button>
+    <button id="sh-cancel" style="${btnStyle('#f1f5f9','#94a3b8')}">Скасувати</button>
+    <div style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;">Натискання відкриє відповідний додаток</div>`;
+
   overlay.appendChild(box);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
 
-  window._shareText = text;
-  window._shareWhatsapp = whatsapp;
-};
+  const enc = encodeURIComponent(text);
 
-window.openWhatsAppGroup = function() {
-  const text = encodeURIComponent(window._shareText || '');
-  const link = window._shareWhatsapp;
-  // Відкриваємо WhatsApp з текстом (користувач обере групу) або пряме посилання на групу
-  if (link && link.includes('chat.whatsapp.com')) {
-    window.open(link, '_blank');
-    setTimeout(() => {
-      if (navigator.share) navigator.share({ text: window._shareText });
-    }, 500);
-  } else {
-    window.open(`https://wa.me/?text=${text}`, '_blank');
+  const close = () => overlay.remove();
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  box.querySelector('#sh-cancel').addEventListener('click', close);
+
+  if (whatsapp) {
+    box.querySelector('#sh-whatsapp').addEventListener('click', () => {
+      window.open(whatsapp.includes('chat.whatsapp.com') ? whatsapp : `https://wa.me/?text=${enc}`, '_blank');
+      close();
+    });
   }
-  document.querySelector('[data-overlay]')?.remove();
-};
-
-window.sendViber = function(encodedText) {
-  window.open(`viber://forward?text=${encodedText}`, '_blank');
-  document.querySelector('[data-overlay]')?.remove();
-};
-
-window.sendSMS = function(encodedText) {
-  window.open(`sms:?body=${encodedText}`, '_blank');
-  document.querySelector('[data-overlay]')?.remove();
-};
-
-window.sendShareNative = function(encodedText) {
-  if (navigator.share) {
-    navigator.share({ text: window._shareText }).catch(() => {});
-  } else {
-    navigator.clipboard?.writeText(window._shareText);
-    showToast('📋 Текст скопійовано');
-  }
-  document.querySelector('[data-overlay]')?.remove();
+  box.querySelector('#sh-viber').addEventListener('click', () => {
+    window.open(`viber://forward?text=${enc}`, '_blank');
+    close();
+  });
+  box.querySelector('#sh-sms').addEventListener('click', () => {
+    window.open(`sms:?body=${enc}`, '_blank');
+    close();
+  });
+  box.querySelector('#sh-other').addEventListener('click', () => {
+    if (navigator.share) {
+      navigator.share({ title: `Протокол №${meetingNum}`, text }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(text);
+      showToast('📋 Текст скопійовано');
+    }
+    close();
+  });
 };
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
