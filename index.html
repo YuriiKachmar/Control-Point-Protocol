@@ -105,7 +105,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .protocol-header { flex-shrink: 0; padding: 10px 14px 12px; padding-top: max(10px, calc(env(safe-area-inset-top) + 6px)); display: flex; align-items: center; justify-content: space-between; }
 .protocol-header-center { text-align: center; flex: 1; margin: 0 8px; }
 .protocol-header-num  { color: white; font-size: 16px; font-weight: 700; }
-.protocol-header-date { color: white; font-size: 13px; font-weight: 700; margin-top: 2px; }
+.protocol-header-date { color: white; font-size: 13px; font-weight: 400; margin-top: 2px; }
 .protocol-header-loc  { color: rgba(255,255,255,0.7); font-size: 11px; margin-top: 1px; }
 .protocol-header-btns { display: flex; gap: 6px; flex-shrink: 0; }
 
@@ -259,13 +259,15 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   cursor: pointer;
   padding: 0 !important;
   overflow: hidden;
+  align-self: stretch;
 }
-.item-num-cell .num-text { font-size: 11px; color: #94a3b8; }
+.item-num-cell .num-text { font-size: 11px; color: #94a3b8; pointer-events: none; }
 .item-del-btn {
   display: none;
   position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  top: 0; left: 0;
   width: 100%; height: 100%;
+  min-height: 100%;
   background: rgba(239,68,68,0.15);
   border: none;
   color: #ef4444;
@@ -279,6 +281,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   line-height: 1;
   padding: 0;
   margin: 0;
+  box-sizing: border-box;
 }
 .item-row.deleting .item-del-btn { display: flex; }
 .item-row:hover .item-del-btn    { display: flex; }
@@ -396,7 +399,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   <div class="app-header neutral">
     <div class="app-header-left">
       <div>
-        <div class="app-header-title">📋 Control Point</div>
+        <div class="app-header-title">📋 Control Point <strong>PROTOCOL</strong></div>
         <div class="app-header-sub">Протоколи нарад</div>
       </div>
     </div>
@@ -842,7 +845,7 @@ async function openMeeting(id, data) {
   currentMeeting = { id, ...data };
   const h = document.getElementById('meeting-header');
   h.style.background = currentProject.gradient;
-  document.getElementById('meeting-header-num').textContent  = `Протокол №${data.number}`;
+  document.getElementById('meeting-header-num').textContent  = `Протокол № ${data.number}`;
   document.getElementById('meeting-header-date').textContent = formatDate(data.date);
   document.getElementById('meeting-header-loc').textContent  = data.location || '—';
   document.getElementById('attachments-title').textContent   = `📎 Додатки до протоколу №${data.number}`;
