@@ -858,7 +858,7 @@ async function openMeeting(id, data) {
   const h = document.getElementById('meeting-header');
   h.style.background = currentProject.gradient;
   document.getElementById('meeting-header-num').textContent  = `Протокол № ${data.number}`;
-  document.getElementById('meeting-header-date').textContent = formatDate(data.date);
+  document.getElementById('meeting-header-date').textContent = formatDateFull(data.date);
   document.getElementById('meeting-header-loc').textContent  = data.location || '—';
   document.getElementById('attachments-title').textContent   = `📎 Додатки до протоколу №${data.number}`;
 
