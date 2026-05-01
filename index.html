@@ -466,7 +466,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="protocol-header-btns">
       <button class="icon-btn" onclick="showToast('Редагування — в розробці')">✏️</button>
       <button class="icon-btn" onclick="printMeeting()">🖨</button>
-      <button class="icon-btn" onclick="showToast('Поділитись — в розробці')">📤</button>
+      <button class="icon-btn" onclick="shareMeeting()">📤</button>
     </div>
   </div>
 
@@ -701,11 +701,6 @@ function formatDateFull(ts) {
   const d = ts.toDate ? ts.toDate() : new Date(ts);
   return d.toLocaleDateString('uk-UA', { day:'2-digit', month:'long', year:'numeric' });
 }
-function formatDate(ts) {
-  if (!ts) return '—';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString('uk-UA', { day:'2-digit', month:'long', year:'numeric' });
-}
 function formatDateShort(ts) {
   if (!ts) return '—';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
@@ -719,6 +714,7 @@ onAuthStateChanged(auth, user => {
     document.getElementById('settings-email').textContent = user.email;
     loadProjects();
     showScreen('screen-home');
+    checkDailyControl(); // Перевірка контролю раз на добу
   } else { showScreen('screen-auth'); }
 });
 
@@ -943,7 +939,7 @@ function renderItems() {
       row.innerHTML = `
         <div class="item-cell item-num-cell">
           <span class="num-text">${item.number}</span>
-          <button class="item-del-btn" title="Видалити">✕</button>
+          <button class="item-del-btn" title="Видалити"></button>
         </div>
         <div class="item-cell"><textarea placeholder="Опис питання...">${esc(item.description||'')}</textarea></div>
         <div class="item-cell">
@@ -1024,7 +1020,7 @@ function renderItems() {
       row.innerHTML = `
         <div class="item-cell item-num-cell">
           <span class="num-text">${item.number}</span>
-          <button class="item-del-btn" title="Видалити">✕</button>
+          <button class="item-del-btn" title="Видалити"></button>
         </div>
         <div class="item-cell">${esc(item.description)||'—'}</div>
         <div class="item-cell">${esc(item.executor)||'—'}</div>
@@ -1401,11 +1397,7 @@ function attachExecutorBlur() {
 window.saveNewExecutor = async function() {
   const name  = document.getElementById('new-exec-name')?.value.trim();
   const phone = document.getElementById('new-exec-phone')?.value.trim();
-  if (!name) return; // нічого не робимо якщо немає імені
-  // Перевіряємо чи не збережено вже
-  if (localExecutors.find(e => e.name === name && !e._saving)) {
-    // вже є — пропускаємо
-  }
+  if (!name) return;
   try {
     const uid = currentUser.uid;
     const ref = await addDoc(
@@ -1516,6 +1508,117 @@ window.printMeeting = function() {
 window.executePrint = function() {
   window.print();
 };
+
+// ── ПОДІЛИТИСЬ ──
+window.shareMeeting = async function() {
+  const displayName = currentProject.officialName || currentProject.name || '';
+  const meetingNum  = currentMeeting.number;
+  const meetingDate = formatDateFull(currentMeeting.date);
+  const meetingLoc  = currentMeeting.location || '';
+
+  // Формуємо текст протоколу
+  let text = `ПРОТОКОЛ НАРАДИ №${meetingNum}\n`;
+  text += `${meetingDate}${meetingLoc ? ' · ' + meetingLoc : ''}\n`;
+  text += `Об'єкт: ${displayName}\n\n`;
+
+  if (localItems.length > 0) {
+    text += `ПУНКТИ:\n`;
+    localItems.forEach(it => {
+      text += `${it.number}. ${it.description || '—'}`;
+      if (it.executor) text += ` | Виконавець: ${it.executor}`;
+      if (it.decision) text += ` | Рішення: ${it.decision}`;
+      if (it.note)     text += ` | Примітка: ${it.note}`;
+      text += '\n';
+    });
+  }
+
+  if (localAttendees.length > 0) {
+    text += `\nПРИСУТНІ: ${localAttendees.map(a => a.name).join(', ')}\n`;
+  }
+
+  // Додатки — посилання Google Drive
+  const driveLinks = localItems
+    .filter(it => it.driveUrl)
+    .map(it => `Пункт ${it.number}: ${it.driveUrl}`);
+  if (driveLinks.length > 0) {
+    text += `\nДОДАТКИ:\n${driveLinks.join('\n')}\n`;
+  }
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: `Протокол №${meetingNum}`, text });
+    } catch(e) { if (e.name !== 'AbortError') showToast('Помилка відправки'); }
+  } else {
+    await navigator.clipboard?.writeText(text);
+    showToast('📋 Текст протоколу скопійовано');
+  }
+};
+
+// ── КОНТРОЛЬ — перевірка раз на добу ──
+async function checkDailyControl() {
+  const today = new Date().toISOString().slice(0, 10);
+  const lastCheck = localStorage.getItem('cp_control_check');
+  if (lastCheck === today) return; // вже перевіряли сьогодні
+
+  try {
+    const uid = currentUser.uid;
+    const projSnap = await getDocs(collection(db,'users',uid,'projects'));
+    const controlled = [];
+
+    for (const p of projSnap.docs) {
+      const mSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings'));
+      for (const m of mSnap.docs) {
+        const iSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings',m.id,'items'));
+        iSnap.forEach(i => {
+          const data = i.data();
+          if (data.control) {
+            controlled.push({
+              projectName: p.data().name,
+              meetingNum:  m.data().number,
+              description: data.description,
+              executor:    data.executor,
+              projectId:   p.id,
+              meetingId:   m.id,
+            });
+          }
+        });
+      }
+    }
+
+    localStorage.setItem('cp_control_check', today);
+
+    if (controlled.length === 0) return;
+
+    // Показуємо банер
+    showControlBanner(controlled);
+  } catch(e) { console.warn('Control check error:', e); }
+}
+
+function showControlBanner(items) {
+  const banner = document.createElement('div');
+  banner.id = 'control-banner';
+  banner.style.cssText = `
+    position:fixed; top:0; left:0; right:0; z-index:300;
+    background:#1e3a5f; color:white; padding:14px 16px;
+    padding-top: max(14px, calc(env(safe-area-inset-top) + 10px));
+    box-shadow:0 4px 16px rgba(0,0,0,0.3);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  `;
+  banner.innerHTML = `
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;">🔔 ${items.length} пункт${items.length > 1 ? 'и' : ''} на контролі</div>
+      <div style="font-size:11px;opacity:0.75;margin-top:2px;">${items.map(i => i.description).slice(0,2).join(' · ')}${items.length > 2 ? ' ...' : ''}</div>
+    </div>
+    <button onclick="document.getElementById('control-banner').remove()" style="
+      background:rgba(255,255,255,0.15); border:none; border-radius:8px;
+      color:white; padding:6px 12px; font-size:13px; cursor:pointer; font-family:inherit;
+    ">✕</button>
+  `;
+  document.body.appendChild(banner);
+
+  // Автоматично ховаємо через 8 секунд
+  setTimeout(() => banner?.remove(), 8000);
+}
 
 // ── BACKUP ──
 async function autoBackup(trigger) {
