@@ -943,7 +943,7 @@ function renderItems() {
       row.innerHTML = `
         <div class="item-cell item-num-cell">
           <span class="num-text">${item.number}</span>
-          <button class="item-del-btn" title="Видалити"></button>
+          <button class="item-del-btn" title="Видалити">✕</button>
         </div>
         <div class="item-cell"><textarea placeholder="Опис питання...">${esc(item.description||'')}</textarea></div>
         <div class="item-cell">
@@ -1024,7 +1024,7 @@ function renderItems() {
       row.innerHTML = `
         <div class="item-cell item-num-cell">
           <span class="num-text">${item.number}</span>
-          <button class="item-del-btn" title="Видалити"></button>
+          <button class="item-del-btn" title="Видалити">✕</button>
         </div>
         <div class="item-cell">${esc(item.description)||'—'}</div>
         <div class="item-cell">${esc(item.executor)||'—'}</div>
