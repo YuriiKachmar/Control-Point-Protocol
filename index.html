@@ -157,32 +157,62 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 /* ══ ІНЛАЙН УЧАСНИКИ ══ */
 .att-wrap { background: white; border-radius: 0 0 12px 12px; overflow: hidden; margin-bottom: 4px; }
 .att-row {
-  display: flex; align-items: center;
-  padding: 9px 12px; border-bottom: 1px solid #f1f5f9;
-  cursor: pointer; gap: 8px; position: relative;
+  display: grid;
+  grid-template-columns: 28px 1fr 1fr;
+  align-items: center;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer; position: relative;
   background: white; min-height: 38px;
 }
 .att-row:last-child { border-bottom: none; }
 .att-row:hover { background: #eff6ff; }
 .att-row.active   { background: #fff5f5 !important; border-bottom: 2px solid #ef4444; cursor: default; }
 .att-row.deleting { background: #fee2e2 !important; }
-.att-name { font-size: 13px; font-weight: 700; color: #1e293b; flex: 1; user-select: text; }
-.att-role { font-size: 11px; color: #64748b; flex: 1; user-select: text; }
+
+/* Комірка номера учасника — з перекресленням */
+.att-num-cell {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; overflow: hidden; height: 100%;
+}
+.att-num-cell .num-text { font-size: 11px; color: #94a3b8; pointer-events: none; }
+.att-row:hover .att-num-cell::before,
+.att-row:hover .att-num-cell::after,
+.att-row.deleting .att-num-cell::before,
+.att-row.deleting .att-num-cell::after {
+  content: '';
+  position: absolute;
+  background: #ef4444;
+  width: 70%; height: 2px;
+  top: 50%; left: 15%;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 4;
+}
+.att-row:hover .att-num-cell::before,
+.att-row.deleting .att-num-cell::before { transform: translateY(-50%) rotate(45deg); }
+.att-row:hover .att-num-cell::after,
+.att-row.deleting .att-num-cell::after  { transform: translateY(-50%) rotate(-45deg); }
+.att-row:hover .att-num-cell,
+.att-row.deleting .att-num-cell { background: rgba(239,68,68,0.08); }
+
+.att-del-trigger {
+  display: none;
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  background: transparent; border: none; cursor: pointer; z-index: 5;
+}
+.att-row.deleting .att-del-trigger { display: block; }
+.att-row:hover .att-del-trigger    { display: block; }
+
+.att-name { font-size: 13px; font-weight: 700; color: #1e293b; padding: 9px 8px; user-select: text; }
+.att-role { font-size: 11px; color: #64748b; padding: 9px 8px; user-select: text; }
 .att-row input {
   border: none; background: transparent; font-size: 16px;
   font-family: 'Arsenal', Arial, sans-serif; color: #1e293b;
-  outline: none; flex: 1; user-select: text;
+  outline: none; padding: 6px 8px; user-select: text; width: 100%;
 }
 .att-row input:first-of-type { font-weight: 700; }
-.att-del-btn {
-  display: none;
-  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
-  background: #ef4444; color: white; border: none; border-radius: 6px;
-  padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer; z-index: 5;
-  font-family: inherit;
-}
-.att-row.deleting .att-del-btn { display: flex; align-items: center; gap: 3px; }
-.att-row:hover .att-del-btn    { display: flex; align-items: center; gap: 3px; }
 
 /* ══ БЛОК ЗАГОЛОВОК ══ */
 .proto-block-head { background: #1e3a5f; height: 36px; display: flex; align-items: center; padding: 0 12px; border-radius: 12px 12px 0 0; }
@@ -235,7 +265,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .print-sig-line { border-bottom:1px solid #000; height:22px; text-align:center; font-size:7.5pt; color:#aaa; padding-top:4px; }
 
 @media print {
-  @page { size: A4; margin: 15mm 15mm 15mm 20mm; }
+  @page { size: A4; margin: 20mm 10mm 20mm 25mm; }
   body > *:not(#screen-print) { display: none !important; }
   #screen-print { display: flex !important; height: auto !important; }
   .app-header, #float-print-btn { display: none !important; }
@@ -597,6 +627,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
           <label class="settings-field-label">Офіційна назва (для друку)</label>
           <textarea class="settings-field-input" id="ps-official" rows="3" placeholder="Повна юридична назва об'єкту..."></textarea>
         </div>
+        <div class="settings-field">
+          <label class="settings-field-label">📱 Посилання WhatsApp групи</label>
+          <input class="settings-field-input" id="ps-whatsapp" type="url" placeholder="https://chat.whatsapp.com/...">
+        </div>
       </div>
     </div>
 
@@ -817,8 +851,8 @@ async function loadMeetings() {
   }
   list.innerHTML = '';
   snap.forEach(d => {
-    const m    = d.data();
-    const open = m.openItemsCount || 0;
+    const m       = d.data();
+    const control = m.controlCount || 0;
     const card = document.createElement('div');
     card.className = 'meeting-card';
     card.style.borderLeftColor = currentProject.color;
@@ -829,7 +863,10 @@ async function loadMeetings() {
           <p>${formatDateShort(m.date)}${m.location ? ' · ' + esc(m.location) : ''}</p>
         </div>
       </div>
-      <span class="open-badge ${open===0?'none':'has'}">${open===0?'✓ Виконано':open+' відкритих'}</span>`;
+      ${control > 0
+        ? `<span class="open-badge has"><svg viewBox="0 0 24 24" fill="none" width="14" height="14" style="vertical-align:middle;margin-right:3px;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg>${control}</span>`
+        : `<span class="open-badge none">✓</span>`
+      }`;
     card.onclick = () => openMeeting(d.id, m);
     list.appendChild(card);
   });
@@ -969,6 +1006,8 @@ function renderItems() {
             if (item.id) {
               const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
               updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'items',item.id), { control: item.control });
+              const delta = item.control ? 1 : -1;
+              updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid), { controlCount: increment(delta) });
             }
           });
         }
@@ -1049,10 +1088,11 @@ function renderItems() {
           e.stopPropagation();
           item.control = !item.control;
           ctrlBtn.classList.toggle('on', item.control);
-          // Зберігаємо в Firestore
           if (item.id) {
             const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
             updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'items',item.id), { control: item.control });
+            const delta = item.control ? 1 : -1;
+            updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid), { controlCount: increment(delta) });
           }
         });
         ctrlBtn.addEventListener('touchend', e => { e.stopPropagation(); });
@@ -1163,39 +1203,36 @@ function renderAttendees() {
 
     if (idx === activeAttIdx) {
       row.innerHTML = `
+        <div class="att-num-cell"><span class="num-text">${idx+1}</span><button class="att-del-trigger"></button></div>
         <input type="text" value="${esc(att.name||'')}" placeholder="ПІБ...">
         <input type="text" value="${esc(att.role||'')}" placeholder="Посада...">`;
       setTimeout(() => row.querySelector('input')?.focus(), 30);
     } else {
       row.innerHTML = `
+        <div class="att-num-cell"><span class="num-text">${idx+1}</span><button class="att-del-trigger"></button></div>
         <div class="att-name">${esc(att.name)||'—'}</div>
-        <div class="att-role">${esc(att.role)||'—'}</div>
-        <button class="att-del-btn">🗑 Видалити</button>`;
+        <div class="att-role">${esc(att.role)||'—'}</div>`;
 
+      // Клік на num-cell — видалення
+      const numCell = row.querySelector('.att-num-cell');
+      numCell.addEventListener('click', e => {
+        e.stopPropagation();
+        deleteAtt(idx);
+      });
+      numCell.addEventListener('touchend', e => {
+        e.stopPropagation();
+        e.preventDefault();
+        deleteAtt(idx);
+      });
+
+      // Клік на рядок — редагування
       row.addEventListener('click', e => {
-        if (e.target.closest('.att-del-btn')) return;
-        if (deletingAttIdx === idx) { deletingAttIdx = null; renderAttendees(); return; }
+        if (e.target.closest('.att-num-cell')) return;
         saveActiveAtt().then(() => {
-          activeAttIdx   = idx;
-          deletingAttIdx = null;
+          activeAttIdx = idx;
           renderAttendees();
         });
       });
-
-      const delBtn = row.querySelector('.att-del-btn');
-      if (delBtn) {
-        delBtn.addEventListener('click', e => { e.stopPropagation(); deleteAtt(idx); });
-        delBtn.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); deleteAtt(idx); });
-      }
-
-      row.addEventListener('touchstart', e => {
-        if (e.target.closest('.att-del-btn')) return;
-        longPressTimer = setTimeout(() => {
-          deletingAttIdx = idx; activeAttIdx = null; renderAttendees();
-        }, 600);
-      }, {passive:true});
-      row.addEventListener('touchend',  () => clearTimeout(longPressTimer), {passive:true});
-      row.addEventListener('touchmove', () => clearTimeout(longPressTimer), {passive:true});
     }
     body.appendChild(row);
   });
@@ -1269,6 +1306,7 @@ window.openProjectSettings = async function() {
   document.getElementById('ps-name').value     = currentProject.name         || '';
   document.getElementById('ps-address').value  = currentProject.address      || '';
   document.getElementById('ps-official').value = currentProject.officialName || '';
+  document.getElementById('ps-whatsapp').value = currentProject.whatsappGroup || '';
   document.getElementById('header-project-settings').style.background = currentProject.gradient;
   await loadExecutorsLocal();
   renderExecutors();
@@ -1276,24 +1314,25 @@ window.openProjectSettings = async function() {
   attachExecutorBlur();
 
   // Автозбереження основних даних при виході з поля
-  ['ps-name','ps-address','ps-official'].forEach(id => {
+  ['ps-name','ps-address','ps-official','ps-whatsapp'].forEach(id => {
     const el = document.getElementById(id);
-    // Видаляємо старий listener щоб не дублювався
     el.onblur = () => saveBasicData();
   });
 };
 
 async function saveBasicData() {
-  const name         = document.getElementById('ps-name').value.trim();
-  const address      = document.getElementById('ps-address').value.trim();
-  const officialName = document.getElementById('ps-official').value.trim();
+  const name          = document.getElementById('ps-name').value.trim();
+  const address       = document.getElementById('ps-address').value.trim();
+  const officialName  = document.getElementById('ps-official').value.trim();
+  const whatsappGroup = document.getElementById('ps-whatsapp').value.trim();
   if (!name) return;
   try {
     const uid = currentUser.uid;
-    await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { name, address, officialName });
-    currentProject.name         = name;
-    currentProject.address      = address;
-    currentProject.officialName = officialName;
+    await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { name, address, officialName, whatsappGroup });
+    currentProject.name          = name;
+    currentProject.address       = address;
+    currentProject.officialName  = officialName;
+    currentProject.whatsappGroup = whatsappGroup;
     document.getElementById('project-header-name').textContent    = name;
     document.getElementById('project-header-address').textContent = address;
     showToast('✓ Збережено');
@@ -1510,48 +1549,88 @@ window.executePrint = function() {
 };
 
 // ── ПОДІЛИТИСЬ ──
-window.shareMeeting = async function() {
+window.shareMeeting = function() {
   const displayName = currentProject.officialName || currentProject.name || '';
   const meetingNum  = currentMeeting.number;
   const meetingDate = formatDateFull(currentMeeting.date);
   const meetingLoc  = currentMeeting.location || '';
+  const whatsapp    = currentProject.whatsappGroup || '';
 
-  // Формуємо текст протоколу
-  let text = `ПРОТОКОЛ НАРАДИ №${meetingNum}\n`;
-  text += `${meetingDate}${meetingLoc ? ' · ' + meetingLoc : ''}\n`;
-  text += `Об'єкт: ${displayName}\n\n`;
-
+  let text = `📋 ПРОТОКОЛ НАРАДИ №${meetingNum}\n`;
+  text += `📅 ${meetingDate}${meetingLoc ? ' · ' + meetingLoc : ''}\n`;
+  text += `🏗 ${displayName}\n\n`;
   if (localItems.length > 0) {
     text += `ПУНКТИ:\n`;
     localItems.forEach(it => {
       text += `${it.number}. ${it.description || '—'}`;
-      if (it.executor) text += ` | Виконавець: ${it.executor}`;
-      if (it.decision) text += ` | Рішення: ${it.decision}`;
-      if (it.note)     text += ` | Примітка: ${it.note}`;
+      if (it.executor) text += ` | ${it.executor}`;
+      if (it.decision) text += ` → ${it.decision}`;
       text += '\n';
     });
   }
-
   if (localAttendees.length > 0) {
-    text += `\nПРИСУТНІ: ${localAttendees.map(a => a.name).join(', ')}\n`;
+    text += `\nПРИСУТНІ: ${localAttendees.map(a => a.name).join(', ')}`;
   }
 
-  // Додатки — посилання Google Drive
-  const driveLinks = localItems
-    .filter(it => it.driveUrl)
-    .map(it => `Пункт ${it.number}: ${it.driveUrl}`);
-  if (driveLinks.length > 0) {
-    text += `\nДОДАТКИ:\n${driveLinks.join('\n')}\n`;
-  }
+  const encodedText = encodeURIComponent(text);
 
-  if (navigator.share) {
-    try {
-      await navigator.share({ title: `Протокол №${meetingNum}`, text });
-    } catch(e) { if (e.name !== 'AbortError') showToast('Помилка відправки'); }
+  // Показуємо модалку вибору каналу
+  const overlay = document.createElement('div');
+  overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:16px;`;
+
+  const box = document.createElement('div');
+  box.style.cssText = `background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;`;
+  box.innerHTML = `
+    <div style="font-size:17px;font-weight:700;color:#1e3a5f;text-align:center;margin-bottom:16px;">📤 Поділитись протоколом</div>
+    ${whatsapp ? `<button onclick="openWhatsAppGroup()" style="width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:#25D366;color:white;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;">📱 WhatsApp група</button>` : ''}
+    <button onclick="sendViber('${encodedText}')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:#7360f2;color:white;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">📱 Viber</button>
+    <button onclick="sendSMS('${encodedText}')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:#16a34a;color:white;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">💬 SMS</button>
+    <button onclick="sendShareNative('${encodedText}')" style="width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:#f1f5f9;color:#475569;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;border:1.5px solid #e2e8f0;">📤 Інший месенджер</button>
+    <button onclick="this.closest('[data-overlay]').remove()" style="width:100%;padding:13px;border-radius:12px;border:none;background:#f1f5f9;color:#94a3b8;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">Скасувати</button>
+    <div style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;">Натискання відкриє відповідний додаток з заповненим текстом</div>`;
+  box.dataset.overlay = '1';
+  overlay.dataset.overlay = '1';
+  overlay.appendChild(box);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+
+  window._shareText = text;
+  window._shareWhatsapp = whatsapp;
+};
+
+window.openWhatsAppGroup = function() {
+  const text = encodeURIComponent(window._shareText || '');
+  const link = window._shareWhatsapp;
+  // Відкриваємо WhatsApp з текстом (користувач обере групу) або пряме посилання на групу
+  if (link && link.includes('chat.whatsapp.com')) {
+    window.open(link, '_blank');
+    setTimeout(() => {
+      if (navigator.share) navigator.share({ text: window._shareText });
+    }, 500);
   } else {
-    await navigator.clipboard?.writeText(text);
-    showToast('📋 Текст протоколу скопійовано');
+    window.open(`https://wa.me/?text=${text}`, '_blank');
   }
+  document.querySelector('[data-overlay]')?.remove();
+};
+
+window.sendViber = function(encodedText) {
+  window.open(`viber://forward?text=${encodedText}`, '_blank');
+  document.querySelector('[data-overlay]')?.remove();
+};
+
+window.sendSMS = function(encodedText) {
+  window.open(`sms:?body=${encodedText}`, '_blank');
+  document.querySelector('[data-overlay]')?.remove();
+};
+
+window.sendShareNative = function(encodedText) {
+  if (navigator.share) {
+    navigator.share({ text: window._shareText }).catch(() => {});
+  } else {
+    navigator.clipboard?.writeText(window._shareText);
+    showToast('📋 Текст скопійовано');
+  }
+  document.querySelector('[data-overlay]')?.remove();
 };
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
