@@ -236,6 +236,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   padding: 20px;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
   -webkit-overflow-scrolling: touch;
 }
 #protocol-doc {
@@ -590,7 +591,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <div class="app-header-title">Попередній перегляд</div>
     </div>
   </div>
-  <div class="scroll-area no-fab" id="print-preview-area"></div>
+  <div class="scroll-area no-fab" id="print-preview-area">
+    <div id="protocol-doc"></div>
+  </div>
   <button id="float-print-btn" onclick="executePrint()" style="
     position:fixed; bottom:32px; right:24px;
     background:#2563eb; color:white; border:none; border-radius:16px;
