@@ -414,11 +414,23 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .settings-add-btn { width: 100%; padding: 11px; background: white; color: #2563eb; border: 1.5px dashed #93c5fd; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 4px; }
 
 /* Рядок виконавця */
-.executor-row { display: flex; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-.executor-row:last-of-type { border-bottom: none; }
-.executor-row input { border: none; background: transparent; font-size: 14px; font-family: inherit; color: #1a1a2e; outline: none; flex: 1; padding: 2px; }
-.executor-row input::placeholder { color: #94a3b8; }
-.executor-row .exec-del { background: none; border: none; color: #ef4444; font-size: 16px; cursor: pointer; padding: 0 4px; flex-shrink: 0; }
+/* Рядок виконавця — два стовпці */
+.executor-row { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #f1f5f9; min-height: 52px; }
+.executor-row:last-child { border-bottom: none; }
+.executor-left  { padding: 8px 10px; border-right: 1px solid #f1f5f9; }
+.executor-right { padding: 8px 10px; display: flex; flex-direction: column; justify-content: center; }
+.executor-name  { font-size: 14px; font-weight: 700; color: #1e293b; cursor: pointer; }
+.executor-phone { font-size: 12px; color: #64748b; margin-top: 2px; }
+.executor-email { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.executor-status { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+.executor-status.none    { background: #f1f5f9; color: #94a3b8; }
+.executor-status.invited { background: #fef9c3; color: #854d0e; }
+.executor-status.active  { background: #dcfce7; color: #166634; }
+.executor-invite-btn { font-size: 11px; font-weight: 700; background: #eff6ff; color: #2563eb; border: 1.5px solid #93c5fd; border-radius: 6px; padding: 3px 8px; cursor: pointer; font-family: inherit; margin-top: 4px; }
+.executor-new-grid { display: grid; grid-template-columns: 1fr 1fr; }
+.executor-new-left  { padding: 6px 10px; border-right: 1px solid #f1f5f9; }
+.executor-new-right { padding: 6px 10px; }
+.exec-del { background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 2px 4px; }
 </style>
 </head>
 <body>
@@ -648,15 +660,20 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       </div>
     </div>
 
-    <!-- ДОВІДНИК ВИКОНАВЦІВ -->
+    <!-- ВИКОНАВЦІ / КОРИСТУВАЧІ -->
     <div class="settings-section">
-      <div class="settings-label">Довідник виконавців</div>
+      <div class="settings-label">Виконавці / користувачі</div>
       <div class="settings-card" id="executors-list-wrap"></div>
       <div id="executor-new-wrap" style="display:none;">
         <div class="settings-card" style="margin-top:8px;">
-          <div class="executor-row">
-            <input type="text" id="new-exec-name" placeholder="ПІБ виконавця...">
-            <input type="tel"  id="new-exec-phone" placeholder="Телефон" style="max-width:140px;">
+          <div class="executor-new-grid">
+            <div class="executor-new-left">
+              <input type="text" id="new-exec-name" placeholder="ПІБ..." style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
+              <input type="tel"  id="new-exec-phone" placeholder="Телефон" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;margin-top:6px;">
+            </div>
+            <div class="executor-new-right">
+              <input type="email" id="new-exec-email" placeholder="Email" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
+            </div>
           </div>
         </div>
       </div>
@@ -1367,7 +1384,7 @@ async function loadExecutorsLocal() {
   const uid = currentUser.uid;
   const snap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'executors'));
   localExecutors = [];
-  snap.forEach(d => localExecutors.push({ id: d.id, ...d.data() }));
+  snap.forEach(d => localExecutors.push({ id: d.id, name:'', phone:'', email:'', memberStatus:'none', ...d.data() }));
 }
 
 function renderExecutors() {
@@ -1380,52 +1397,86 @@ function renderExecutors() {
   localExecutors.forEach((ex, idx) => {
     const row = document.createElement('div');
     row.className = 'executor-row';
-    row.dataset.idx = idx;
-    row.dataset.editing = 'false';
 
-    function showView() {
-      row.dataset.editing = 'false';
-      row.innerHTML = `
-        <div style="flex:1;cursor:pointer;">
-          <div style="font-size:14px;font-weight:700;color:#1e293b;">${esc(ex.name||'—')}</div>
-          <div style="font-size:12px;color:#64748b;">${esc(ex.phone||'')}</div>
+    const status = ex.memberStatus || 'none';
+    const statusLabel = status === 'active' ? '✓ Активний' : status === 'invited' ? '⏳ Запрошено' : '—';
+
+    row.innerHTML = `
+      <div class="executor-left">
+        <div class="executor-name">${esc(ex.name||'—')}</div>
+        <div class="executor-phone">${esc(ex.phone||'')}</div>
+      </div>
+      <div class="executor-right">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;">
+          <div>
+            <div class="executor-email">${esc(ex.email||'')}</div>
+            <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+              <span class="executor-status ${status}">${statusLabel}</span>
+              ${ex.email && status === 'none' ? `<button class="executor-invite-btn">Запросити</button>` : ''}
+            </div>
+          </div>
+          <button class="exec-del">✕</button>
         </div>
-        <button class="exec-del" onclick="event.stopPropagation();deleteExecutor(${idx})">✕</button>`;
-      row.querySelector('div[style*="cursor"]').onclick = () => showEdit();
-    }
+      </div>`;
 
-    function showEdit() {
-      row.dataset.editing = 'true';
-      row.innerHTML = `
-        <input type="text" value="${esc(ex.name||'')}" placeholder="ПІБ..." style="flex:1;font-size:16px;">
-        <input type="tel"  value="${esc(ex.phone||'')}" placeholder="Телефон" style="max-width:130px;font-size:16px;">
-        <button class="exec-del" onclick="event.stopPropagation();deleteExecutor(${idx})">✕</button>`;
-      const [nameIn, phoneIn] = row.querySelectorAll('input');
+    // Редагування — клік на ім'я
+    row.querySelector('.executor-name').addEventListener('click', () => editExecutorRow(row, idx, ex));
 
-      async function saveEx() {
-        const newName  = nameIn.value.trim();
-        const newPhone = phoneIn.value.trim();
-        if (!newName) return;
-        ex.name  = newName;
-        ex.phone = newPhone;
-        try {
-          const uid = currentUser.uid;
-          if (ex.id) {
-            await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), { name: ex.name, phone: ex.phone });
-          }
-          showToast('✓ Збережено');
-        } catch(e) { console.warn(e); }
-        showView();
-      }
+    // Запросити
+    const invBtn = row.querySelector('.executor-invite-btn');
+    if (invBtn) invBtn.addEventListener('click', e => { e.stopPropagation(); inviteExecutor(idx); });
 
-      phoneIn.addEventListener('blur', () => setTimeout(saveEx, 150));
-      nameIn.addEventListener('keydown', e => { if (e.key === 'Enter') phoneIn.focus(); });
-      nameIn.focus();
-    }
+    // Видалити
+    const delBtn = row.querySelector('.exec-del');
+    delBtn.addEventListener('click', e => { e.stopPropagation(); deleteExecutor(idx); });
 
-    showView();
     wrap.appendChild(row);
   });
+}
+
+function editExecutorRow(row, idx, ex) {
+  const left  = row.querySelector('.executor-left');
+  const right = row.querySelector('.executor-right');
+  left.innerHTML = `
+    <input type="text"  id="edit-name-${idx}"  value="${esc(ex.name||'')}"  placeholder="ПІБ..."    style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
+    <input type="tel"   id="edit-phone-${idx}" value="${esc(ex.phone||'')}" placeholder="Телефон"   style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;margin-top:4px;">`;
+  right.innerHTML = `
+    <input type="email" id="edit-email-${idx}" value="${esc(ex.email||'')}" placeholder="Email"     style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">`;
+
+  const nameIn  = document.getElementById(`edit-name-${idx}`);
+  const phoneIn = document.getElementById(`edit-phone-${idx}`);
+  const emailIn = document.getElementById(`edit-email-${idx}`);
+
+  async function saveEx() {
+    const newName = nameIn.value.trim();
+    if (!newName) return;
+    ex.name  = newName;
+    ex.phone = phoneIn.value.trim();
+    ex.email = emailIn.value.trim();
+    try {
+      const uid = currentUser.uid;
+      if (ex.id) await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), { name: ex.name, phone: ex.phone, email: ex.email });
+      showToast('✓ Збережено');
+    } catch(e) { console.warn(e); }
+    renderExecutors();
+  }
+
+  emailIn.addEventListener('blur', () => setTimeout(saveEx, 150));
+  nameIn.addEventListener('keydown',  e => { if (e.key === 'Enter') phoneIn.focus(); });
+  phoneIn.addEventListener('keydown', e => { if (e.key === 'Enter') emailIn.focus(); });
+  nameIn.focus();
+}
+
+async function inviteExecutor(idx) {
+  const ex = localExecutors[idx];
+  if (!ex.email) { showToast('Спочатку вкажіть email'); return; }
+  ex.memberStatus = 'invited';
+  try {
+    const uid = currentUser.uid;
+    if (ex.id) await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), { memberStatus: 'invited' });
+    showToast(`📨 Запрошення надіслано на ${ex.email}`);
+  } catch(e) { showToast('Помилка надсилання'); }
+  renderExecutors();
 }
 
 window.toggleAddExecutor = function() {
@@ -1445,27 +1496,24 @@ window.toggleAddExecutor = function() {
 function attachExecutorBlur() {
   const phoneInput = document.getElementById('new-exec-phone');
   const nameInput  = document.getElementById('new-exec-name');
-  if (phoneInput) {
-    phoneInput.addEventListener('blur', () => setTimeout(saveNewExecutor, 150));
-  }
-  if (nameInput) {
-    nameInput.addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('new-exec-phone').focus();
-    });
-  }
+  const emailInput = document.getElementById('new-exec-email');
+  if (emailInput) emailInput.addEventListener('blur', () => setTimeout(saveNewExecutor, 150));
+  if (nameInput)  nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') phoneInput?.focus(); });
+  if (phoneInput) phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') emailInput?.focus(); });
 }
 
 window.saveNewExecutor = async function() {
   const name  = document.getElementById('new-exec-name')?.value.trim();
   const phone = document.getElementById('new-exec-phone')?.value.trim();
+  const email = document.getElementById('new-exec-email')?.value.trim();
   if (!name) return;
   try {
     const uid = currentUser.uid;
     const ref = await addDoc(
       collection(db,'users',uid,'projects',currentProject.id,'executors'),
-      { name, phone: phone||'', createdAt: serverTimestamp() }
+      { name, phone: phone||'', email: email||'', memberStatus: 'none', createdAt: serverTimestamp() }
     );
-    localExecutors.push({ id: ref.id, name, phone: phone||'' });
+    localExecutors.push({ id: ref.id, name, phone: phone||'', email: email||'', memberStatus: 'none' });
     renderExecutors();
     document.getElementById('executor-new-wrap').style.display = 'none';
     showToast(`✅ ${name} додано`);
