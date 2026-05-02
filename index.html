@@ -1551,8 +1551,16 @@ window.printMeeting = function() {
 
   // Підключаємо кнопку друку напряму — важливо для iOS
   const printBtn = document.getElementById('float-print-btn');
-  printBtn.onclick = null;
-  printBtn.addEventListener('click', function() { window.print(); });
+  function attachPrintBtn() {
+    printBtn.onclick = null;
+    printBtn.addEventListener('click', function handler() {
+      printBtn.removeEventListener('click', handler);
+      window.print();
+      // Переприєднуємо після закриття діалогу
+      setTimeout(attachPrintBtn, 100);
+    });
+  }
+  attachPrintBtn();
 
   // Дозволяємо pinch-zoom на екрані перегляду
   document.querySelector('meta[name=viewport]').content =
