@@ -1566,9 +1566,11 @@ window.printMeeting = function() {
       const scale   = availW / elW;
       const origH   = el.scrollHeight;
       const scaledH = origH * scale;
+      // Центруємо через margin-left після scale з top left
+      const marginLeft = (availW - elW) / 2;
       el.style.transform       = `scale(${scale})`;
       el.style.transformOrigin = 'top left';
-      el.style.marginLeft      = '0';
+      el.style.marginLeft      = `${marginLeft + 20}px`;
       el.style.marginRight     = '0';
       el.style.marginBottom    = `${scaledH - origH + 20}px`;
     }
