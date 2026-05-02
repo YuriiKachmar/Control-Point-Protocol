@@ -1635,6 +1635,8 @@ window.showControlScreen = function() {
   overlay.appendChild(box);
   document.documentElement.appendChild(overlay);
 };
+
+window.leavePrintScreen = function() {
   // Відновлюємо заборону zoom при виході
   document.querySelector('meta[name=viewport]').content =
     'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
