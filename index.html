@@ -234,9 +234,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   overflow-x: hidden;
   background: #475569;
   padding: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
+  display: block;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
 }
@@ -247,10 +245,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   box-shadow: 0 4px 32px rgba(0,0,0,0.4);
   padding: 76px 38px 76px 95px;
   flex-shrink: 0;
-  transform-origin: top left;
   font-family: 'Arsenal', Arial, sans-serif;
   font-size: 10pt;
   color: #000;
+  margin: 0 auto 20px;
 }
 #protocol-doc table { width:100%; border-collapse:collapse; margin-bottom:18px; table-layout:fixed; font-size:9.5pt; }
 #protocol-doc th { background:#1e3a5f; color:white; padding:5px 8px; text-align:left; font-size:8.5pt; border:1px solid #1e3a5f; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -1556,23 +1554,22 @@ window.printMeeting = function() {
     const el   = document.getElementById('protocol-doc');
     const area = document.getElementById('print-preview-area');
     if (!el || !area) return;
-    el.style.transform    = 'none';
-    el.style.marginBottom = '20px';
-    el.style.marginLeft   = 'auto';
-    el.style.marginRight  = 'auto';
     const availW = area.clientWidth - 40;
     const elW    = 794;
     if (availW > 0 && availW < elW) {
       const scale   = availW / elW;
       const origH   = el.scrollHeight;
       const scaledH = origH * scale;
-      // Центруємо через margin-left після scale з top left
-      const marginLeft = (availW - elW) / 2;
       el.style.transform       = `scale(${scale})`;
-      el.style.transformOrigin = 'top left';
-      el.style.marginLeft      = `${marginLeft + 20}px`;
-      el.style.marginRight     = '0';
+      el.style.transformOrigin = 'top center';
+      el.style.marginLeft      = `${(elW * (1 - scale)) / -2}px`;
+      el.style.marginRight     = `${(elW * (1 - scale)) / -2}px`;
       el.style.marginBottom    = `${scaledH - origH + 20}px`;
+    } else {
+      el.style.transform    = 'none';
+      el.style.marginLeft   = 'auto';
+      el.style.marginRight  = 'auto';
+      el.style.marginBottom = '20px';
     }
   }
   setTimeout(applyScale, 50);
