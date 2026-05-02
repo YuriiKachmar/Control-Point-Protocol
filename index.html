@@ -236,7 +236,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   padding: 20px;
   display: block;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-y;
+  touch-action: auto;
 }
 #protocol-doc {
   width: 794px;
@@ -586,7 +586,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-print" class="screen">
   <div class="app-header neutral" id="header-print">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-meeting')">◀ Назад</button>
+      <button class="back-btn" onclick="leavePrintScreen()">◀ Назад</button>
       <div class="app-header-title">Попередній перегляд</div>
     </div>
   </div>
@@ -1549,6 +1549,10 @@ window.printMeeting = function() {
   document.getElementById('header-print').style.background = currentProject.gradient;
   showScreen('screen-print');
 
+  // Дозволяємо pinch-zoom на екрані перегляду
+  document.querySelector('meta[name=viewport]').content =
+    'width=device-width, initial-scale=1.0, viewport-fit=cover';
+
   // Масштабуємо — точно як в тестовому файлі
   function applyScale() {
     const el   = document.getElementById('protocol-doc');
@@ -1577,7 +1581,12 @@ window.printMeeting = function() {
   window.addEventListener('resize', applyScale);
 };
 
-window.executePrint = function() {
+window.leavePrintScreen = function() {
+  // Відновлюємо заборону zoom при виході
+  document.querySelector('meta[name=viewport]').content =
+    'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
+  showScreen('screen-meeting');
+};
   window.print();
 };
 
