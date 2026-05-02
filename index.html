@@ -268,7 +268,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   @page { size: A4; margin: 20mm 10mm 20mm 25mm; }
   body > *:not(#screen-print) { display: none !important; }
   #screen-print { display: flex !important; height: auto !important; }
-  .app-header, #float-print-btn { display: none !important; }
+  .app-header, #float-print-btn, #control-banner, .share-overlay { display: none !important; }
   #print-preview-area { overflow: visible !important; padding: 0 !important; background: white !important; align-items: flex-start; }
   .print-page { box-shadow: none; margin: 0; padding: 0 !important; width: 100%; min-height: auto; border-radius: 0; max-width: 100%; transform: none !important; }
 }
@@ -1597,17 +1597,31 @@ window.shareMeeting = function() {
   const box = document.createElement('div');
   box.style.cssText = 'background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;';
 
-  const btnStyle = (bg, color='white') =>
-    `width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:${bg};color:${color};font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;`;
+  const makeBtn = (id, bg, color, label) => {
+    const b = document.createElement('button');
+    b.id = id;
+    b.textContent = label;
+    b.style.cssText = `width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:${bg};color:${color};font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;`;
+    return b;
+  };
 
-  box.innerHTML = `
-    <div style="font-size:17px;font-weight:700;color:#1e3a5f;text-align:center;margin-bottom:16px;">📤 Поділитись протоколом</div>
-    ${whatsapp ? `<button id="sh-whatsapp" style="${btnStyle('#25D366')}">📱 WhatsApp група</button>` : ''}
-    <button id="sh-viber"  style="${btnStyle('#7360f2')}">📱 Viber</button>
-    <button id="sh-sms"    style="${btnStyle('#16a34a')}">💬 SMS</button>
-    <button id="sh-other"  style="${btnStyle('#f1f5f9','#475569')}border:1.5px solid #e2e8f0;">📤 Інший месенджер</button>
-    <button id="sh-cancel" style="${btnStyle('#f1f5f9','#94a3b8')}">Скасувати</button>
-    <div style="font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;">Натискання відкриє відповідний додаток</div>`;
+  const title = document.createElement('div');
+  title.textContent = '📤 Поділитись протоколом';
+  title.style.cssText = 'font-size:17px;font-weight:700;color:#1e3a5f;text-align:center;margin-bottom:16px;';
+  box.appendChild(title);
+
+  if (whatsapp) {
+    box.appendChild(makeBtn('sh-whatsapp', '#25D366', 'white', '📱 WhatsApp група'));
+  }
+  box.appendChild(makeBtn('sh-viber',  '#7360f2', 'white',   '📱 Viber'));
+  box.appendChild(makeBtn('sh-sms',    '#16a34a', 'white',   '💬 SMS'));
+  box.appendChild(makeBtn('sh-other',  '#f1f5f9', '#475569', '📤 Інший месенджер'));
+  box.appendChild(makeBtn('sh-cancel', '#f1f5f9', '#94a3b8', 'Скасувати'));
+
+  const hint = document.createElement('div');
+  hint.textContent = 'Натискання відкриє відповідний додаток';
+  hint.style.cssText = 'font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;';
+  box.appendChild(hint);
 
   overlay.appendChild(box);
   document.body.appendChild(overlay);
