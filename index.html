@@ -236,9 +236,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 }
 .print-page {
   width: 210mm;
-  min-height: 297mm;
   background: white;
-  padding: 18mm 15mm 18mm 20mm;
+  padding: 18mm 10mm 18mm 25mm;
   border-radius: 2px;
   box-shadow: 0 2px 16px rgba(0,0,0,0.15);
   font-family: 'Arsenal', Arial, sans-serif;
@@ -1479,26 +1478,26 @@ window.printMeeting = function() {
   const meetingLoc  = currentMeeting.location || '';
 
   const itemsRows = localItems.length === 0
-    ? `<tr><td colspan="5" style="text-align:center;color:#999;padding:12px;">Пунктів немає</td></tr>`
-    : localItems.map(it => `
+    ? `<tr><td colspan="5" style="text-align:center;color:#999;padding:12px;border:1px solid #ccc;">Пунктів немає</td></tr>`
+    : localItems.map((it, i) => `
         <tr>
-          <td style="text-align:center;width:28px;">${it.number}</td>
-          <td>${esc(it.description||'')}</td>
-          <td style="width:18%;">${esc(it.executor||'')}</td>
-          <td style="width:27%;">${esc(it.decision||'')}</td>
-          <td style="width:13%;">${esc(it.note||'')}</td>
+          <td style="padding:5px 7px;border:1px solid #ccc;vertical-align:top;text-align:center;${i%2===1?'background:#f8f8f8;':''}">${it.number}</td>
+          <td style="padding:5px 7px;border:1px solid #ccc;vertical-align:top;word-wrap:break-word;${i%2===1?'background:#f8f8f8;':''}">${esc(it.description||'')}</td>
+          <td style="padding:5px 7px;border:1px solid #ccc;vertical-align:top;word-wrap:break-word;${i%2===1?'background:#f8f8f8;':''}">${esc(it.executor||'')}</td>
+          <td style="padding:5px 7px;border:1px solid #ccc;vertical-align:top;word-wrap:break-word;${i%2===1?'background:#f8f8f8;':''}">${esc(it.decision||'')}</td>
+          <td style="padding:5px 7px;border:1px solid #ccc;vertical-align:top;word-wrap:break-word;${i%2===1?'background:#f8f8f8;':''}">${esc(it.note||'')}</td>
         </tr>`).join('');
 
   const sigRows = localAttendees.length === 0
     ? '<p style="color:#999;font-size:9pt;padding:8px 0;">Учасників не вказано</p>'
     : localAttendees.map(a => `
-        <div class="print-sig-row">
+        <div style="display:grid;grid-template-columns:1fr 110px 90px;gap:6px;padding:7px 0;border-bottom:1px solid #eee;align-items:center;">
           <div>
-            <div class="print-sig-name">${esc(a.name||'')}</div>
-            <div class="print-sig-role">${esc(a.role||'')}</div>
+            <div style="font-weight:bold;font-size:9.5pt;font-family:'Arsenal',Arial,sans-serif;">${esc(a.name||'')}</div>
+            <div style="color:#555;font-size:8.5pt;font-family:'Arsenal',Arial,sans-serif;">${esc(a.role||'')}</div>
           </div>
-          <div class="print-sig-line">підпис</div>
-          <div class="print-sig-line">дата</div>
+          <div style="border-bottom:1px solid #000;height:22px;text-align:center;font-size:7.5pt;color:#aaa;padding-top:4px;font-family:'Arsenal',Arial,sans-serif;">підпис</div>
+          <div style="border-bottom:1px solid #000;height:22px;text-align:center;font-size:7.5pt;color:#aaa;padding-top:4px;font-family:'Arsenal',Arial,sans-serif;">дата</div>
         </div>`).join('');
 
   const content = `
@@ -1512,20 +1511,20 @@ window.printMeeting = function() {
         <span>${meetingDate}</span>
         <span>${esc(meetingLoc)}</span>
       </div>
-      <table class="print-table">
+      <table style="width:100%;border-collapse:collapse;margin-bottom:18px;font-size:9.5pt;table-layout:fixed;font-family:'Arsenal',Arial,sans-serif;">
         <thead>
           <tr>
-            <th style="width:28px;">№</th>
-            <th>Опис / питання</th>
-            <th style="width:18%;">Виконавець</th>
-            <th style="width:27%;">Прийняте рішення</th>
-            <th style="width:13%;">Примітка</th>
+            <th style="background:#1e3a5f;color:white;padding:5px 7px;text-align:left;font-size:8.5pt;border:1px solid #1e3a5f;width:28px;-webkit-print-color-adjust:exact;print-color-adjust:exact;">№</th>
+            <th style="background:#1e3a5f;color:white;padding:5px 7px;text-align:left;font-size:8.5pt;border:1px solid #1e3a5f;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Опис / питання</th>
+            <th style="background:#1e3a5f;color:white;padding:5px 7px;text-align:left;font-size:8.5pt;border:1px solid #1e3a5f;width:18%;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Виконавець</th>
+            <th style="background:#1e3a5f;color:white;padding:5px 7px;text-align:left;font-size:8.5pt;border:1px solid #1e3a5f;width:27%;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Прийняте рішення</th>
+            <th style="background:#1e3a5f;color:white;padding:5px 7px;text-align:left;font-size:8.5pt;border:1px solid #1e3a5f;width:13%;-webkit-print-color-adjust:exact;print-color-adjust:exact;">Примітка</th>
           </tr>
         </thead>
         <tbody>${itemsRows}</tbody>
       </table>
-      <div class="print-sig-section">
-        <div class="print-sig-title">Погоджено та затверджено присутніми:</div>
+      <div style="margin-top:16px;border-top:1px solid #000;padding-top:10px;font-family:'Arsenal',Arial,sans-serif;">
+        <div style="font-weight:bold;font-size:9.5pt;margin-bottom:8px;">Погоджено та затверджено присутніми:</div>
         ${sigRows}
       </div>
     </div>`;
