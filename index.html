@@ -232,18 +232,30 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #94a3b8;
-  padding: 24px 16px;
+  background: #64748b;
+  padding: 20px 0;
   -webkit-overflow-scrolling: touch;
 }
 #protocol-doc {
   background: white;
+  width: 794px;
   box-shadow: 0 4px 32px rgba(0,0,0,0.35);
-  transform-origin: top left;
-  margin: 0 auto;
+  transform-origin: top center;
   display: block;
+  margin: 0 auto;
 }
 #print-only-div { display: none; }
+
+@media print {
+  @page { size: A4 portrait; margin: 20mm 10mm 20mm 25mm; }
+  body.printing > * { display: none !important; }
+  body.printing #print-only-div {
+    display: block !important;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+  }
+}
 .ctrl-btn {
   display: flex; align-items: center; justify-content: center;
   border: none; background: transparent; cursor: pointer;
@@ -1480,7 +1492,7 @@ window.printMeeting = function() {
 
   // HTML протоколу — використовується і для перегляду і для друку
   _printHTML = `
-<div id="protocol-doc" style="${F}font-size:10pt;color:#000;padding:18mm 10mm 18mm 25mm;box-sizing:border-box;width:794px;background:white;box-shadow:0 4px 32px rgba(0,0,0,0.3);">
+<div id="protocol-doc" style="${F}font-size:10pt;color:#000;padding:18mm 10mm 18mm 25mm;box-sizing:border-box;width:794px;background:white;box-shadow:0 4px 32px rgba(0,0,0,0.3);margin:0 auto;">
   <div style="${F}text-align:center;font-size:13pt;font-weight:bold;text-transform:uppercase;margin-bottom:6px;">Протокол наради №${meetingNum}</div>
   <div style="${F}text-align:center;font-size:9.5pt;margin-bottom:14px;line-height:1.6;">
     Щодо ходу робіт на об'єкті:<br>
@@ -1515,58 +1527,51 @@ window.printMeeting = function() {
   const area = document.getElementById('print-preview-area');
   area.innerHTML = _printHTML;
 
-  // Масштабуємо під ширину екрану
+  // Масштабуємо аркуш під ширину екрану (завжди книжний portrait)
   setTimeout(() => {
     const doc = document.getElementById('protocol-doc');
     if (!doc || !area) return;
-    const areaW = area.clientWidth - 32;
-    const docW  = doc.scrollWidth;
-    const scale = Math.min(1, areaW / docW);
+    const areaW = area.clientWidth;
+    const scale = areaW / 794;
     doc.style.transform = `scale(${scale})`;
     doc.style.transformOrigin = 'top center';
-    // Компенсуємо висоту після масштабу
-    const scaledH = doc.scrollHeight * scale;
-    doc.style.marginBottom = `${scaledH - doc.scrollHeight + 24}px`;
-  }, 200);
+    // Компенсуємо висоту — після масштабу div займає менше місця
+    const newH = doc.scrollHeight * scale;
+    doc.style.marginBottom = `${newH - doc.scrollHeight}px`;
+    // Центруємо горизонтально
+    doc.style.marginLeft  = 'auto';
+    doc.style.marginRight = 'auto';
+  }, 100);
 
   document.getElementById('header-print').style.background = currentProject.gradient;
   showScreen('screen-print');
 };
 
 window.executePrint = function() {
-  // Відкриваємо повний HTML протоколу в новому вікні і друкуємо звідти
-  // Це єдиний надійний спосіб на всіх пристроях і браузерах
-  const fullHTML = `<!DOCTYPE html>
-<html lang="uk">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Протокол №${currentMeeting.number}</title>
-<style>
-  * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:white; }
-  @page { size:A4 portrait; margin:20mm 10mm 20mm 25mm; }
-  @media print { body { margin:0; } }
-</style>
-</head>
-<body>${_printHTML}</body>
-</html>`;
-
-  const blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const win  = window.open(url, '_blank');
-  if (win) {
-    win.onload = () => {
-      setTimeout(() => {
-        win.print();
-        URL.revokeObjectURL(url);
-      }, 500);
-    };
-  } else {
-    // Якщо popup заблоковано — підказка
-    showToast('Дозвольте спливаючі вікна для цього сайту');
-    URL.revokeObjectURL(url);
+  // Друк в тому ж вікні через @media print
+  // Ховаємо все крім протоколу через спеціальний клас
+  document.body.classList.add('printing');
+  
+  // Вставляємо протокол для друку
+  let printDiv = document.getElementById('print-only-div');
+  if (!printDiv) {
+    printDiv = document.createElement('div');
+    printDiv.id = 'print-only-div';
+    document.body.appendChild(printDiv);
   }
+  // Вставляємо без transform — оригінальний розмір для друку
+  printDiv.innerHTML = `<div style="font-family:Arial,sans-serif;font-size:10pt;color:#000;">${document.getElementById('protocol-doc')?.innerHTML || ''}</div>`;
+  printDiv.style.display = 'block';
+
+  setTimeout(() => {
+    window.print();
+    // Відновлюємо після друку
+    setTimeout(() => {
+      document.body.classList.remove('printing');
+      printDiv.style.display = 'none';
+      printDiv.innerHTML = '';
+    }, 1000);
+  }, 100);
 };
 
 // ── ПОДІЛИТИСЬ ──
