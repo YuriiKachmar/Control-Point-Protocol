@@ -232,28 +232,59 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  background: #64748b;
-  padding: 20px 0;
+  background: #475569;
+  padding: 20px;
+  display: flex;
+  justify-content: center;
   -webkit-overflow-scrolling: touch;
 }
 #protocol-doc {
+  width: 794px;
+  min-height: 1123px;
   background: white;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.35);
+  box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+  padding: 76px 38px 76px 95px;
+  flex-shrink: 0;
   transform-origin: top center;
-  display: block;
-  margin: 0 auto;
-  /* width задається інлайн в JS */
+  font-family: 'Arsenal', Arial, sans-serif;
+  font-size: 10pt;
+  color: #000;
 }
-#print-only-div { display: none; }
+#protocol-doc table { width:100%; border-collapse:collapse; margin-bottom:18px; table-layout:fixed; font-size:9.5pt; }
+#protocol-doc th { background:#1e3a5f; color:white; padding:5px 8px; text-align:left; font-size:8.5pt; border:1px solid #1e3a5f; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+#protocol-doc td { padding:5px 8px; border:1px solid #ccc; vertical-align:top; line-height:1.4; word-break:break-word; }
+#protocol-doc tr:nth-child(even) td { background:#f8f8f8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+#protocol-doc .doc-title { text-align:center; font-size:13pt; font-weight:700; text-transform:uppercase; margin-bottom:6px; }
+#protocol-doc .doc-sub { text-align:center; font-size:9.5pt; margin-bottom:14px; line-height:1.6; }
+#protocol-doc .doc-meta { display:flex; justify-content:space-between; font-size:9.5pt; margin-bottom:14px; padding-bottom:8px; border-bottom:1px solid #000; }
+#protocol-doc .sig-section { margin-top:16px; border-top:1px solid #000; padding-top:10px; }
+#protocol-doc .sig-title { font-weight:700; font-size:9.5pt; margin-bottom:8px; }
+#protocol-doc .sig-row { display:flex; align-items:flex-end; gap:8px; padding:7px 0; border-bottom:1px solid #eee; }
+#protocol-doc .sig-row:last-child { border-bottom:none; }
+#protocol-doc .sig-name-wrap { flex:1; }
+#protocol-doc .sig-name { font-weight:700; font-size:9.5pt; }
+#protocol-doc .sig-role { color:#555; font-size:8pt; }
+#protocol-doc .sig-line { border-bottom:1px solid #000; width:120px; text-align:center; font-size:7.5pt; color:#aaa; padding-top:20px; }
 
 @media print {
-  @page { size: A4 portrait; margin: 20mm 10mm 20mm 25mm; }
-  body.printing > * { display: none !important; }
-  body.printing #print-only-div {
+  @page { size: A4 portrait; margin: 0; }
+  body { background: white !important; }
+  body > *:not(#screen-print) { display: none !important; }
+  #screen-print { display: flex !important; height: auto !important; }
+  .app-header, #float-print-btn { display: none !important; }
+  #print-preview-area {
+    padding: 0 !important;
+    background: white !important;
+    overflow: visible !important;
     display: block !important;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
+  }
+  #protocol-doc {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    padding: 20mm 10mm 20mm 25mm !important;
+    box-shadow: none !important;
+    transform: none !important;
+    margin: 0 !important;
   }
 }
 .ctrl-btn {
@@ -1455,128 +1486,92 @@ let _printHTML = '';
 window.printMeeting = function() {
   autoBackup('друк-' + currentMeeting.number);
 
-  const F = "font-family:Arial,sans-serif;";
   const displayName = esc(currentProject.officialName || currentProject.name || '');
   const address     = esc(currentProject.address || '');
   const meetingNum  = currentMeeting.number || '—';
   const meetingDate = formatDateFull(currentMeeting.date);
   const meetingLoc  = esc(currentMeeting.location || '');
 
-  const thStyle = `${F}background:#1e3a5f;color:#fff;padding:5px 8px;text-align:left;font-size:9pt;border:1px solid #1e3a5f;print-color-adjust:exact;-webkit-print-color-adjust:exact;`;
-
   const rows = localItems.length === 0
-    ? `<tr><td colspan="5" style="${F}padding:10px;text-align:center;color:#999;border:1px solid #ccc;">Пунктів немає</td></tr>`
-    : localItems.map((it, i) => {
-        const bg = i % 2 === 1 ? 'background:#f8f8f8;' : '';
-        const td = `${F}${bg}padding:5px 8px;border:1px solid #ccc;vertical-align:top;font-size:9pt;line-height:1.4;word-break:break-word;`;
-        return `<tr>
-          <td style="${td}text-align:center;">${it.number}</td>
-          <td style="${td}">${esc(it.description||'')}</td>
-          <td style="${td}">${esc(it.executor||'')}</td>
-          <td style="${td}">${esc(it.decision||'')}</td>
-          <td style="${td}">${esc(it.note||'')}</td>
-        </tr>`;
-      }).join('');
+    ? `<tr><td colspan="5" style="padding:10px;text-align:center;color:#999;border:1px solid #ccc;">Пунктів немає</td></tr>`
+    : localItems.map((it, i) => `<tr>
+        <td style="text-align:center;${i%2?'background:#f8f8f8;':''}">${it.number}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.description||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.executor||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.decision||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.note||'')}</td>
+      </tr>`).join('');
 
   const sigs = localAttendees.length === 0
-    ? `<p style="${F}color:#999;font-size:9pt;">Учасників не вказано</p>`
+    ? `<p style="color:#999;font-size:9pt;">Учасників не вказано</p>`
     : localAttendees.map(a => `
-        <div style="display:flex;align-items:flex-end;gap:8px;padding:8px 0;border-bottom:1px solid #eee;">
-          <div style="flex:1;">
-            <div style="${F}font-weight:bold;font-size:9.5pt;">${esc(a.name||'')}</div>
-            <div style="${F}color:#555;font-size:8pt;">${esc(a.role||'')}</div>
+        <div class="sig-row">
+          <div class="sig-name-wrap">
+            <div class="sig-name">${esc(a.name||'')}</div>
+            <div class="sig-role">${esc(a.role||'')}</div>
           </div>
-          <div style="${F}width:120px;border-bottom:1px solid #000;text-align:center;font-size:7pt;color:#aaa;padding-top:20px;">підпис</div>
-          <div style="${F}width:90px;border-bottom:1px solid #000;text-align:center;font-size:7pt;color:#aaa;padding-top:20px;">дата</div>
+          <div class="sig-line">підпис</div>
+          <div class="sig-line">дата</div>
         </div>`).join('');
 
-  // HTML протоколу — використовується і для перегляду і для друку
-  _printHTML = `
-<div id="protocol-doc" style="${F}font-size:10pt;color:#000;padding:18mm 10mm 18mm 25mm;box-sizing:border-box;width:794px;background:white;box-shadow:0 4px 32px rgba(0,0,0,0.3);margin:0 auto;">
-  <div style="${F}text-align:center;font-size:13pt;font-weight:bold;text-transform:uppercase;margin-bottom:6px;">Протокол наради №${meetingNum}</div>
-  <div style="${F}text-align:center;font-size:9.5pt;margin-bottom:14px;line-height:1.6;">
-    Щодо ходу робіт на об'єкті:<br>
-    <strong>${displayName}</strong>${address ? '<br>' + address : ''}
-  </div>
-  <div style="${F}display:flex;justify-content:space-between;font-size:9.5pt;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid #000;">
-    <span>${meetingDate}</span>
-    <span>${meetingLoc}</span>
-  </div>
-  <table style="${F}width:100%;border-collapse:collapse;margin-bottom:18px;table-layout:fixed;">
-    <colgroup>
-      <col style="width:28px"><col><col style="width:18%"><col style="width:27%"><col style="width:13%">
-    </colgroup>
-    <thead>
-      <tr>
-        <th style="${thStyle}">№</th>
-        <th style="${thStyle}">Опис / питання</th>
-        <th style="${thStyle}">Виконавець</th>
-        <th style="${thStyle}">Прийняте рішення</th>
-        <th style="${thStyle}">Примітка</th>
-      </tr>
-    </thead>
-    <tbody>${rows}</tbody>
-  </table>
-  <div style="${F}margin-top:16px;border-top:1px solid #000;padding-top:10px;">
-    <div style="${F}font-weight:bold;font-size:9.5pt;margin-bottom:8px;">Погоджено та затверджено присутніми:</div>
-    ${sigs}
-  </div>
-</div>`;
+  const docHTML = `
+    <div class="doc-title">Протокол наради №${meetingNum}</div>
+    <div class="doc-sub">
+      Щодо ходу робіт на об'єкті:<br>
+      <strong>${displayName}</strong>${address ? '<br>' + address : ''}
+    </div>
+    <div class="doc-meta">
+      <span>${meetingDate}</span>
+      <span>${meetingLoc}</span>
+    </div>
+    <table>
+      <colgroup>
+        <col style="width:32px"><col><col style="width:18%"><col style="width:27%"><col style="width:13%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>№</th><th>Опис / питання</th><th>Виконавець</th><th>Прийняте рішення</th><th>Примітка</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="sig-section">
+      <div class="sig-title">Погоджено та затверджено присутніми:</div>
+      ${sigs}
+    </div>`;
 
-  // Показуємо попередній перегляд
+  // Вставляємо в #protocol-doc
+  const doc = document.getElementById('protocol-doc');
+  if (doc) doc.innerHTML = docHTML;
+
   document.getElementById('header-print').style.background = currentProject.gradient;
   showScreen('screen-print');
 
-  const area = document.getElementById('print-preview-area');
-  area.innerHTML = _printHTML;
-
-  // Масштабуємо після рендеру DOM
+  // Масштабуємо — точно як в тестовому файлі
   function applyScale() {
-    const doc = document.getElementById('protocol-doc');
-    if (!doc) return;
-    doc.style.transform = '';
-    doc.style.marginBottom = '';
-    const areaW = area.clientWidth;
-    const docW  = 794; // фіксована ширина аркушу
-    if (areaW > 0 && areaW < docW) {
-      const scale = areaW / docW;
-      doc.style.transform = `scale(${scale})`;
-      doc.style.transformOrigin = 'top center';
-      const scaledH = doc.scrollHeight * scale;
-      doc.style.marginBottom = `${scaledH - doc.scrollHeight}px`;
+    const el   = document.getElementById('protocol-doc');
+    const area = document.getElementById('print-preview-area');
+    if (!el || !area) return;
+    el.style.transform    = 'none';
+    el.style.marginBottom = '20px';
+    const availW = area.clientWidth - 40;
+    const elW    = 794;
+    if (availW > 0 && availW < elW) {
+      const scale   = availW / elW;
+      const origH   = el.scrollHeight;
+      const scaledH = origH * scale;
+      el.style.transform       = `scale(${scale})`;
+      el.style.transformOrigin = 'top center';
+      el.style.marginBottom    = `${scaledH - origH + 20}px`;
     }
   }
-  // Чекаємо поки екран стане активним
   setTimeout(applyScale, 50);
-  setTimeout(applyScale, 200);
-  setTimeout(applyScale, 500);
+  setTimeout(applyScale, 300);
+  window.addEventListener('resize', applyScale);
 };
 
 window.executePrint = function() {
-  // Друк в тому ж вікні через @media print
-  // Ховаємо все крім протоколу через спеціальний клас
-  document.body.classList.add('printing');
-  
-  // Вставляємо протокол для друку
-  let printDiv = document.getElementById('print-only-div');
-  if (!printDiv) {
-    printDiv = document.createElement('div');
-    printDiv.id = 'print-only-div';
-    document.body.appendChild(printDiv);
-  }
-  // Вставляємо без transform — оригінальний розмір для друку
-  printDiv.innerHTML = `<div style="font-family:Arial,sans-serif;font-size:10pt;color:#000;">${document.getElementById('protocol-doc')?.innerHTML || ''}</div>`;
-  printDiv.style.display = 'block';
-
-  setTimeout(() => {
-    window.print();
-    // Відновлюємо після друку
-    setTimeout(() => {
-      document.body.classList.remove('printing');
-      printDiv.style.display = 'none';
-      printDiv.innerHTML = '';
-    }, 1000);
-  }, 100);
+  window.print();
 };
 
 // ── ПОДІЛИТИСЬ ──
