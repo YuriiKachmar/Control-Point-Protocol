@@ -238,6 +238,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   justify-content: center;
   align-items: flex-start;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
 }
 #protocol-doc {
   width: 794px;
@@ -246,7 +247,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   box-shadow: 0 4px 32px rgba(0,0,0,0.4);
   padding: 76px 38px 76px 95px;
   flex-shrink: 0;
-  transform-origin: top center;
+  transform-origin: top left;
   font-family: 'Arsenal', Arial, sans-serif;
   font-size: 10pt;
   color: #000;
@@ -1557,6 +1558,8 @@ window.printMeeting = function() {
     if (!el || !area) return;
     el.style.transform    = 'none';
     el.style.marginBottom = '20px';
+    el.style.marginLeft   = 'auto';
+    el.style.marginRight  = 'auto';
     const availW = area.clientWidth - 40;
     const elW    = 794;
     if (availW > 0 && availW < elW) {
@@ -1564,7 +1567,9 @@ window.printMeeting = function() {
       const origH   = el.scrollHeight;
       const scaledH = origH * scale;
       el.style.transform       = `scale(${scale})`;
-      el.style.transformOrigin = 'top center';
+      el.style.transformOrigin = 'top left';
+      el.style.marginLeft      = '0';
+      el.style.marginRight     = '0';
       el.style.marginBottom    = `${scaledH - origH + 20}px`;
     }
   }
