@@ -238,11 +238,11 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 }
 #protocol-doc {
   background: white;
-  width: 794px;
   box-shadow: 0 4px 32px rgba(0,0,0,0.35);
   transform-origin: top center;
   display: block;
   margin: 0 auto;
+  /* width задається інлайн в JS */
 }
 #print-only-div { display: none; }
 
@@ -1524,27 +1524,32 @@ window.printMeeting = function() {
 </div>`;
 
   // Показуємо попередній перегляд
+  document.getElementById('header-print').style.background = currentProject.gradient;
+  showScreen('screen-print');
+
   const area = document.getElementById('print-preview-area');
   area.innerHTML = _printHTML;
 
-  // Масштабуємо аркуш під ширину екрану (завжди книжний portrait)
-  setTimeout(() => {
+  // Масштабуємо після рендеру DOM
+  function applyScale() {
     const doc = document.getElementById('protocol-doc');
-    if (!doc || !area) return;
+    if (!doc) return;
+    doc.style.transform = '';
+    doc.style.marginBottom = '';
     const areaW = area.clientWidth;
-    const scale = areaW / 794;
-    doc.style.transform = `scale(${scale})`;
-    doc.style.transformOrigin = 'top center';
-    // Компенсуємо висоту — після масштабу div займає менше місця
-    const newH = doc.scrollHeight * scale;
-    doc.style.marginBottom = `${newH - doc.scrollHeight}px`;
-    // Центруємо горизонтально
-    doc.style.marginLeft  = 'auto';
-    doc.style.marginRight = 'auto';
-  }, 100);
-
-  document.getElementById('header-print').style.background = currentProject.gradient;
-  showScreen('screen-print');
+    const docW  = 794; // фіксована ширина аркушу
+    if (areaW > 0 && areaW < docW) {
+      const scale = areaW / docW;
+      doc.style.transform = `scale(${scale})`;
+      doc.style.transformOrigin = 'top center';
+      const scaledH = doc.scrollHeight * scale;
+      doc.style.marginBottom = `${scaledH - doc.scrollHeight}px`;
+    }
+  }
+  // Чекаємо поки екран стане активним
+  setTimeout(applyScale, 50);
+  setTimeout(applyScale, 200);
+  setTimeout(applyScale, 500);
 };
 
 window.executePrint = function() {
