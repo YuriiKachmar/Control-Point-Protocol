@@ -1553,13 +1553,15 @@ window.printMeeting = function() {
 };
 
 window.executePrint = function() {
-  // iOS Safari потребує невеликої затримки
+  // Ховаємо динамічні елементи
+  document.querySelectorAll('#control-banner, .share-overlay').forEach(el => el.style.display = 'none');
   setTimeout(() => {
-    try {
-      window.print();
-    } catch(e) {
-      showToast('Використайте меню браузера → Поділитись → Друк');
-    }
+    try { window.print(); }
+    catch(e) { showToast('Використайте меню браузера → Друк'); }
+    // Відновлюємо після друку
+    setTimeout(() => {
+      document.querySelectorAll('#control-banner, .share-overlay').forEach(el => el.style.display = '');
+    }, 1000);
   }, 100);
 };
 
@@ -1592,7 +1594,7 @@ window.shareMeeting = function() {
   // Показуємо модалку
   const overlay = document.createElement('div');
   overlay.className = 'share-overlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
 
   const box = document.createElement('div');
   box.style.cssText = 'background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;';
@@ -1624,7 +1626,7 @@ window.shareMeeting = function() {
   box.appendChild(hint);
 
   overlay.appendChild(box);
-  document.body.appendChild(overlay);
+  document.documentElement.appendChild(overlay);
 
   const enc = encodeURIComponent(text);
 
