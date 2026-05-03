@@ -1445,12 +1445,11 @@ function renderExecutors() {
   }
   wrap.innerHTML = '';
   localExecutors.forEach((ex, idx) => {
+    const isDeleting = deletingExecutorIdx === idx;
     const row = document.createElement('div');
     row.className = 'executor-row' + (isDeleting ? ' exec-deleting' : '');
 
     const role = ex.memberStatus || 'none';
-
-    const isDeleting = deletingExecutorIdx === idx;
 
     row.innerHTML = `
       <div class="executor-num-cell">
