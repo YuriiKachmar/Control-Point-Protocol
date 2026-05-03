@@ -267,7 +267,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 #protocol-doc .sig-line { border-bottom:1px solid #000; width:120px; text-align:center; font-size:7.5pt; color:#aaa; padding-top:20px; }
 
 @media print {
-  @page { size: A4 portrait; margin: 0; }
+  @page { size: A4 portrait; margin: 20mm 10mm 20mm 25mm; }
   body { background: white !important; }
   body > *:not(#screen-print) { display: none !important; }
   #screen-print { display: flex !important; height: auto !important; }
@@ -279,9 +279,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     display: block !important;
   }
   #protocol-doc {
-    width: 210mm !important;
-    min-height: 297mm !important;
-    padding: 20mm 10mm 20mm 25mm !important;
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 0 !important;
     box-shadow: none !important;
     transform: none !important;
     margin: 0 !important;
@@ -422,6 +422,20 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .executor-name  { font-size: 14px; font-weight: 700; color: #1e293b; cursor: pointer; }
 .executor-phone { font-size: 12px; color: #64748b; margin-top: 2px; }
 .executor-email { font-size: 12px; color: #64748b; margin-bottom: 4px; }
+.exec-field {
+  display: block; width: 100%;
+  border: none; outline: none; background: transparent;
+  font-size: 14px; font-family: inherit; color: #1e293b;
+  padding: 2px 0; margin-bottom: 2px;
+}
+.exec-field::placeholder { color: #94a3b8; }
+.exec-field:focus { border-bottom: 1px solid #2563eb; }
+.exec-role-select {
+  font-size: 11px; font-family: inherit; color: #475569;
+  border: 1px solid #e2e8f0; border-radius: 6px;
+  background: #f8fafc; padding: 2px 4px; cursor: pointer;
+  outline: none;
+}
 .executor-status { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
 .executor-status.none    { background: #f1f5f9; color: #94a3b8; }
 .executor-status.invited { background: #fef9c3; color: #854d0e; }
@@ -1398,26 +1412,66 @@ function renderExecutors() {
     const row = document.createElement('div');
     row.className = 'executor-row';
 
-    const status = ex.memberStatus || 'none';
-    const statusLabel = status === 'active' ? '✓ Активний' : status === 'invited' ? '⏳ Запрошено' : '—';
+    const role = ex.memberStatus || 'none';
 
     row.innerHTML = `
       <div class="executor-left">
-        <div class="executor-name">${esc(ex.name||'—')}</div>
-        <div class="executor-phone">${esc(ex.phone||'')}</div>
+        <input type="text"  class="exec-field" value="${esc(ex.name||'')}"  placeholder="ПІБ..."   data-field="name"  data-idx="${idx}" style="font-weight:700;">
+        <input type="tel"   class="exec-field" value="${esc(ex.phone||'')}" placeholder="Телефон"  data-field="phone" data-idx="${idx}">
       </div>
       <div class="executor-right">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:4px;">
-          <div>
-            <div class="executor-email">${esc(ex.email||'')}</div>
-            <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-              <span class="executor-status ${status}">${statusLabel}</span>
-              ${ex.email && status === 'none' ? `<button class="executor-invite-btn">Запросити</button>` : ''}
-            </div>
-          </div>
-          <button class="exec-del">✕</button>
+        <input type="email" class="exec-field" value="${esc(ex.email||'')}" placeholder="Email"    data-field="email" data-idx="${idx}">
+        <div style="display:flex;align-items:center;gap:4px;margin-top:4px;flex-wrap:wrap;">
+          <select class="exec-role-select" data-idx="${idx}">
+            <option value="none"  ${role==='none'  ?'selected':''}>— Без доступу</option>
+            <option value="user"  ${role==='user'  ?'selected':''}>👤 Користувач</option>
+            <option value="admin" ${role==='admin' ?'selected':''}>👑 Адмін</option>
+          </select>
+          ${ex.email && role !== 'none' ? `<button class="executor-invite-btn" data-idx="${idx}">Запросити</button>` : ''}
+          <button class="exec-del" data-idx="${idx}">✕</button>
         </div>
       </div>`;
+
+    // Автозбереження кожного поля при blur
+    row.querySelectorAll('.exec-field').forEach(inp => {
+      inp.addEventListener('blur', async () => {
+        const i = parseInt(inp.dataset.idx);
+        localExecutors[i][inp.dataset.field] = inp.value.trim();
+        await saveExecutorField(i);
+      });
+    });
+
+    // Зміна ролі
+    const sel = row.querySelector('.exec-role-select');
+    sel.addEventListener('change', async () => {
+      const i = parseInt(sel.dataset.idx);
+      localExecutors[i].memberStatus = sel.value;
+      await saveExecutorField(i);
+      renderExecutors();
+    });
+
+    // Запросити
+    const invBtn = row.querySelector('.executor-invite-btn');
+    if (invBtn) invBtn.addEventListener('click', e => { e.stopPropagation(); inviteExecutor(parseInt(invBtn.dataset.idx)); });
+
+    // Видалити
+    const delBtn = row.querySelector('.exec-del');
+    delBtn.addEventListener('click', e => { e.stopPropagation(); deleteExecutor(parseInt(delBtn.dataset.idx)); });
+
+    wrap.appendChild(row);
+  });
+}
+
+async function saveExecutorField(idx) {
+  const ex = localExecutors[idx];
+  if (!ex.id || !ex.name) return;
+  try {
+    const uid = currentUser.uid;
+    await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), {
+      name: ex.name, phone: ex.phone||'', email: ex.email||'', memberStatus: ex.memberStatus||'none'
+    });
+  } catch(e) { console.warn(e); }
+}
 
     // Редагування — клік на ім'я
     row.querySelector('.executor-name').addEventListener('click', () => editExecutorRow(row, idx, ex));
@@ -1434,49 +1488,10 @@ function renderExecutors() {
   });
 }
 
-function editExecutorRow(row, idx, ex) {
-  const left  = row.querySelector('.executor-left');
-  const right = row.querySelector('.executor-right');
-  left.innerHTML = `
-    <input type="text"  id="edit-name-${idx}"  value="${esc(ex.name||'')}"  placeholder="ПІБ..."    style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
-    <input type="tel"   id="edit-phone-${idx}" value="${esc(ex.phone||'')}" placeholder="Телефон"   style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;margin-top:4px;">`;
-  right.innerHTML = `
-    <input type="email" id="edit-email-${idx}" value="${esc(ex.email||'')}" placeholder="Email"     style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">`;
-
-  const nameIn  = document.getElementById(`edit-name-${idx}`);
-  const phoneIn = document.getElementById(`edit-phone-${idx}`);
-  const emailIn = document.getElementById(`edit-email-${idx}`);
-
-  async function saveEx() {
-    const newName = nameIn.value.trim();
-    if (!newName) return;
-    ex.name  = newName;
-    ex.phone = phoneIn.value.trim();
-    ex.email = emailIn.value.trim();
-    try {
-      const uid = currentUser.uid;
-      if (ex.id) await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), { name: ex.name, phone: ex.phone, email: ex.email });
-      showToast('✓ Збережено');
-    } catch(e) { console.warn(e); }
-    renderExecutors();
-  }
-
-  emailIn.addEventListener('blur', () => setTimeout(saveEx, 150));
-  nameIn.addEventListener('keydown',  e => { if (e.key === 'Enter') phoneIn.focus(); });
-  phoneIn.addEventListener('keydown', e => { if (e.key === 'Enter') emailIn.focus(); });
-  nameIn.focus();
-}
-
 async function inviteExecutor(idx) {
   const ex = localExecutors[idx];
   if (!ex.email) { showToast('Спочатку вкажіть email'); return; }
-  ex.memberStatus = 'invited';
-  try {
-    const uid = currentUser.uid;
-    if (ex.id) await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'executors',ex.id), { memberStatus: 'invited' });
-    showToast(`📨 Запрошення надіслано на ${ex.email}`);
-  } catch(e) { showToast('Помилка надсилання'); }
-  renderExecutors();
+  showToast(`📨 Запрошення надіслано на ${ex.email}`);
 }
 
 window.toggleAddExecutor = function() {
