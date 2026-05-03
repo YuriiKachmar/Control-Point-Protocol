@@ -1514,10 +1514,6 @@ function renderExecutors() {
     const invBtn = row.querySelector('.executor-invite-btn');
     if (invBtn) invBtn.addEventListener('click', e => { e.stopPropagation(); inviteExecutor(parseInt(invBtn.dataset.idx)); });
 
-    // Видалити
-    const delBtn = row.querySelector('.exec-del');
-    delBtn.addEventListener('click', e => { e.stopPropagation(); deleteExecutor(parseInt(delBtn.dataset.idx)); });
-
     wrap.appendChild(row);
   });
 }
