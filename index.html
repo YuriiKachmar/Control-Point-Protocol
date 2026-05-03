@@ -414,18 +414,15 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .settings-add-btn { width: 100%; padding: 11px; background: white; color: #2563eb; border: 1.5px dashed #93c5fd; border-radius: 10px; font-size: 14px; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 4px; }
 
 /* Рядок виконавця */
-/* Комірка номера виконавця — з перехрестям як в протоколі */
+/* Комірка номера виконавця — точно як item-num-cell в протоколі */
 .executor-num-cell {
   position: relative;
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; overflow: hidden;
   border-right: 1px solid #f1f5f9;
-  min-width: 28px;
 }
 .executor-num-cell .num-text { font-size: 11px; color: #94a3b8; pointer-events: none; }
-.executor-row.exec-deleting .executor-num-cell,
-.executor-row.exec-deleting .executor-num-cell::before,
-.executor-row.exec-deleting .executor-num-cell::after { background: rgba(239,68,68,0.08); }
+
 .executor-row.exec-deleting .executor-num-cell::before,
 .executor-row.exec-deleting .executor-num-cell::after {
   content: '';
@@ -435,9 +432,11 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   top: 50%; left: 15%;
   border-radius: 2px;
   pointer-events: none;
+  z-index: 4;
 }
 .executor-row.exec-deleting .executor-num-cell::before { transform: translateY(-50%) rotate(45deg); }
 .executor-row.exec-deleting .executor-num-cell::after  { transform: translateY(-50%) rotate(-45deg); }
+.executor-row.exec-deleting .executor-num-cell { background: rgba(239,68,68,0.08); }
 .executor-row { display: grid; grid-template-columns: 28px 1fr 1fr; border-bottom: 1px solid #f1f5f9; min-height: 52px; }
 .executor-row:last-child { border-bottom: none; }
 .executor-left  { padding: 8px 10px; border-right: 1px solid #f1f5f9; }
@@ -558,10 +557,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <div class="protocol-header-loc"  id="meeting-header-loc">—</div>
     </div>
     <div class="protocol-header-btns">
-      <button class="icon-btn" onclick="showToast('Налаштування протоколу — в розробці')">⚙️</button>
-      <button class="icon-btn" onclick="showControlScreen()">🔔</button>
-      <button class="icon-btn" onclick="printMeeting()">🖨</button>
       <button class="icon-btn" onclick="shareMeeting()">📤</button>
+      <button class="icon-btn" onclick="printMeeting()">🖨</button>
+      <button class="icon-btn" onclick="showControlScreen()" title="Контроль" style="display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><circle cx="12" cy="13" r="8" stroke="white" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#60a5fa"/></svg></button>
+      <button class="icon-btn" onclick="showToast('Налаштування протоколу — в розробці')">⚙️</button>
     </div>
   </div>
 
@@ -1447,15 +1446,15 @@ function renderExecutors() {
   wrap.innerHTML = '';
   localExecutors.forEach((ex, idx) => {
     const row = document.createElement('div');
-    row.className = 'executor-row';
+    row.className = 'executor-row' + (isDeleting ? ' exec-deleting' : '');
 
     const role = ex.memberStatus || 'none';
 
     const isDeleting = deletingExecutorIdx === idx;
 
     row.innerHTML = `
-      <div class="executor-num-cell ${isDeleting?'exec-deleting':''}">
-        <span class="num-text">${isDeleting?'':idx+1}</span>
+      <div class="executor-num-cell">
+        <span class="num-text">${idx+1}</span>
       </div>
       <div class="executor-left">
         <input type="text"  class="exec-field" value="${esc(ex.name||'')}"  placeholder="ПІБ..."   data-field="name"  data-idx="${idx}" style="font-weight:700;">
