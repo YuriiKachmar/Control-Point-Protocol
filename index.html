@@ -1473,21 +1473,6 @@ async function saveExecutorField(idx) {
   } catch(e) { console.warn(e); }
 }
 
-    // Редагування — клік на ім'я
-    row.querySelector('.executor-name').addEventListener('click', () => editExecutorRow(row, idx, ex));
-
-    // Запросити
-    const invBtn = row.querySelector('.executor-invite-btn');
-    if (invBtn) invBtn.addEventListener('click', e => { e.stopPropagation(); inviteExecutor(idx); });
-
-    // Видалити
-    const delBtn = row.querySelector('.exec-del');
-    delBtn.addEventListener('click', e => { e.stopPropagation(); deleteExecutor(idx); });
-
-    wrap.appendChild(row);
-  });
-}
-
 async function inviteExecutor(idx) {
   const ex = localExecutors[idx];
   if (!ex.email) { showToast('Спочатку вкажіть email'); return; }
