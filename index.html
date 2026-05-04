@@ -70,13 +70,14 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 /* ══ FAB ══ */
 .fab {
   display: flex; align-items: center; justify-content: center;
-  width: 46px; height: 46px; border-radius: 12px;
+  width: 46px; height: 46px; border-radius: 14px;
   border: none; font-size: 26px; cursor: pointer;
   margin: 7px auto 4px; line-height: 1; flex-shrink: 0;
-  background: #2D2D2D; color: white;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+  background: #2563eb; color: white;
+  box-shadow: 0 6px 20px rgba(37,99,235,0.45), 0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.fab:active { opacity: 0.85; }
+.fab:active { transform: scale(0.93); box-shadow: 0 3px 10px rgba(37,99,235,0.3); }
 
 /* Ландшафтний режим */
 @media (max-height: 500px) {
@@ -433,7 +434,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .modal-btn-cancel  { background: #f1f5f9; color: #64748b; }
 
 .settings-section { margin-bottom: 24px; }
-.settings-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px; padding: 0 4px; }
+.settings-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6); margin-bottom: 8px; padding: 0 4px; }
 .settings-row { background: white; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; cursor: pointer; }
 .settings-row span { font-size: 14px; color: #1a1a2e; }
 .settings-val { font-size: 13px; color: #94a3b8; }
@@ -569,13 +570,15 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="app-header-left">
       <button class="back-btn" onclick="showScreen('screen-home')">◀</button>
       <div>
-        <div class="app-header-title" id="project-header-name">—</div>
-        <div class="app-header-sub" id="project-header-address">—</div>
+        <div class="app-header-title">Усі протоколи</div>
+        <div class="app-header-sub" id="project-header-name">—</div>
       </div>
     </div>
     <div class="app-header-right">
+      <button class="icon-btn" onclick="showAllControlScreen()">
+        <svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:middle;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="currentColor"/></svg>
+      </button>
       <button class="icon-btn" onclick="showScreen('screen-analytics')">📊</button>
-      <button class="icon-btn" onclick="showToast('Пошук — в розробці')">🔍</button>
       <button class="icon-btn" onclick="openProjectSettings()">⚙️</button>
     </div>
   </div>
@@ -676,7 +679,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <button class="back-btn" onclick="leavePrintScreen()">◀ Назад</button>
     </div>
     <div class="app-header-right">
-      <div class="app-header-title">Попередній перегляд 🖨</div>
+      <div>
+        <div class="app-header-title">Попередній перегляд 🖨</div>
+        <div class="app-header-sub" id="print-header-sub"></div>
+      </div>
     </div>
   </div>
   <div class="scroll-area no-fab" id="print-preview-area">
@@ -687,8 +693,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     background:#2563eb; color:white; border:none; border-radius:16px;
     padding:14px 24px; font-size:15px; font-weight:700;
     font-family:inherit; cursor:pointer;
-    box-shadow:0 4px 20px rgba(37,99,235,0.45);
+    box-shadow:0 8px 24px rgba(37,99,235,0.5), 0 2px 8px rgba(0,0,0,0.15);
     display:flex; align-items:center; gap:8px; z-index:50;
+    transition: transform 0.15s, box-shadow 0.15s;
   ">🖨 Друкувати</button>
 </div>
 <div id="screen-analytics" class="screen">
@@ -709,10 +716,13 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-project-settings" class="screen">
   <div class="app-header neutral" id="header-project-settings">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-project')">◀ Назад</button>
+      <button class="back-btn" onclick="leaveProjectSettings()">◀ Назад</button>
     </div>
     <div class="app-header-right">
-      <div class="app-header-title">Налаштування об'єкту ⚙️</div>
+      <div>
+        <div class="app-header-title">Налаштування об'єкту ⚙️</div>
+        <div class="app-header-sub" id="ps-header-sub"></div>
+      </div>
     </div>
   </div>
   <div class="scroll-area no-fab">
@@ -951,8 +961,7 @@ window.saveProject = async function() {
 
 function openProject(id, data, palette) {
   currentProject = { id, ...data, palette };
-  document.getElementById('project-header-name').textContent    = data.name;
-  document.getElementById('project-header-address').textContent = data.address || '';
+  document.getElementById('project-header-name').textContent = data.name;
   // Хедер = колір плитки
   const hdr = document.getElementById('header-project');
   hdr.style.background = palette.bg;
@@ -1458,7 +1467,12 @@ document.addEventListener('touchstart', e => {
   }
 }, {passive:true});
 
-// ── ДОПОМІЖНА — застосувати палітру до хедера ──
+window.leaveProjectSettings = function() {
+  // Застосовуємо поточну палітру до хедерів екранів 2 і 3
+  const palette = currentProject.palette || TILE_COLORS[currentProject.colorIdx||0];
+  applyPaletteToHeader(document.getElementById('header-project'), palette);
+  showScreen('screen-project');
+};
 function applyPaletteToHeader(hdr, palette) {
   if (!hdr || !palette) return;
   hdr.style.background = palette.bg;
@@ -1481,8 +1495,9 @@ window.openProjectSettings = async function() {
   document.getElementById('ps-address').value  = currentProject.address      || '';
   document.getElementById('ps-official').value = currentProject.officialName || '';
   document.getElementById('ps-whatsapp').value = currentProject.whatsappGroup || '';
+  document.getElementById('ps-header-sub').textContent = currentProject.name || '';
   const hdrSettings = document.getElementById('header-project-settings');
-  applyPaletteToHeader(hdrSettings, currentProject.palette || TILE_COLORS[0]);
+  applyPaletteToHeader(hdrSettings, currentProject.palette || TILE_COLORS[currentProject.colorIdx||0]);
   // Color picker
   const picker = document.getElementById('color-picker');
   picker.innerHTML = '';
@@ -1526,8 +1541,7 @@ async function saveBasicData() {
     currentProject.address       = address;
     currentProject.officialName  = officialName;
     currentProject.whatsappGroup = whatsappGroup;
-    document.getElementById('project-header-name').textContent    = name;
-    document.getElementById('project-header-address').textContent = address;
+    document.getElementById('project-header-name').textContent = name;
     showToast('✓ Збережено');
     loadProjects();
   } catch(e) { console.warn('Save basic data error:', e); }
@@ -1652,19 +1666,23 @@ window.toggleAddExecutor = function() {
 
 // Автозбереження при виході з поля телефону
 function attachExecutorBlur() {
-  const phoneInput = document.getElementById('new-exec-phone');
-  const nameInput  = document.getElementById('new-exec-name');
   const emailInput = document.getElementById('new-exec-email');
-  if (emailInput) emailInput.addEventListener('blur', () => setTimeout(saveNewExecutor, 150));
-  if (nameInput)  nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') phoneInput?.focus(); });
-  if (phoneInput) phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') emailInput?.focus(); });
+  const nameInput  = document.getElementById('new-exec-name');
+  const phoneInput = document.getElementById('new-exec-phone');
+  // Використовуємо onblur замість addEventListener щоб не дублювалось
+  if (emailInput) emailInput.onblur = () => setTimeout(saveNewExecutor, 150);
+  if (nameInput)  nameInput.onkeydown  = e => { if (e.key === 'Enter') phoneInput?.focus(); };
+  if (phoneInput) phoneInput.onkeydown = e => { if (e.key === 'Enter') emailInput?.focus(); };
 }
 
+let _savingExecutor = false;
 window.saveNewExecutor = async function() {
+  if (_savingExecutor) return;
   const name  = document.getElementById('new-exec-name')?.value.trim();
   const phone = document.getElementById('new-exec-phone')?.value.trim();
   const email = document.getElementById('new-exec-email')?.value.trim();
   if (!name) return;
+  _savingExecutor = true;
   try {
     const uid = currentUser.uid;
     const ref = await addDoc(
@@ -1676,6 +1694,7 @@ window.saveNewExecutor = async function() {
     document.getElementById('executor-new-wrap').style.display = 'none';
     showToast(`✅ ${name} додано`);
   } catch(e) { console.warn(e); }
+  _savingExecutor = false;
 };
 
 window.deleteExecutor = async function(idx) {
@@ -1753,7 +1772,8 @@ window.printMeeting = function() {
   const doc = document.getElementById('protocol-doc');
   if (doc) doc.innerHTML = docHTML;
 
-  applyPaletteToHeader(document.getElementById('header-print'), currentProject.palette || TILE_COLORS[0]);
+  applyPaletteToHeader(document.getElementById('header-print'), currentProject.palette || TILE_COLORS[currentProject.colorIdx||0]);
+  document.getElementById('print-header-sub').textContent = `Протокол № ${meetingNum}`;
   showScreen('screen-print');
 
   // Підключаємо кнопку друку напряму — важливо для iOS
@@ -1801,46 +1821,55 @@ window.printMeeting = function() {
   window.addEventListener('resize', applyScale);
 };
 
-// ── КОНТРОЛЬ ПРОТОКОЛУ ──
+// Контроль — всі протоколи об'єкту
+window.showAllControlScreen = async function() {
+  const uid = currentUser.uid;
+  const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
+  const controlled = [];
+  for (const m of mSnap.docs) {
+    const iSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',m.id,'items'));
+    iSnap.forEach(i => {
+      const d = i.data();
+      if (d.control) controlled.push({ ...d, meetingNum: m.data().number, meetingId: m.id });
+    });
+  }
+  showControlModal(controlled, `Контроль — всі протоколи (${controlled.length})`);
+};
+
+// Контроль — поточний протокол
 window.showControlScreen = function() {
   const controlled = localItems.filter(it => it.control);
-  if (controlled.length === 0) {
-    showToast('Немає пунктів на контролі');
-    return;
-  }
+  showControlModal(controlled, `Контроль — Протокол № ${currentMeeting.number} (${controlled.length})`);
+};
 
-  // Показуємо модалку зі списком пунктів на контролі
+function showControlModal(items, title) {
+  if (items.length === 0) { showToast('Немає пунктів на контролі'); return; }
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
-
   const box = document.createElement('div');
-  box.style.cssText = 'background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;';
-
-  const title = document.createElement('div');
-  title.textContent = `🔔 На контролі (${controlled.length})`;
-  title.style.cssText = 'font-size:17px;font-weight:700;color:#1e3a5f;margin-bottom:16px;';
-  box.appendChild(title);
-
-  controlled.forEach(it => {
+  box.style.cssText = 'background:white;border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:75vh;overflow-y:auto;';
+  const t = document.createElement('div');
+  t.style.cssText = 'font-size:15px;font-weight:700;color:#2D2D2D;margin-bottom:12px;display:flex;align-items:center;gap:8px;';
+  t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="#C17058" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#C17058" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#C17058" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#C17058"/></svg>${title}`;
+  box.appendChild(t);
+  items.forEach(it => {
     const row = document.createElement('div');
-    row.style.cssText = 'padding:10px 0;border-bottom:1px solid #f1f5f9;';
+    row.style.cssText = 'padding:8px 0;border-bottom:1px solid #EBEBEB;';
     row.innerHTML = `
-      <div style="font-size:13px;font-weight:700;color:#1e293b;">${it.number}. ${esc(it.description||'—')}</div>
-      ${it.executor ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Виконавець: ${esc(it.executor)}</div>` : ''}
-      ${it.decision ? `<div style="font-size:11px;color:#64748b;">Рішення: ${esc(it.decision)}</div>` : ''}`;
+      <div style="font-size:9px;color:#C17058;font-weight:700;">${it.meetingNum ? `Протокол №${it.meetingNum} · ` : ''}Пункт ${it.number}</div>
+      <div style="font-size:11px;font-weight:700;color:#2D2D2D;margin-top:1px;">${esc(it.description||'—')}</div>
+      ${it.executor ? `<div style="font-size:10px;color:#6B6B6B;">${esc(it.executor)}</div>` : ''}`;
     box.appendChild(row);
   });
-
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = 'Закрити';
-  closeBtn.style.cssText = 'width:100%;padding:13px;margin-top:16px;border-radius:12px;border:none;background:#f1f5f9;color:#64748b;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;';
-  closeBtn.addEventListener('click', () => overlay.remove());
-  box.appendChild(closeBtn);
-
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  const cls = document.createElement('button');
+  cls.textContent = 'Закрити';
+  cls.style.cssText = 'width:100%;padding:11px;margin-top:12px;border-radius:10px;border:1px solid #EBEBEB;background:#F9FAFB;color:#6B6B6B;font-size:13px;font-family:inherit;cursor:pointer;';
+  cls.addEventListener('click', () => overlay.remove());
+  box.appendChild(cls);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
   overlay.appendChild(box);
   document.documentElement.appendChild(overlay);
-};
+}
 
 window.leavePrintScreen = function() {
   // Відновлюємо заборону zoom при виході
