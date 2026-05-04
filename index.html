@@ -770,6 +770,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
             </div>
           </div>
         </div>
+        <button onclick="saveNewExecutor()" style="width:100%;padding:11px;margin-top:6px;border-radius:10px;border:none;background:#2D2D2D;color:white;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;">✓ Зберегти</button>
       </div>
       <button class="center-btn blue" id="add-executor-btn" onclick="toggleAddExecutor()" style="margin-top:8px;">＋</button>
     </div>
@@ -1666,19 +1667,14 @@ window.toggleAddExecutor = function() {
     wrap.style.display = 'block';
     document.getElementById('new-exec-name').value  = '';
     document.getElementById('new-exec-phone').value = '';
+    document.getElementById('new-exec-email').value = '';
     setTimeout(() => document.getElementById('new-exec-name').focus(), 50);
   }
 };
 
-// Автозбереження при виході з поля телефону
+// Прибираємо автозбереження по blur — тільки явне збереження
 function attachExecutorBlur() {
-  const emailInput = document.getElementById('new-exec-email');
-  const nameInput  = document.getElementById('new-exec-name');
-  const phoneInput = document.getElementById('new-exec-phone');
-  // Використовуємо onblur замість addEventListener щоб не дублювалось
-  if (emailInput) emailInput.onblur = () => setTimeout(saveNewExecutor, 150);
-  if (nameInput)  nameInput.onkeydown  = e => { if (e.key === 'Enter') phoneInput?.focus(); };
-  if (phoneInput) phoneInput.onkeydown = e => { if (e.key === 'Enter') emailInput?.focus(); };
+  // Нічого не робимо — збереження тільки по кнопці
 }
 
 let _savingExecutor = false;
@@ -1687,19 +1683,25 @@ window.saveNewExecutor = async function() {
   const name  = document.getElementById('new-exec-name')?.value.trim();
   const phone = document.getElementById('new-exec-phone')?.value.trim();
   const email = document.getElementById('new-exec-email')?.value.trim();
-  if (!name) return;
+  if (!name) { showToast('Введіть ПІБ'); return; }
+  // Фіксуємо projectId в момент збереження
+  const projectId = currentProject.id;
+  if (!projectId) { showToast('Помилка: об\'єкт не визначено'); return; }
   _savingExecutor = true;
   try {
     const uid = currentUser.uid;
     const ref = await addDoc(
-      collection(db,'users',uid,'projects',currentProject.id,'executors'),
+      collection(db,'users',uid,'projects',projectId,'executors'),
       { name, phone: phone||'', email: email||'', memberStatus: 'none', createdAt: serverTimestamp() }
     );
-    localExecutors.push({ id: ref.id, name, phone: phone||'', email: email||'', memberStatus: 'none' });
-    renderExecutors();
+    // Перевіряємо що ми ще на тому самому об'єкті
+    if (currentProject.id === projectId) {
+      localExecutors.push({ id: ref.id, name, phone: phone||'', email: email||'', memberStatus: 'none' });
+      renderExecutors();
+    }
     document.getElementById('executor-new-wrap').style.display = 'none';
     showToast(`✅ ${name} додано`);
-  } catch(e) { console.warn(e); }
+  } catch(e) { console.warn(e); showToast('Помилка збереження'); }
   _savingExecutor = false;
 };
 
