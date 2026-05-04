@@ -2018,6 +2018,7 @@ async function uploadAttachment(file) {
 }
 
 // ══ КОНТРОЛЬ ══
+window.showAllControlScreen = async function() {
   const uid = currentUser.uid;
   const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
   const controlled = [];
