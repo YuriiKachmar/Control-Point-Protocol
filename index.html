@@ -264,7 +264,21 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .block-divider { height: 28px; display: flex; align-items: center; justify-content: center; margin: 4px 0; }
 .block-divider::before { content: ''; width: 48px; height: 3px; background: #cbd5e1; border-radius: 2px; }
 
-/* ══ ПОПЕРЕДНІЙ ПЕРЕГЛЯД ДРУКУ ══ */
+/* ══ ДОДАТКИ ══ */
+.att-row { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; background: white; border-radius: 8px; margin-bottom: 4px; min-height: 44px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
+.att-num-cell { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; height: 100%; border-right: 1px solid #f1f5f9; min-height: 44px; }
+.att-num-cell .num-text { font-size: 10px; color: #94a3b8; }
+.att-row.att-deleting .att-num-cell::before,
+.att-row.att-deleting .att-num-cell::after { content: ''; position: absolute; background: #ef4444; width: 65%; height: 2px; top: 50%; left: 17.5%; border-radius: 2px; pointer-events: none; }
+.att-row.att-deleting .att-num-cell::before { transform: translateY(-50%) rotate(45deg); }
+.att-row.att-deleting .att-num-cell::after  { transform: translateY(-50%) rotate(-45deg); }
+.att-row.att-deleting .att-num-cell { background: rgba(239,68,68,0.07); }
+.att-info { padding: 6px 10px; cursor: pointer; }
+.att-name { font-size: 13px; font-weight: 700; color: #1e293b; }
+.att-desc { font-size: 11px; color: #64748b; margin-top: 1px; }
+.att-type-icon { padding: 0 10px; font-size: 18px; color: #94a3b8; }
+.att-upload-progress { height: 3px; background: #e2e8f0; border-radius: 2px; margin: 2px 0; overflow: hidden; }
+.att-upload-progress-bar { height: 100%; background: #2563eb; border-radius: 2px; transition: width 0.2s; }
 #print-preview-area {
   flex: 1;
   overflow-y: auto;
@@ -631,8 +645,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
     <!-- ДОДАТКИ -->
     <div class="proto-block-head"><span id="attachments-title">📎 Додатки до протоколу</span></div>
-    <div class="att-empty">Додатків ще немає</div>
-    <button class="center-btn gray" onclick="showToast('Додатки — в розробці')">📎</button>
+    <div id="attachments-list"></div>
+    <input type="file" id="att-file-input" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;">
+    <button class="center-btn blue" id="add-att-btn" onclick="openAddAttachment()">＋ Додаток</button>
 
     <div class="block-divider"></div>
 
@@ -808,6 +823,8 @@ import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, si
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, increment }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCKE_X9DaSHEH7tpJ07mfPSKJUJH7ZxTkM",
@@ -818,19 +835,21 @@ const firebaseConfig = {
   appId: "1:756000624671:web:55a70d705b332dcc4f452a"
 };
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+const app     = initializeApp(firebaseConfig);
+const auth    = getAuth(app);
+const db      = getFirestore(app);
+const storage = getStorage(app);
 
 let currentUser    = null;
 let currentProject = null;
 let currentMeeting = null;
 
 // Локальні дані для інлайн-редагування
-let localItems     = [];
-let localAttendees = [];
-let activeItemIdx  = null;
-let activeAttIdx   = null;
+let localItems       = [];
+let localAttendees   = [];
+let localAttachments = [];
+let activeItemIdx    = null;
+let activeAttIdx     = null;
 let deletingItemIdx = null;
 let deletingAttIdx  = null;
 let longPressTimer  = null;
@@ -1059,8 +1078,11 @@ async function openMeeting(id, data) {
   document.getElementById('attachments-title').textContent   = `📎 Додатки до протоколу №${data.number}`;
   await loadItemsLocal();
   await loadAttendeesLocal();
+  await loadAttachmentsLocal();
+  _deletingAttIdx = null;
   renderItems();
   renderAttendees();
+  renderAttachments();
   showScreen('screen-meeting');
 }
 
@@ -1765,13 +1787,12 @@ window.printMeeting = async function() {
     const uid = currentUser.uid;
     const aSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'));
     if (!aSnap.empty) {
-      const attRows = aSnap.docs.map((d, i) => {
-        const a = d.data();
-        return `<tr>
-          <td style="padding:4px 8px;border:1px solid #e5e7eb;font-size:9.5pt;white-space:nowrap;">Додаток ${i+1}</td>
-          <td style="padding:4px 8px;border:1px solid #e5e7eb;font-size:9.5pt;">${esc(a.description||a.name||'')}</td>
-        </tr>`;
-      }).join('');
+      const attList = aSnap.docs.map((d,i) => ({ num: i+1, ...d.data() }));
+      // Список в протоколі
+      const attRows = attList.map(a => `<tr>
+        <td style="padding:4px 8px;border:1px solid #e5e7eb;font-size:9.5pt;white-space:nowrap;">Додаток ${a.num}</td>
+        <td style="padding:4px 8px;border:1px solid #e5e7eb;font-size:9.5pt;">${esc(a.description||a.name||'')}</td>
+      </tr>`).join('');
       attachmentsHTML = `
     <div class="att-section">
       <div class="att-title">Додатки:</div>
@@ -1780,6 +1801,17 @@ window.printMeeting = async function() {
         <tbody>${attRows}</tbody>
       </table>
     </div>`;
+      // Окремі аркуші для фото
+      for (const a of attList) {
+        if (a.type?.startsWith('image') && a.url) {
+          attachmentsHTML += `
+    <div style="page-break-before:always;padding:20mm 15mm;font-family:'Arsenal',Arial,sans-serif;">
+      <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
+      ${a.description ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
+      <img src="${a.url}" style="width:100%;max-height:220mm;object-fit:contain;display:block;" crossorigin="anonymous">
+    </div>`;
+        }
+      }
     }
   } catch(e) { console.warn(e); }
 
@@ -1864,7 +1896,128 @@ window.printMeeting = async function() {
 };
 
 // Контроль — всі протоколи об'єкту
-window.showAllControlScreen = async function() {
+// ══ ДОДАТКИ ══
+let _deletingAttIdx = null;
+
+async function loadAttachmentsLocal() {
+  const uid = currentUser.uid;
+  try {
+    const snap = await getDocs(query(
+      collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
+      orderBy('createdAt')
+    ));
+    localAttachments = [];
+    snap.forEach(d => localAttachments.push({ id: d.id, ...d.data() }));
+  } catch(e) { localAttachments = []; }
+}
+
+function renderAttachments() {
+  const list = document.getElementById('attachments-list');
+  if (!list) return;
+  if (localAttachments.length === 0) {
+    list.innerHTML = `<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:13px;padding:10px 0;">Додатків ще немає</div>`;
+    return;
+  }
+  list.innerHTML = '';
+  localAttachments.forEach((att, idx) => {
+    const isDeleting = _deletingAttIdx === idx;
+    const typeIcon = att.type?.startsWith('image') ? '🖼' : att.type === 'application/pdf' ? '📄' : '📎';
+    const row = document.createElement('div');
+    row.className = 'att-row' + (isDeleting ? ' att-deleting' : '');
+    row.innerHTML = `
+      <div class="att-num-cell"><span class="num-text">${idx+1}</span></div>
+      <div class="att-info">
+        <div class="att-name">${esc(att.name||'')}</div>
+        ${att.description ? `<div class="att-desc">${esc(att.description)}</div>` : ''}
+      </div>
+      <div class="att-type-icon">${typeIcon}</div>`;
+
+    const numCell = row.querySelector('.att-num-cell');
+    numCell.addEventListener('click', e => {
+      e.stopPropagation();
+      if (_deletingAttIdx === idx) { deleteAttachment(idx); }
+      else { _deletingAttIdx = idx; renderAttachments(); }
+    });
+
+    row.querySelector('.att-info').addEventListener('click', () => {
+      if (_deletingAttIdx !== null) { _deletingAttIdx = null; renderAttachments(); return; }
+      if (att.url) window.open(att.url, '_blank');
+    });
+
+    row.addEventListener('click', e => {
+      if (!e.target.closest('.att-num-cell') && _deletingAttIdx === idx) {
+        _deletingAttIdx = null; renderAttachments();
+      }
+    });
+
+    list.appendChild(row);
+  });
+}
+
+async function deleteAttachment(idx) {
+  const att = localAttachments[idx];
+  try {
+    const uid = currentUser.uid;
+    if (att.storagePath) {
+      try { await deleteObject(storageRef(storage, att.storagePath)); } catch(e) {}
+    }
+    await deleteDoc(doc(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments',att.id));
+    localAttachments.splice(idx, 1);
+    _deletingAttIdx = null;
+    renderAttachments();
+    showToast('Додаток видалено');
+  } catch(e) { showToast('Помилка видалення'); }
+}
+
+window.openAddAttachment = function() {
+  const input = document.getElementById('att-file-input');
+  input.value = '';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    await uploadAttachment(file);
+  };
+  input.click();
+};
+
+async function uploadAttachment(file) {
+  const uid = currentUser.uid;
+  const path = `attachments/${uid}/${currentProject.id}/${currentMeeting.id}/${Date.now()}_${file.name}`;
+  const sRef = storageRef(storage, path);
+  const list = document.getElementById('attachments-list');
+  const progressDiv = document.createElement('div');
+  progressDiv.style.cssText = 'background:white;border-radius:8px;padding:10px 12px;margin-bottom:4px;';
+  progressDiv.innerHTML = `
+    <div style="font-size:12px;color:#1e293b;margin-bottom:6px;">⏳ ${esc(file.name)}</div>
+    <div class="att-upload-progress"><div class="att-upload-progress-bar" id="att-progress-bar" style="width:0%"></div></div>`;
+  list.appendChild(progressDiv);
+  try {
+    const uploadTask = uploadBytesResumable(sRef, file);
+    await new Promise((resolve, reject) => {
+      uploadTask.on('state_changed',
+        snap => {
+          const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
+          const bar = document.getElementById('att-progress-bar');
+          if (bar) bar.style.width = pct + '%';
+        }, reject, resolve);
+    });
+    const url = await getDownloadURL(sRef);
+    const description = prompt(`Опис для "${file.name}" (необов'язково):`) || '';
+    const ref = await addDoc(
+      collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
+      { name: file.name, description, url, storagePath: path, type: file.type, createdAt: serverTimestamp() }
+    );
+    localAttachments.push({ id: ref.id, name: file.name, description, url, storagePath: path, type: file.type });
+    progressDiv.remove();
+    renderAttachments();
+    showToast(`✅ ${file.name} додано`);
+  } catch(e) {
+    progressDiv.remove();
+    showToast('Помилка завантаження');
+  }
+}
+
+// ══ КОНТРОЛЬ ══
   const uid = currentUser.uid;
   const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
   const controlled = [];
