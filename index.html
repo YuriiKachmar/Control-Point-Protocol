@@ -1799,13 +1799,12 @@ window.printMeeting = async function() {
       <div class="att-title">Додатки:</div>
       <div style="margin-top:5px;">${attRows}</div>
     </div>`;
-      // Окремі аркуші для фото — поза #protocol-doc
+      // Окремі аркуші для фото — кожне фото = окремий аркуш
       for (const a of attList) {
         if (a.type?.startsWith('image') && a.dataUrl) {
-          photoPages += `
-<div style="page-break-before:always;padding:20mm 25mm;font-family:'Arsenal',Arial,sans-serif;background:white;">
+          photoPages += `<div style="page-break-before:always;break-before:page;padding:20mm 25mm;font-family:'Arsenal',Arial,sans-serif;background:white;min-height:297mm;box-sizing:border-box;">
   <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
-  ${a.description ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
+  ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
   <img src="${a.dataUrl}" style="width:100%;max-height:220mm;object-fit:contain;display:block;">
 </div>`;
         }
@@ -1936,10 +1935,35 @@ function renderAttachments() {
     row.innerHTML = `
       <div class="att-num-cell"><span class="num-text">${idx+1}</span></div>
       <div class="att-info">
-        <div class="att-name">${esc(att.name||'')}</div>
-        ${att.description ? `<div class="att-desc">${esc(att.description)}</div>` : ''}
+        <div class="att-desc-edit" style="font-size:13px;font-weight:700;color:#1e293b;min-height:20px;">${esc(att.description||'—')}</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:1px;">${esc(att.name||'')}</div>
       </div>
       <div class="att-type-icon">${typeIcon}</div>`;
+
+    // Редагування опису по кліку
+    const descEl = row.querySelector('.att-desc-edit');
+    descEl.addEventListener('click', e => {
+      e.stopPropagation();
+      if (_deletingAttIdx !== null) { _deletingAttIdx = null; renderAttachments(); return; }
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = att.description || '';
+      input.placeholder = 'Опис додатку...';
+      input.style.cssText = 'font-size:13px;font-weight:700;color:#1e293b;border:none;outline:none;background:transparent;width:100%;font-family:inherit;border-bottom:1px solid #2563eb;';
+      descEl.replaceWith(input);
+      input.focus();
+      async function saveDesc() {
+        const newDesc = input.value.trim();
+        att.description = newDesc;
+        try {
+          const uid = currentUser.uid;
+          if (att.id) await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments',att.id), { description: newDesc });
+        } catch(e) { console.warn(e); }
+        renderAttachments();
+      }
+      input.addEventListener('blur', () => setTimeout(saveDesc, 150));
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+    });
 
     const numCell = row.querySelector('.att-num-cell');
     numCell.addEventListener('click', e => {
@@ -1948,10 +1972,10 @@ function renderAttachments() {
       else { _deletingAttIdx = idx; renderAttachments(); }
     });
 
-    row.querySelector('.att-info').addEventListener('click', () => {
-      if (_deletingAttIdx !== null) { _deletingAttIdx = null; renderAttachments(); return; }
+    // Перегляд по кліку на іконку типу
+    row.querySelector('.att-type-icon').addEventListener('click', e => {
+      e.stopPropagation();
       if (att.dataUrl) {
-        // Відкриваємо в новому вікні
         const w = window.open('', '_blank');
         if (w) {
           w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">
@@ -2099,44 +2123,61 @@ window.showControlScreen = function() {
   showControlModal(controlled, `Контроль — Протокол № ${currentMeeting.number} (${controlled.length})`);
 };
 
-function showControlModal(items, title) {
-  if (items.length === 0) { showToast('Немає пунктів на контролі'); return; }
+// ── ЄДИНА ФУНКЦІЯ МОДАЛКИ ──
+function createModal(title, iconHTML = '') {
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
   const box = document.createElement('div');
-  box.style.cssText = 'background:white;border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:75vh;overflow-y:auto;';
-  const t = document.createElement('div');
-  t.style.cssText = 'font-size:15px;font-weight:700;color:#2D2D2D;margin-bottom:12px;display:flex;align-items:center;gap:8px;';
-  t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="#C17058" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#C17058" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#C17058" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#C17058"/></svg>${title}`;
-  box.appendChild(t);
-  items.forEach(it => {
+  box.style.cssText = `background:white;border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:78vh;overflow-y:auto;font-family:'Arsenal',Arial,sans-serif;`;
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'font-size:16px;font-weight:700;color:#2D2D2D;margin-bottom:14px;display:flex;align-items:center;gap:8px;';
+  hdr.innerHTML = iconHTML + esc(title);
+  box.appendChild(hdr);
+  overlay.appendChild(box);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.documentElement.appendChild(overlay);
+
+  function addCloseBtn(label = 'Закрити') {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = `width:100%;padding:11px;margin-top:12px;border-radius:10px;border:1px solid #EBEBEB;background:#F9FAFB;color:#6B6B6B;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
+    btn.addEventListener('click', () => overlay.remove());
+    box.appendChild(btn);
+    return btn;
+  }
+
+  function addActionBtn(label, bg, color) {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:${bg};color:${color};font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
+    box.appendChild(btn);
+    return btn;
+  }
+
+  function addRow(html) {
     const row = document.createElement('div');
     row.style.cssText = 'padding:8px 0;border-bottom:1px solid #EBEBEB;';
-    row.innerHTML = `
-      <div style="font-size:9px;color:#C17058;font-weight:700;">${it.meetingNum ? `Протокол №${it.meetingNum} · ` : ''}Пункт ${it.number}</div>
-      <div style="font-size:11px;font-weight:700;color:#2D2D2D;margin-top:1px;">${esc(it.description||'—')}</div>
-      ${it.executor ? `<div style="font-size:10px;color:#6B6B6B;">${esc(it.executor)}</div>` : ''}`;
+    row.innerHTML = html;
     box.appendChild(row);
-  });
-  const cls = document.createElement('button');
-  cls.textContent = 'Закрити';
-  cls.style.cssText = 'width:100%;padding:11px;margin-top:12px;border-radius:10px;border:1px solid #EBEBEB;background:#F9FAFB;color:#6B6B6B;font-size:13px;font-family:inherit;cursor:pointer;';
-  cls.addEventListener('click', () => overlay.remove());
-  box.appendChild(cls);
-  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
-  overlay.appendChild(box);
-  document.documentElement.appendChild(overlay);
+    return row;
+  }
+
+  return { overlay, box, addCloseBtn, addActionBtn, addRow, close: () => overlay.remove() };
 }
 
-window.leavePrintScreen = function() {
-  // Відновлюємо заборону zoom при виході
-  document.querySelector('meta[name=viewport]').content =
-    'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
-  showScreen('screen-meeting');
-};
-window.executePrint = function() { window.print(); };
+function showControlModal(items, title) {
+  if (items.length === 0) { showToast('Немає пунктів на контролі'); return; }
+  const ctrlSVG = `<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="#C17058" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#C17058" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#C17058" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#C17058"/></svg>`;
+  const { addRow, addCloseBtn } = createModal(title, ctrlSVG);
+  items.forEach(it => {
+    addRow(`
+      <div style="font-size:9px;color:#C17058;font-weight:700;">${it.meetingNum ? `Протокол №${it.meetingNum} · ` : ''}Пункт ${it.number}</div>
+      <div style="font-size:12px;font-weight:700;color:#2D2D2D;margin-top:2px;">${esc(it.description||'—')}</div>
+      ${it.executor ? `<div style="font-size:11px;color:#6B6B6B;margin-top:1px;">${esc(it.executor)}</div>` : ''}`);
+  });
+  addCloseBtn();
+}
 
-// ── ПОДІЛИТИСЬ ──
 window.shareMeeting = function() {
   const displayName = currentProject.officialName || currentProject.name || '';
   const meetingNum  = currentMeeting.number;
@@ -2159,77 +2200,34 @@ window.shareMeeting = function() {
   if (localAttendees.length > 0) {
     text += `\nПРИСУТНІ: ${localAttendees.map(a => a.name).join(', ')}`;
   }
-  window._shareText    = text;
-  window._shareWhatsapp = whatsapp;
 
-  // Показуємо модалку
-  const overlay = document.createElement('div');
-  overlay.className = 'share-overlay';
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
-
-  const box = document.createElement('div');
-  box.style.cssText = 'background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;';
-
-  const makeBtn = (id, bg, color, label) => {
-    const b = document.createElement('button');
-    b.id = id;
-    b.textContent = label;
-    b.style.cssText = `width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:${bg};color:${color};font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;`;
-    return b;
-  };
-
-  const title = document.createElement('div');
-  title.textContent = '📤 Поділитись протоколом';
-  title.style.cssText = 'font-size:17px;font-weight:700;color:#1e3a5f;text-align:center;margin-bottom:16px;';
-  box.appendChild(title);
-
-  if (whatsapp) {
-    box.appendChild(makeBtn('sh-whatsapp', '#25D366', 'white', '📱 WhatsApp група'));
-  }
-  box.appendChild(makeBtn('sh-viber',  '#7360f2', 'white',   '📱 Viber'));
-  box.appendChild(makeBtn('sh-sms',    '#16a34a', 'white',   '💬 SMS'));
-  box.appendChild(makeBtn('sh-other',  '#f1f5f9', '#475569', '📤 Інший месенджер'));
-  box.appendChild(makeBtn('sh-cancel', '#f1f5f9', '#94a3b8', 'Скасувати'));
-
-  const hint = document.createElement('div');
-  hint.textContent = 'Натискання відкриє відповідний додаток';
-  hint.style.cssText = 'font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;';
-  box.appendChild(hint);
-
-  overlay.appendChild(box);
-  document.documentElement.appendChild(overlay);
-
+  const { addActionBtn, addCloseBtn, close } = createModal('Поділитись протоколом', '📤 ');
   const enc = encodeURIComponent(text);
 
-  const close = () => overlay.remove();
-
-  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-  box.querySelector('#sh-cancel').addEventListener('click', close);
-
   if (whatsapp) {
-    box.querySelector('#sh-whatsapp').addEventListener('click', () => {
-      window.open(whatsapp.includes('chat.whatsapp.com') ? whatsapp : `https://wa.me/?text=${enc}`, '_blank');
-      close();
-    });
+    const wb = addActionBtn('📱 WhatsApp група', '#25D366', 'white');
+    wb.addEventListener('click', () => { window.open(whatsapp.includes('chat.whatsapp.com') ? whatsapp : `https://wa.me/?text=${enc}`, '_blank'); close(); });
   }
-  box.querySelector('#sh-viber').addEventListener('click', () => {
-    window.open(`viber://forward?text=${enc}`, '_blank');
+  const vb = addActionBtn('📱 Viber', '#7360f2', 'white');
+  vb.addEventListener('click', () => { window.open(`viber://forward?text=${enc}`, '_blank'); close(); });
+  const sb = addActionBtn('💬 SMS', '#16a34a', 'white');
+  sb.addEventListener('click', () => { window.open(`sms:?body=${enc}`, '_blank'); close(); });
+  const ob = addActionBtn('📤 Інший месенджер', '#F9FAFB', '#475569');
+  ob.style.border = '1px solid #EBEBEB';
+  ob.addEventListener('click', () => {
+    if (navigator.share) { navigator.share({ title: `Протокол №${meetingNum}`, text }).catch(() => {}); }
+    else { navigator.clipboard?.writeText(text); showToast('📋 Текст скопійовано'); }
     close();
   });
-  box.querySelector('#sh-sms').addEventListener('click', () => {
-    window.open(`sms:?body=${enc}`, '_blank');
-    close();
-  });
-  box.querySelector('#sh-other').addEventListener('click', () => {
-    if (navigator.share) {
-      navigator.share({ title: `Протокол №${meetingNum}`, text }).catch(() => {});
-    } else {
-      navigator.clipboard?.writeText(text);
-      showToast('📋 Текст скопійовано');
-    }
-    close();
-  });
+  addCloseBtn('Скасувати');
 };
+
+window.leavePrintScreen = function() {
+  document.querySelector('meta[name=viewport]').content =
+    'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
+  showScreen('screen-meeting');
+};
+window.executePrint = function() { window.print(); };
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
 async function checkDailyControl() {
