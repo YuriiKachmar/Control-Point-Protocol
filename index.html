@@ -319,7 +319,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 #protocol-doc .sig-line { border-bottom:1px solid #000; width:120px; text-align:center; font-size:7.5pt; color:#aaa; padding-top:20px; }
 
 @media print {
-  @page { size: A4 portrait; margin: 20mm 10mm 20mm 25mm; }
+  @page { size: A4 portrait; margin: 0; }
   body { background: white !important; }
   body > *:not(#screen-print) { display: none !important; }
   #screen-print { display: flex !important; height: auto !important; }
@@ -337,6 +337,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     box-shadow: none !important;
     transform: none !important;
     margin: 0 !important;
+  }
+  .photo-page > div {
+    page-break-before: always;
+    padding: 20mm 25mm !important;
   }
 }
 .ctrl-btn {
@@ -1780,33 +1784,30 @@ window.printMeeting = async function() {
 
   // Завантажуємо додатки
   let attachmentsHTML = '';
+  let photoPages = '';
   try {
     const uid = currentUser.uid;
     const aSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'));
     if (!aSnap.empty) {
       const attList = aSnap.docs.map((d,i) => ({ num: i+1, ...d.data() }));
-      // Список в протоколі
-      const attRows = attList.map(a => `<tr>
-        <td style="padding:4px 8px;border:1px solid #e5e7eb;font-size:9.5pt;white-space:nowrap;">Додаток ${a.num}</td>
-        <td style="padding:4px 8px;border:1px solid #e5e7eb;font-size:9.5pt;">${esc(a.description||a.name||'')}</td>
-      </tr>`).join('');
+      // Список в протоколі — без таблиці
+      const attRows = attList.map(a =>
+        `<div style="font-size:9.5pt;padding:2px 0;"><strong>Додаток ${a.num}</strong> — ${esc(a.description||a.name||'')}</div>`
+      ).join('');
       attachmentsHTML = `
     <div class="att-section">
       <div class="att-title">Додатки:</div>
-      <table style="width:100%;border-collapse:collapse;margin-top:6px;">
-        <colgroup><col style="width:140px"><col></colgroup>
-        <tbody>${attRows}</tbody>
-      </table>
+      <div style="margin-top:5px;">${attRows}</div>
     </div>`;
-      // Окремі аркуші для фото
+      // Окремі аркуші для фото — поза #protocol-doc
       for (const a of attList) {
         if (a.type?.startsWith('image') && a.dataUrl) {
-          attachmentsHTML += `
-    <div style="page-break-before:always;padding:20mm 15mm;font-family:'Arsenal',Arial,sans-serif;">
-      <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
-      ${a.description ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
-      <img src="${a.dataUrl}" style="width:100%;max-height:220mm;object-fit:contain;display:block;">
-    </div>`;
+          photoPages += `
+<div style="page-break-before:always;padding:20mm 25mm;font-family:'Arsenal',Arial,sans-serif;background:white;">
+  <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
+  ${a.description ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
+  <img src="${a.dataUrl}" style="width:100%;max-height:220mm;object-fit:contain;display:block;">
+</div>`;
         }
       }
     }
@@ -1840,8 +1841,19 @@ window.printMeeting = async function() {
     ${attachmentsHTML}`;
 
   // Вставляємо в #protocol-doc
-  const doc = document.getElementById('protocol-doc');
-  if (doc) doc.innerHTML = docHTML;
+  const docEl = document.getElementById('protocol-doc');
+  if (docEl) docEl.innerHTML = docHTML;
+
+  // Фото аркуші — після #protocol-doc поза його межами
+  const area = document.getElementById('print-preview-area');
+  // Видаляємо старі фото аркуші
+  area.querySelectorAll('.photo-page').forEach(el => el.remove());
+  if (photoPages) {
+    const photoWrap = document.createElement('div');
+    photoWrap.className = 'photo-page';
+    photoWrap.innerHTML = photoPages;
+    area.appendChild(photoWrap);
+  }
 
   applyPaletteToHeader(document.getElementById('header-print'), currentProject.palette || TILE_COLORS[currentProject.colorIdx||0]);
   document.getElementById('print-header-sub').textContent = `Протокол № ${meetingNum}`;
