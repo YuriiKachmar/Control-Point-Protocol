@@ -762,11 +762,11 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
         <div class="settings-card" style="margin-top:8px;">
           <div class="executor-new-grid">
             <div class="executor-new-left">
-              <input type="text" id="new-exec-name" placeholder="ПІБ..." style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
-              <input type="tel"  id="new-exec-phone" placeholder="Телефон" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;margin-top:6px;">
+              <input type="text" id="new-exec-name" placeholder="ПІБ..." autocomplete="off" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
+              <input type="tel"  id="new-exec-phone" placeholder="Телефон" autocomplete="off" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;margin-top:6px;">
             </div>
             <div class="executor-new-right">
-              <input type="email" id="new-exec-email" placeholder="Email" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
+              <input type="email" id="new-exec-email" placeholder="Email" autocomplete="off" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
             </div>
           </div>
         </div>
@@ -1661,27 +1661,34 @@ window.toggleAddExecutor = function() {
   const wrap = document.getElementById('executor-new-wrap');
   const isOpen = wrap.style.display !== 'none';
   if (isOpen) {
+    // Закриваємо тільки якщо поля порожні
+    const name = document.getElementById('new-exec-name')?.value.trim();
+    if (name) {
+      // Є дані — зберігаємо
+      saveNewExecutorForProject(_fixedProjectId);
+      return;
+    }
     wrap.style.display = 'none';
-  } else {
-    wrap.style.display = 'block';
-    document.getElementById('new-exec-name').value  = '';
-    document.getElementById('new-exec-phone').value = '';
-    document.getElementById('new-exec-email').value = '';
-    // Фіксуємо projectId в момент відкриття форми
-    const fixedProjectId = currentProject.id;
-    const nameInput  = document.getElementById('new-exec-name');
-    const phoneInput = document.getElementById('new-exec-phone');
-    const emailInput = document.getElementById('new-exec-email');
-    nameInput.onkeydown  = e => { if (e.key === 'Enter') phoneInput.focus(); };
-    phoneInput.onkeydown = e => { if (e.key === 'Enter') emailInput.focus(); };
-    emailInput.onblur = () => setTimeout(() => saveNewExecutorForProject(fixedProjectId), 150);
-    setTimeout(() => nameInput.focus(), 50);
+    return;
   }
+  wrap.style.display = 'block';
+  document.getElementById('new-exec-name').value  = '';
+  document.getElementById('new-exec-phone').value = '';
+  document.getElementById('new-exec-email').value = '';
+  _fixedProjectId = currentProject.id;
+  const nameInput  = document.getElementById('new-exec-name');
+  const phoneInput = document.getElementById('new-exec-phone');
+  const emailInput = document.getElementById('new-exec-email');
+  nameInput.onkeydown  = e => { if (e.key === 'Enter') phoneInput.focus(); };
+  phoneInput.onkeydown = e => { if (e.key === 'Enter') emailInput.focus(); };
+  emailInput.onblur = () => setTimeout(() => saveNewExecutorForProject(_fixedProjectId), 150);
+  setTimeout(() => nameInput.focus(), 50);
 };
 
 function attachExecutorBlur() { /* не потрібно — логіка в toggleAddExecutor */ }
 
 let _savingExecutor = false;
+let _fixedProjectId = null;
 async function saveNewExecutorForProject(projectId) {
   if (_savingExecutor) return;
   const name  = document.getElementById('new-exec-name')?.value.trim();
