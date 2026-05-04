@@ -1468,9 +1468,11 @@ document.addEventListener('touchstart', e => {
 }, {passive:true});
 
 window.leaveProjectSettings = function() {
-  // Застосовуємо поточну палітру до хедерів екранів 2 і 3
   const palette = currentProject.palette || TILE_COLORS[currentProject.colorIdx||0];
   applyPaletteToHeader(document.getElementById('header-project'), palette);
+  // Оновлюємо список протоколів і плитки
+  loadMeetings();
+  loadProjects();
   showScreen('screen-project');
 };
 function applyPaletteToHeader(hdr, palette) {
@@ -1542,8 +1544,9 @@ async function saveBasicData() {
     currentProject.officialName  = officialName;
     currentProject.whatsappGroup = whatsappGroup;
     document.getElementById('project-header-name').textContent = name;
+    document.getElementById('ps-header-sub').textContent = name;
     showToast('✓ Збережено');
-    loadProjects();
+    // Не викликаємо loadProjects() — оновимо при поверненні
   } catch(e) { console.warn('Save basic data error:', e); }
 }
 
