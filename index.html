@@ -319,7 +319,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 #protocol-doc .sig-line { border-bottom:1px solid #000; width:120px; text-align:center; font-size:7.5pt; color:#aaa; padding-top:20px; }
 
 @media print {
-  @page { size: A4 portrait; margin: 0; }
+  @page { size: A4 portrait; margin: 20mm 10mm 20mm 25mm; }
   body { background: white !important; }
   body > *:not(#screen-print) { display: none !important; }
   #screen-print { display: flex !important; height: auto !important; }
@@ -338,10 +338,29 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     transform: none !important;
     margin: 0 !important;
   }
-  .photo-page > div {
+  .photo-page { display: block !important; }
+  .photo-page-item {
     page-break-before: always;
-    padding: 20mm 25mm !important;
+    break-before: page;
+    padding: 0 !important;
   }
+  .photo-page-item:first-child {
+    page-break-before: always;
+    break-before: page;
+  }
+}
+
+/* Фото аркуші в preview */
+.photo-page { display: block; }
+.photo-page-item {
+  width: 794px;
+  min-height: 1123px;
+  background: white;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+  padding: 76px 38px 76px 95px;
+  margin: 20px auto 0;
+  box-sizing: border-box;
+  font-family: 'Arsenal', Arial, sans-serif;
 }
 .ctrl-btn {
   display: flex; align-items: center; justify-content: center;
@@ -1802,10 +1821,10 @@ window.printMeeting = async function() {
       // Окремі аркуші для фото — кожне фото = окремий аркуш
       for (const a of attList) {
         if (a.type?.startsWith('image') && a.dataUrl) {
-          photoPages += `<div style="page-break-before:always;break-before:page;padding:20mm 25mm;font-family:'Arsenal',Arial,sans-serif;background:white;min-height:297mm;box-sizing:border-box;">
+          photoPages += `<div class="photo-page-item">
   <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
   ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
-  <img src="${a.dataUrl}" style="width:100%;max-height:220mm;object-fit:contain;display:block;">
+  <img src="${a.dataUrl}" style="width:100%;max-height:180mm;object-fit:contain;display:block;">
 </div>`;
         }
       }
@@ -1845,7 +1864,6 @@ window.printMeeting = async function() {
 
   // Фото аркуші — після #protocol-doc поза його межами
   const area = document.getElementById('print-preview-area');
-  // Видаляємо старі фото аркуші
   area.querySelectorAll('.photo-page').forEach(el => el.remove());
   if (photoPages) {
     const photoWrap = document.createElement('div');
@@ -1882,8 +1900,9 @@ window.printMeeting = async function() {
     if (!el || !area) return;
     const availW = area.clientWidth - 40;
     const elW    = 794;
+    let scale = 1;
     if (availW > 0 && availW < elW) {
-      const scale   = availW / elW;
+      scale = availW / elW;
       const origH   = el.scrollHeight;
       const scaledH = origH * scale;
       el.style.transform       = `scale(${scale})`;
@@ -1897,6 +1916,25 @@ window.printMeeting = async function() {
       el.style.marginRight  = 'auto';
       el.style.marginBottom = '20px';
     }
+    // Масштабуємо фото аркуші так само
+    area.querySelectorAll('.photo-page-item').forEach(pi => {
+      if (scale < 1) {
+        const origH   = pi.scrollHeight;
+        const scaledH = origH * scale;
+        pi.style.transform       = `scale(${scale})`;
+        pi.style.transformOrigin = 'top center';
+        pi.style.marginLeft      = `${(elW * (1 - scale)) / -2}px`;
+        pi.style.marginRight     = `${(elW * (1 - scale)) / -2}px`;
+        pi.style.marginTop       = '0';
+        pi.style.marginBottom    = `${scaledH - origH + 20}px`;
+      } else {
+        pi.style.transform    = 'none';
+        pi.style.marginLeft   = 'auto';
+        pi.style.marginRight  = 'auto';
+        pi.style.marginTop    = '20px';
+        pi.style.marginBottom = '20px';
+      }
+    });
   }
   setTimeout(applyScale, 50);
   setTimeout(applyScale, 300);
