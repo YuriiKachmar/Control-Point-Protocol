@@ -1728,7 +1728,7 @@ window.deleteExecutor = async function(idx) {
 // ── ДРУК ──
 let _printHTML = '';
 
-window.printMeeting = function() {
+window.printMeeting = async function() {
   autoBackup('друк-' + currentMeeting.number);
 
   const displayName = esc(currentProject.officialName || currentProject.name || '');
