@@ -1521,6 +1521,9 @@ window.openProjectSettings = async function() {
     picker.appendChild(dot);
   });
   showScreen('screen-project-settings');
+  await loadExecutorsLocal();
+  deletingExecutorIdx = null;
+  renderExecutors();
   attachExecutorBlur();
 
   // Автозбереження основних даних при виході з поля
