@@ -294,7 +294,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 #protocol-doc .doc-title { text-align:center; font-size:13pt; font-weight:700; text-transform:uppercase; margin-bottom:6px; }
 #protocol-doc .doc-sub { text-align:center; font-size:9.5pt; margin-bottom:14px; line-height:1.6; }
 #protocol-doc .doc-meta { display:flex; justify-content:space-between; font-size:9.5pt; margin-bottom:14px; padding-bottom:8px; }
-#protocol-doc .sig-section { margin-top:16px; padding-top:10px; }
+#protocol-doc .att-section { margin-top:16px; padding-top:10px; border-top:1px solid #e5e7eb; }
+#protocol-doc .att-title { font-weight:700; font-size:9.5pt; margin-bottom:4px; }
 #protocol-doc .sig-title { font-weight:700; font-size:9.5pt; margin-bottom:8px; }
 #protocol-doc .sig-row { display:flex; align-items:flex-end; gap:8px; padding:7px 0; border-bottom:1px solid #eee; }
 #protocol-doc .sig-row:last-child { border-bottom:none; }
@@ -1758,6 +1759,30 @@ window.printMeeting = function() {
           <div class="sig-line">дата</div>
         </div>`).join('');
 
+  // Завантажуємо додатки
+  let attachmentsHTML = '';
+  try {
+    const uid = currentUser.uid;
+    const aSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'));
+    if (!aSnap.empty) {
+      const attRows = aSnap.docs.map((d, i) => {
+        const a = d.data();
+        return `<tr>
+          <td style="padding:4px 8px;border:1px solid #e5e7eb;font-size:9.5pt;white-space:nowrap;">Додаток ${i+1}</td>
+          <td style="padding:4px 8px;border:1px solid #e5e7eb;font-size:9.5pt;">${esc(a.description||a.name||'')}</td>
+        </tr>`;
+      }).join('');
+      attachmentsHTML = `
+    <div class="att-section">
+      <div class="att-title">Додатки:</div>
+      <table style="width:100%;border-collapse:collapse;margin-top:6px;">
+        <colgroup><col style="width:140px"><col></colgroup>
+        <tbody>${attRows}</tbody>
+      </table>
+    </div>`;
+    }
+  } catch(e) { console.warn(e); }
+
   const docHTML = `
     <div class="doc-title">Протокол наради №${meetingNum}</div>
     <div class="doc-sub">
@@ -1782,7 +1807,8 @@ window.printMeeting = function() {
     <div class="sig-section">
       <div class="sig-title">Погоджено та затверджено присутніми:</div>
       ${sigs}
-    </div>`;
+    </div>
+    ${attachmentsHTML}`;
 
   // Вставляємо в #protocol-doc
   const doc = document.getElementById('protocol-doc');
