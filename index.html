@@ -326,6 +326,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   .app-header, #float-print-btn { display: none !important; }
   #print-preview-area {
     padding: 0 !important;
+    margin: 0 !important;
     background: white !important;
     overflow: visible !important;
     display: block !important;
@@ -338,15 +339,21 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     transform: none !important;
     margin: 0 !important;
   }
-  .photo-page { display: block !important; }
+  .photo-page {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
   .photo-page-item {
     page-break-before: always;
     break-before: page;
+    width: 100% !important;
+    min-height: auto !important;
     padding: 0 !important;
-  }
-  .photo-page-item:first-child {
-    page-break-before: always;
-    break-before: page;
+    box-shadow: none !important;
+    transform: none !important;
+    margin: 0 !important;
+    background: white !important;
   }
 }
 
