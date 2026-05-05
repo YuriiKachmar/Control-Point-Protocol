@@ -678,7 +678,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="proto-block-head"><span id="attachments-title">📎 Додатки до протоколу</span></div>
     <div id="attachments-list"></div>
     <input type="file" id="att-file-input" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;">
-    <button class="center-btn blue" id="add-att-btn" onclick="openAddAttachment()">＋</button>
+    <button class="center-btn blue" onclick="openAddAttachment()">＋</button>
 
     <div class="block-divider"></div>
 
@@ -1038,8 +1038,7 @@ async function loadMeetings() {
     return;
   }
   list.innerHTML = '';
-  list.innerHTML = '';
-  for (const d of snap.docs) {
+  const ctrlSvg
     const m = d.data();
     // Рахуємо пункти на контролі напряму
     const uid2 = currentUser.uid;
@@ -1776,8 +1775,6 @@ window.deleteExecutor = async function(idx) {
   } catch(e) { showToast('Помилка видалення'); }
 };
 // ── ДРУК ──
-let _printHTML = '';
-
 window.printMeeting = async function() {
   autoBackup('друк-' + currentMeeting.number);
 
@@ -1949,8 +1946,7 @@ window.printMeeting = async function() {
   window.addEventListener('resize', applyScale);
 };
 
-// Контроль — всі протоколи об'єкту
-// ══ ДОДАТКИ ══
+// ── ДОДАТКИ ══
 let _deletingAttIdx = null;
 
 async function loadAttachmentsLocal() {
@@ -2440,7 +2436,6 @@ window.leavePrintScreen = function() {
     'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
   showScreen('screen-meeting');
 };
-window.executePrint = function() { window.print(); };
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
 async function checkDailyControl() {
