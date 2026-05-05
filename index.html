@@ -2253,8 +2253,93 @@ function showControlModal(items, title) {
   addCloseBtn();
 }
 
-// ── ГЕНЕРАЦІЯ PDF (тихо, без відкриття попереднього перегляду) ──
-async function generatePDF() {
+// ── ГЕНЕРАЦІЯ PDF ──
+async function generatePDF(statusCallback) {
+  if (statusCallback) statusCallback('⏳ Підготовка документу...');
+
+  // Формуємо той самий HTML що і для попереднього перегляду
+  const displayName = esc(currentProject.officialName || currentProject.name || '');
+  const address     = esc(currentProject.address || '');
+  const meetingNum  = currentMeeting.number || '—';
+  const meetingDate = formatDateFull(currentMeeting.date);
+  const meetingLoc  = esc(currentMeeting.location || '');
+
+  const rows = localItems.length === 0
+    ? `<tr><td colspan="5" style="padding:10px;text-align:center;color:#999;">Пунктів немає</td></tr>`
+    : localItems.map((it, i) => `<tr>
+        <td style="text-align:center;${i%2?'background:#f8f8f8;':''}">${it.number}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.description||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.executor||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.decision||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.note||'')}</td>
+      </tr>`).join('');
+
+  const sigs = localAttendees.length === 0 ? '' : localAttendees.map(a => `
+    <div style="display:flex;align-items:flex-end;gap:8px;padding:7px 0;border-bottom:1px solid #eee;">
+      <div style="flex:1;"><div style="font-weight:700;font-size:9.5pt;">${esc(a.name||'')}</div><div style="color:#555;font-size:8pt;">${esc(a.role||'')}</div></div>
+      <div style="border-bottom:1px solid #000;width:120px;padding-top:20px;text-align:center;font-size:7pt;color:#aaa;">підпис</div>
+      <div style="border-bottom:1px solid #000;width:90px;padding-top:20px;text-align:center;font-size:7pt;color:#aaa;">дата</div>
+    </div>`).join('');
+
+  let attachHTML = '';
+  let photoPagesHTML = '';
+  try {
+    const uid = currentUser.uid;
+    const aSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'));
+    if (!aSnap.empty) {
+      const attList = aSnap.docs.map((d,i) => ({ num: i+1, ...d.data() }));
+      attachHTML = `<div style="margin-top:16px;border-top:1px solid #e5e7eb;padding-top:10px;">
+        <div style="font-weight:700;font-size:9.5pt;margin-bottom:4px;">Додатки:</div>
+        ${attList.map(a => `<div style="font-size:9.5pt;padding:2px 0;"><strong>Додаток ${a.num}</strong> — ${esc(a.description||a.name||'')}</div>`).join('')}
+      </div>`;
+      for (const a of attList) {
+        if (a.type?.startsWith('image') && a.dataUrl) {
+          photoPagesHTML += `<div style="page-break-before:always;">
+            <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
+            ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:8px;">${esc(a.description)}</div>` : ''}
+            <img src="${a.dataUrl}" style="width:100%;max-height:230mm;object-fit:contain;display:block;">
+          </div>`;
+        }
+      }
+    }
+  } catch(e) { console.warn(e); }
+
+  const fullHTML = `<!DOCTYPE html><html><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Arsenal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+      * { box-sizing:border-box; margin:0; padding:0; }
+      body { font-family:'Arsenal',Arial,sans-serif; font-size:10pt; color:#000; }
+      @page { size:A4 portrait; margin:20mm 10mm 20mm 25mm; }
+      table { width:100%; border-collapse:collapse; table-layout:fixed; }
+      th { background:#2D2D2D!important; color:white!important; padding:5px 8px; text-align:left; font-size:8.5pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+      td { padding:5px 8px; border:1px solid #ccc; vertical-align:top; font-size:9.5pt; }
+      tr:nth-child(even) td { background:#f8f8f8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    </style>
+  </head><body>
+    <div style="text-align:center;font-size:13pt;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Протокол наради №${meetingNum}</div>
+    <div style="text-align:center;font-size:9.5pt;margin-bottom:14px;line-height:1.6;">Щодо ходу робіт на об'єкті:<br><strong>${displayName}</strong>${address?'<br>'+address:''}</div>
+    <div style="display:flex;justify-content:space-between;font-size:9.5pt;margin-bottom:14px;padding-bottom:8px;">
+      <span>${meetingDate}</span><span>${meetingLoc}</span>
+    </div>
+    <table style="margin-bottom:18px;">
+      <colgroup><col style="width:32px"><col><col style="width:18%"><col style="width:27%"><col style="width:13%"></colgroup>
+      <thead><tr><th>№</th><th>Опис / питання</th><th>Виконавець</th><th>Прийняте рішення</th><th>Примітка</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div style="margin-top:16px;padding-top:10px;">
+      <div style="font-weight:700;font-size:9.5pt;margin-bottom:8px;">Погоджено та затверджено присутніми:</div>
+      ${sigs}
+    </div>
+    ${attachHTML}
+    ${photoPagesHTML}
+  </body></html>`;
+
+  if (statusCallback) statusCallback('⏳ Генерується PDF...');
+
+  // Відкриваємо в новому вікні і друкуємо
+  return { html: fullHTML, filename: `Протокол_№${meetingNum}.pdf` };
+}
   const displayName = esc(currentProject.officialName || currentProject.name || '');
   const address     = esc(currentProject.address || '');
   const meetingNum  = currentMeeting.number || '—';
@@ -2363,104 +2448,59 @@ async function generatePDF() {
 }
 
 window.shareMeeting = async function() {
-  const whatsapp = currentProject.whatsappGroup || '';
+  const whatsapp   = currentProject.whatsappGroup || '';
   const meetingNum = currentMeeting.number;
 
   const { box, addCloseBtn, close } = createModal('Поділитись протоколом', '📤 ');
 
-  // Статус генерації
   const status = document.createElement('div');
-  status.style.cssText = 'font-size:12px;color:#6B6B6B;text-align:center;margin-bottom:12px;';
-  status.textContent = 'Оберіть спосіб надсилання:';
+  status.style.cssText = 'font-size:12px;color:#6B6B6B;text-align:center;padding:4px 0 8px;';
+  status.textContent = 'Оберіть спосіб:';
   box.appendChild(status);
 
-  async function getPDF(btn) {
+  function makeBtn(label, bg, color) {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:${bg};color:${color};font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
+    box.appendChild(b);
+    return b;
+  }
+
+  async function openPDF(btn) {
     btn.disabled = true;
     btn.style.opacity = '0.6';
-    status.textContent = '⏳ Генерується PDF...';
     try {
-      const blob = await generatePDF();
-      return blob;
+      const { html, filename } = await generatePDF(t => { status.textContent = t; });
+      // Відкриваємо HTML в новому вікні — браузер рендерить як друкований документ
+      const w = window.open('', '_blank');
+      if (!w) { showToast('Дозвольте спливаючі вікна'); return; }
+      w.document.write(html);
+      w.document.close();
+      // На мобільному — Share через PDF print
+      if (navigator.share) {
+        status.textContent = '✅ Документ відкрито — збережіть як PDF і поділіться';
+      } else {
+        status.textContent = '✅ Документ відкрито — збережіть як PDF';
+      }
     } catch(e) {
-      status.textContent = '❌ Помилка генерації PDF';
-      btn.disabled = false;
-      btn.style.opacity = '1';
-      throw e;
+      console.error(e);
+      status.textContent = '❌ Помилка';
     }
+    btn.disabled = false;
+    btn.style.opacity = '1';
   }
 
-  async function shareOrDownload(blob) {
-    const file = new File([blob], `Протокол_№${meetingNum}.pdf`, { type: 'application/pdf' });
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      // Мобільний — системний Share Sheet
-      await navigator.share({ files: [file], title: `Протокол №${meetingNum}` });
-    } else {
-      // Комп'ютер — завантаження файлу
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `Протокол_№${meetingNum}.pdf`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('PDF завантажено — прикріпіть до месенджера');
-    }
-    close();
-  }
-
-  // Кнопки
   if (whatsapp) {
-    const wb = document.createElement('button');
-    wb.textContent = '📱 WhatsApp група';
-    wb.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:#25D366;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
+    const wb = makeBtn('📱 WhatsApp група', '#25D366', 'white');
     wb.addEventListener('click', async () => {
-      try {
-        const blob = await getPDF(wb);
-        const file = new File([blob], `Протокол_№${meetingNum}.pdf`, { type: 'application/pdf' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: `Протокол №${meetingNum}` });
-        } else {
-          // На комп'ютері — завантажуємо і відкриваємо групу
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url; a.download = `Протокол_№${meetingNum}.pdf`;
-          a.click();
-          setTimeout(() => { URL.revokeObjectURL(url); window.open(whatsapp, '_blank'); }, 500);
-          showToast('PDF завантажено — прикріпіть в групу');
-        }
-        close();
-      } catch(e) { console.warn(e); }
+      await openPDF(wb);
+      window.open(whatsapp, '_blank');
     });
-    box.appendChild(wb);
   }
 
-  const shareBtn = document.createElement('button');
-  shareBtn.textContent = '📤 Поділитись PDF';
-  shareBtn.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:#2D2D2D;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
-  shareBtn.addEventListener('click', async () => {
-    try {
-      const blob = await getPDF(shareBtn);
-      await shareOrDownload(blob);
-    } catch(e) { console.warn(e); }
-  });
-  box.appendChild(shareBtn);
+  const shareBtn = makeBtn('📄 Відкрити PDF документ', '#2D2D2D', 'white');
+  shareBtn.addEventListener('click', () => openPDF(shareBtn));
 
-  const dlBtn = document.createElement('button');
-  dlBtn.textContent = '💾 Завантажити PDF';
-  dlBtn.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:#F9FAFB;color:#2D2D2D;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;border:1px solid #EBEBEB;`;
-  dlBtn.addEventListener('click', async () => {
-    try {
-      const blob = await getPDF(dlBtn);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `Протокол_№${meetingNum}.pdf`;
-      a.click();
-      setTimeout(() => URL.revokeObjectURL(url), 1000);
-      showToast('✅ PDF завантажено');
-      close();
-    } catch(e) { console.warn(e); }
-  });
-  box.appendChild(dlBtn);
-
-  box.appendChild(status);
   addCloseBtn('Скасувати');
 };
 
