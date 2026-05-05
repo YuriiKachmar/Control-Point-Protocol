@@ -2363,41 +2363,75 @@ window.shareMeeting = async function() {
     return b;
   }
 
-  async function openPDF(btn) {
-    btn.disabled = true;
-    btn.style.opacity = '0.6';
+  // Кнопка — зберегти PDF
+  const saveBtn = makeBtn('💾 Зберегти PDF', '#2D2D2D', 'white');
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    status.textContent = '⏳ Підготовка...';
     try {
-      const { html, filename } = await generatePDF(t => { status.textContent = t; });
-      // Відкриваємо HTML в новому вікні — браузер рендерить як друкований документ
+      const { html } = await generatePDF(t => { status.textContent = t; });
       const w = window.open('', '_blank');
-      if (!w) { showToast('Дозвольте спливаючі вікна'); return; }
+      if (!w) { showToast('Дозвольте спливаючі вікна в браузері'); return; }
       w.document.write(html);
       w.document.close();
-      // На мобільному — Share через PDF print
-      if (navigator.share) {
-        status.textContent = '✅ Документ відкрито — збережіть як PDF і поділіться';
+      // Підказка для iOS
+      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+      if (isIOS) {
+        status.textContent = '✅ Документ відкрито. Натисніть 📤 → Опції → PDF → Зберегти у файли';
       } else {
-        status.textContent = '✅ Документ відкрито — збережіть як PDF';
+        status.textContent = '✅ Документ відкрито. Натисніть Ctrl+P → Зберегти як PDF';
       }
     } catch(e) {
-      console.error(e);
       status.textContent = '❌ Помилка';
+      console.error(e);
     }
-    btn.disabled = false;
-    btn.style.opacity = '1';
-  }
+    saveBtn.disabled = false;
+  });
 
+  // Кнопка — WhatsApp група
   if (whatsapp) {
     const wb = makeBtn('📱 WhatsApp група', '#25D366', 'white');
     wb.addEventListener('click', async () => {
-      await openPDF(wb);
-      window.open(whatsapp, '_blank');
+      wb.disabled = true;
+      status.textContent = '⏳ Підготовка...';
+      try {
+        const { html } = await generatePDF(t => { status.textContent = t; });
+        const w = window.open('', '_blank');
+        if (!w) { showToast('Дозвольте спливаючі вікна'); return; }
+        w.document.write(html);
+        w.document.close();
+        window.open(whatsapp, '_blank');
+        status.textContent = '✅ Збережіть PDF через 📤 і прикріпіть у групу';
+      } catch(e) { status.textContent = '❌ Помилка'; }
+      wb.disabled = false;
     });
   }
 
-  const shareBtn = makeBtn('📄 Відкрити PDF документ', '#2D2D2D', 'white');
-  shareBtn.addEventListener('click', () => openPDF(shareBtn));
+  // Кнопка — поділитись через системний Share Sheet (тільки мобільний)
+  if (/iPhone|iPad|iPod|Android/.test(navigator.userAgent)) {
+    const shareBtn = makeBtn('📤 Поділитись через...', '#F9FAFB', '#2D2D2D');
+    shareBtn.style.border = '1px solid #EBEBEB';
+    shareBtn.addEventListener('click', async () => {
+      shareBtn.disabled = true;
+      status.textContent = '⏳ Підготовка...';
+      try {
+        const { html, filename } = await generatePDF(t => { status.textContent = t; });
+        const blob = new Blob([html], { type: 'text/html' });
+        const file = new File([blob], filename.replace('.pdf', '.html'), { type: 'text/html' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Протокол №' + meetingNum });
+          close();
+        } else {
+          const w = window.open('', '_blank');
+          if (w) { w.document.write(html); w.document.close(); }
+          status.textContent = '✅ Збережіть через 📤 → PDF';
+        }
+      } catch(e) { status.textContent = '❌ Помилка'; }
+      shareBtn.disabled = false;
+    });
+  }
 
+  box.appendChild(status);
   addCloseBtn('Скасувати');
 };
 
