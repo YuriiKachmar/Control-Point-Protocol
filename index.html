@@ -2093,8 +2093,8 @@ async function uploadAttachment(file) {
     const bar = document.getElementById('att-progress-bar');
     if (bar) bar.style.width = '70%';
 
-    // Запитуємо опис
-    const description = prompt(`Опис для "${file.name}" (необов'язково):`) || '';
+    // Запитуємо опис через модалку
+    const description = await askDescription(file.name);
 
     if (bar) bar.style.width = '90%';
 
@@ -2147,7 +2147,36 @@ function fileToBase64(file) {
   });
 }
 
-// ══ КОНТРОЛЬ ══
+function askDescription(fileName) {
+  return new Promise(resolve => {
+    const { box, addCloseBtn, close } = createModal('Опис додатку', '📎 ');
+
+    const fileLabel = document.createElement('div');
+    fileLabel.style.cssText = 'font-size:12px;color:#6B6B6B;margin-bottom:10px;';
+    fileLabel.textContent = fileName;
+    box.appendChild(fileLabel);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Введіть опис (необов\'язково)...';
+    input.style.cssText = `width:100%;padding:11px 12px;border:1px solid #EBEBEB;border-radius:10px;font-size:14px;font-family:'Arsenal',Arial,sans-serif;outline:none;color:#2D2D2D;margin-bottom:10px;`;
+    box.appendChild(input);
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Зберегти';
+    saveBtn.style.cssText = `width:100%;padding:12px;border-radius:10px;border:none;background:#2D2D2D;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;margin-bottom:8px;`;
+    saveBtn.addEventListener('click', () => { close(); resolve(input.value.trim()); });
+    box.appendChild(saveBtn);
+
+    const skipBtn = addCloseBtn('Пропустити');
+    skipBtn.addEventListener('click', () => resolve(''));
+
+    setTimeout(() => input.focus(), 100);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { close(); resolve(input.value.trim()); } });
+  });
+}
+
+// ══ КІНЕЦЬ ДОДАТКІВ ══
 window.showAllControlScreen = async function() {
   const uid = currentUser.uid;
   const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
