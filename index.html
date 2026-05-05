@@ -2394,57 +2394,7 @@ async function generatePDF(statusCallback) {
     }
   } catch(e) { console.warn(e); }
 
-  const fullHTML = `
-    <div style="font-family:'Arsenal',Arial,sans-serif;font-size:10pt;color:#000;">
-      <div style="text-align:center;font-size:13pt;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Протокол наради №${meetingNum}</div>
-      <div style="text-align:center;font-size:9.5pt;margin-bottom:14px;line-height:1.6;">
-        Щодо ходу робіт на об'єкті:<br><strong>${displayName}</strong>${address ? '<br>' + address : ''}
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:9.5pt;margin-bottom:14px;padding-bottom:8px;">
-        <span>${meetingDate}</span><span>${meetingLoc}</span>
-      </div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:18px;table-layout:fixed;font-size:9.5pt;">
-        <colgroup><col style="width:32px"><col><col style="width:18%"><col style="width:27%"><col style="width:13%"></colgroup>
-        <thead><tr>
-          <th style="background:#2D2D2D;color:white;padding:5px 8px;text-align:left;font-size:8.5pt;border:1px solid #2D2D2D;">№</th>
-          <th style="background:#2D2D2D;color:white;padding:5px 8px;text-align:left;font-size:8.5pt;border:1px solid #2D2D2D;">Опис / питання</th>
-          <th style="background:#2D2D2D;color:white;padding:5px 8px;text-align:left;font-size:8.5pt;border:1px solid #2D2D2D;">Виконавець</th>
-          <th style="background:#2D2D2D;color:white;padding:5px 8px;text-align:left;font-size:8.5pt;border:1px solid #2D2D2D;">Прийняте рішення</th>
-          <th style="background:#2D2D2D;color:white;padding:5px 8px;text-align:left;font-size:8.5pt;border:1px solid #2D2D2D;">Примітка</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>
-      <div style="margin-top:16px;padding-top:10px;">
-        <div style="font-weight:700;font-size:9.5pt;margin-bottom:8px;">Погоджено та затверджено присутніми:</div>
-        ${sigs}
-      </div>
-      ${attachmentsHTML}
-      ${photoPages}
-    </div>`;
-
-  // Тимчасовий div поза екраном
-  const tmpDiv = document.createElement('div');
-  tmpDiv.style.cssText = 'position:fixed;top:-9999px;left:0;width:794px;background:white;';
-  tmpDiv.innerHTML = fullHTML;
-  document.body.appendChild(tmpDiv);
-
-  const opt = {
-    margin:      [20, 10, 20, 25],
-    filename:    `Протокол_№${meetingNum}.pdf`,
-    image:       { type: 'jpeg', quality: 0.88 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
-    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak:   { mode: ['css', 'legacy'] }
-  };
-
-  try {
-    const blob = await html2pdf().set(opt).from(tmpDiv).outputPdf('blob');
-    document.body.removeChild(tmpDiv);
-    return blob;
-  } catch(e) {
-    document.body.removeChild(tmpDiv);
-    throw e;
-  }
+  return { html: fullHTML, filename: `Протокол_№${meetingNum}.pdf` };
 }
 
 window.shareMeeting = async function() {
