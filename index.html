@@ -550,6 +550,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .executor-new-right { padding: 6px 10px; }
 .exec-del { background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 2px 4px; }
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -2252,55 +2253,152 @@ function showControlModal(items, title) {
   addCloseBtn();
 }
 
-window.shareMeeting = function() {
-  const displayName = currentProject.officialName || currentProject.name || '';
-  const meetingNum  = currentMeeting.number;
-  const meetingDate = formatDateFull(currentMeeting.date);
-  const meetingLoc  = currentMeeting.location || '';
-  const whatsapp    = currentProject.whatsappGroup || '';
-
-  let text = `📋 ПРОТОКОЛ НАРАДИ №${meetingNum}\n`;
-  text += `📅 ${meetingDate}${meetingLoc ? ' · ' + meetingLoc : ''}\n`;
-  text += `🏗 ${displayName}\n\n`;
-  if (localItems.length > 0) {
-    text += `ПУНКТИ:\n`;
-    localItems.forEach(it => {
-      text += `${it.number}. ${it.description || '—'}`;
-      if (it.executor) text += ` | ${it.executor}`;
-      if (it.decision) text += ` → ${it.decision}`;
-      text += '\n';
-    });
-  }
-  if (localAttendees.length > 0) {
-    text += `\nПРИСУТНІ: ${localAttendees.map(a => a.name).join(', ')}`;
+// ── ГЕНЕРАЦІЯ PDF ──
+async function generatePDF() {
+  // Спочатку відкриваємо попередній перегляд якщо ще не відкритий
+  if (!document.getElementById('screen-print').classList.contains('active')) {
+    await printMeeting();
   }
 
-  const { addActionBtn, addCloseBtn, close } = createModal('Поділитись протоколом', '📤 ');
-  const enc = encodeURIComponent(text);
+  const area = document.getElementById('print-preview-area');
+  if (!area) throw new Error('Немає попереднього перегляду');
 
-  if (whatsapp) {
-    const wb = addActionBtn('📱 WhatsApp група', '#25D366', 'white');
-    wb.addEventListener('click', () => {
-      // Копіюємо текст і відкриваємо групу
-      navigator.clipboard?.writeText(text).catch(() => {});
-      window.open(whatsapp, '_blank');
-      showToast('📋 Текст протоколу скопійовано — вставте в повідомлення');
-      close();
-    });
-  }
-  const wt = addActionBtn('📱 WhatsApp (текст)', '#25D366', 'white');
-  wt.addEventListener('click', () => { window.open(`https://wa.me/?text=${enc}`, '_blank'); close(); });
-  const vb = addActionBtn('📱 Viber', '#7360f2', 'white');
-  vb.addEventListener('click', () => { window.open(`viber://forward?text=${enc}`, '_blank'); close(); });
-  const sb = addActionBtn('💬 SMS', '#16a34a', 'white');
-  sb.addEventListener('click', () => { window.open(`sms:?body=${enc}`, '_blank'); close(); });
-  const ob = addActionBtn('📤 Інший месенджер', '#F9FAFB', '#475569');
-  ob.style.border = '1px solid #EBEBEB';
-  ob.addEventListener('click', () => {
-    if (navigator.share) { navigator.share({ title: `Протокол №${meetingNum}`, text }).catch(() => {}); }
-    else { navigator.clipboard?.writeText(text); showToast('📋 Текст скопійовано'); }
-    close();
+  // Клонуємо вміст для генерації PDF
+  const clone = area.cloneNode(true);
+  clone.style.cssText = 'width:794px;background:white;';
+
+  // Скидаємо transform на всіх елементах
+  clone.querySelectorAll('[style*="transform"]').forEach(el => {
+    el.style.transform = 'none';
+    el.style.marginLeft = 'auto';
+    el.style.marginRight = 'auto';
+    el.style.marginBottom = '0';
   });
+
+  // Тимчасово вставляємо в DOM для рендеру
+  clone.style.position = 'fixed';
+  clone.style.top = '-9999px';
+  clone.style.left = '0';
+  document.body.appendChild(clone);
+
+  const opt = {
+    margin:      [20, 10, 20, 25], // mm: top, right, bottom, left
+    filename:    `Протокол_№${currentMeeting.number}.pdf`,
+    image:       { type: 'jpeg', quality: 0.85 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:   { mode: ['css', 'legacy'], before: '.photo-page-item' }
+  };
+
+  try {
+    const pdf = await html2pdf().set(opt).from(clone).outputPdf('blob');
+    document.body.removeChild(clone);
+    return pdf;
+  } catch(e) {
+    document.body.removeChild(clone);
+    throw e;
+  }
+}
+
+window.shareMeeting = async function() {
+  const whatsapp = currentProject.whatsappGroup || '';
+  const meetingNum = currentMeeting.number;
+
+  const { box, addCloseBtn, close } = createModal('Поділитись протоколом', '📤 ');
+
+  // Статус генерації
+  const status = document.createElement('div');
+  status.style.cssText = 'font-size:12px;color:#6B6B6B;text-align:center;margin-bottom:12px;';
+  status.textContent = 'Оберіть спосіб надсилання:';
+  box.appendChild(status);
+
+  async function getPDF(btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    status.textContent = '⏳ Генерується PDF...';
+    try {
+      const blob = await generatePDF();
+      return blob;
+    } catch(e) {
+      status.textContent = '❌ Помилка генерації PDF';
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      throw e;
+    }
+  }
+
+  async function shareOrDownload(blob) {
+    const file = new File([blob], `Протокол_№${meetingNum}.pdf`, { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      // Мобільний — системний Share Sheet
+      await navigator.share({ files: [file], title: `Протокол №${meetingNum}` });
+    } else {
+      // Комп'ютер — завантаження файлу
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `Протокол_№${meetingNum}.pdf`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('PDF завантажено — прикріпіть до месенджера');
+    }
+    close();
+  }
+
+  // Кнопки
+  if (whatsapp) {
+    const wb = document.createElement('button');
+    wb.textContent = '📱 WhatsApp група';
+    wb.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:#25D366;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
+    wb.addEventListener('click', async () => {
+      try {
+        const blob = await getPDF(wb);
+        const file = new File([blob], `Протокол_№${meetingNum}.pdf`, { type: 'application/pdf' });
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: `Протокол №${meetingNum}` });
+        } else {
+          // На комп'ютері — завантажуємо і відкриваємо групу
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = `Протокол_№${meetingNum}.pdf`;
+          a.click();
+          setTimeout(() => { URL.revokeObjectURL(url); window.open(whatsapp, '_blank'); }, 500);
+          showToast('PDF завантажено — прикріпіть в групу');
+        }
+        close();
+      } catch(e) { console.warn(e); }
+    });
+    box.appendChild(wb);
+  }
+
+  const shareBtn = document.createElement('button');
+  shareBtn.textContent = '📤 Поділитись PDF';
+  shareBtn.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:#2D2D2D;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
+  shareBtn.addEventListener('click', async () => {
+    try {
+      const blob = await getPDF(shareBtn);
+      await shareOrDownload(blob);
+    } catch(e) { console.warn(e); }
+  });
+  box.appendChild(shareBtn);
+
+  const dlBtn = document.createElement('button');
+  dlBtn.textContent = '💾 Завантажити PDF';
+  dlBtn.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:#F9FAFB;color:#2D2D2D;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;border:1px solid #EBEBEB;`;
+  dlBtn.addEventListener('click', async () => {
+    try {
+      const blob = await getPDF(dlBtn);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `Протокол_№${meetingNum}.pdf`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      showToast('✅ PDF завантажено');
+      close();
+    } catch(e) { console.warn(e); }
+  });
+  box.appendChild(dlBtn);
+
+  box.appendChild(status);
   addCloseBtn('Скасувати');
 };
 
