@@ -2280,8 +2280,16 @@ window.shareMeeting = function() {
 
   if (whatsapp) {
     const wb = addActionBtn('📱 WhatsApp група', '#25D366', 'white');
-    wb.addEventListener('click', () => { window.open(whatsapp.includes('chat.whatsapp.com') ? whatsapp : `https://wa.me/?text=${enc}`, '_blank'); close(); });
+    wb.addEventListener('click', () => {
+      // Копіюємо текст і відкриваємо групу
+      navigator.clipboard?.writeText(text).catch(() => {});
+      window.open(whatsapp, '_blank');
+      showToast('📋 Текст протоколу скопійовано — вставте в повідомлення');
+      close();
+    });
   }
+  const wt = addActionBtn('📱 WhatsApp (текст)', '#25D366', 'white');
+  wt.addEventListener('click', () => { window.open(`https://wa.me/?text=${enc}`, '_blank'); close(); });
   const vb = addActionBtn('📱 Viber', '#7360f2', 'white');
   vb.addEventListener('click', () => { window.open(`viber://forward?text=${enc}`, '_blank'); close(); });
   const sb = addActionBtn('💬 SMS', '#16a34a', 'white');
