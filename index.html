@@ -1969,13 +1969,17 @@ window.printMeeting = async function() {
           }
           const blob = pdf.output('blob');
           const file = new File([blob],'Протокол_№'+meetingNum+'.pdf',{type:'application/pdf'});
-          console.log('navigator.share:', typeof navigator.share);
-          console.log('canShare files:', navigator.canShare && navigator.canShare({files:[file]}));
-          try {
-            await navigator.share({ files: [file] });
-          } catch(e) {
-            console.error('share error:', e.name, e.message);
-            // Fallback — відкриваємо blob
+          const hasShare = typeof navigator.share === 'function';
+          const canShare = hasShare && navigator.canShare && navigator.canShare({files:[file]});
+          showToast('share:'+hasShare+' can:'+canShare, 5000);
+          if (hasShare) {
+            try {
+              await navigator.share({ files: [file] });
+            } catch(e) {
+              showToast('Помилка: '+e.name+' '+e.message, 5000);
+            }
+          } else {
+            showToast('navigator.share недоступний', 4000);
             const url = URL.createObjectURL(blob);
             window.open(url, '_blank');
             setTimeout(() => URL.revokeObjectURL(url), 15000);
