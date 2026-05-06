@@ -1097,7 +1097,8 @@ window.saveMeeting = async function() {
 
 // ── MEETING SCREEN ──
 async function openMeeting(id, data) {
-  currentMeeting = { id, ...data };
+  try {
+    currentMeeting = { id, ...data };
   const palette = currentProject.palette || { bg:'#2D2D2D', text:'#fff', sub:'#aaa' };
   const h = document.getElementById('meeting-header');
   h.style.background = palette.bg;
@@ -1122,6 +1123,7 @@ async function openMeeting(id, data) {
   renderAttendees();
   renderAttachments();
   showScreen('screen-meeting');
+  } catch(e) { showToast('Помилка: '+e.message, 5000); console.error(e); }
 }
 
 window.leaveMeeting = async function() {
