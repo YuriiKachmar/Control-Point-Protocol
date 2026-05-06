@@ -923,6 +923,10 @@ window.closeModal = id => document.getElementById(id).classList.remove('active')
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
+function ids() {
+  return { uid: currentUser.uid, pid: currentProject.id, mid: currentMeeting.id };
+}
+
 function formatDateFull(ts) {
   if (!ts) return '—';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
