@@ -81,20 +81,23 @@ const margin = 10;
 const imgW = pageW - margin * 2;
 const imgH = (canvas.height / canvas.width) * imgW;
 
-const imgData = canvas.toDataURL('image/jpeg', 0.92);
+const imgW = pageW - margin * 2;
+const scale = canvas.width / imgW; // пікселів на мм
+const pageImgPx = Math.floor((pageH - margin * 2) * scale); // висота сторінки в пікселях
+const totalPages = Math.ceil(canvas.height / pageImgPx);
 
-if (imgH <= pageH - margin * 2) {
-// Вміщується на одну сторінку
-pdf.addImage(imgData, 'JPEG', margin, margin, imgW, imgH);
-} else {
-// Розбиваємо на кілька сторінок
-let yOffset = 0;
-const pageImgH = pageH - margin * 2;
-while (yOffset < imgH) {
-if (yOffset > 0) pdf.addPage();
-pdf.addImage(imgData, 'JPEG', margin, margin, imgW, imgH, '', 'FAST', 0, -yOffset);
-yOffset += pageImgH;
-}
+for (let i = 0; i < totalPages; i++) {
+if (i > 0) pdf.addPage();
+// Ріжемо canvas на частину для цієї сторінки
+const srcY = i * pageImgPx;
+const srcH = Math.min(pageImgPx, canvas.height - srcY);
+const tmpCanvas = document.createElement('canvas');
+tmpCanvas.width = canvas.width;
+tmpCanvas.height = srcH;
+tmpCanvas.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+const sliceData = tmpCanvas.toDataURL('image/jpeg', 0.92);
+const sliceH = (srcH / scale);
+pdf.addImage(sliceData, 'JPEG', margin, margin, imgW, sliceH);
 }
 
 status('✅ PDF готовий — передаю через Share...');
