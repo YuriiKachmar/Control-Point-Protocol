@@ -1935,7 +1935,7 @@ window.printMeeting = async function() {
           el.style.boxShadow = 'none';
 
           const canvas = await window.html2canvas(el, {
-            scale: 1,
+            scale: 2,
             useCORS: true,
             backgroundColor: '#ffffff',
             logging: false,
@@ -1950,7 +1950,7 @@ window.printMeeting = async function() {
           const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
           const pageW = 210, pageH = 297, margin = 10;
           const imgW = pageW - margin * 2;
-          const scale = canvas.width / imgW;
+          const scale = canvas.width / imgW; // пікселів на мм (при scale:2 = 794*2/190)
           const pageImgPx = Math.floor((pageH - margin * 2) * scale);
           const totalPages = Math.ceil(canvas.height / pageImgPx);
 
@@ -2000,26 +2000,31 @@ window.printMeeting = async function() {
         saveBtn.disabled = true;
         saveBtn.textContent = '⏳ Генерується...';
         try {
-          const area = document.getElementById('print-preview-area');
-          const clone = area.cloneNode(true);
-          clone.style.cssText = 'width:794px;background:white;position:fixed;top:-9999px;left:0;';
-          clone.querySelectorAll('[style*="transform"]').forEach(el => {
-            el.style.transform = 'none';
-            el.style.marginLeft = 'auto';
-            el.style.marginRight = 'auto';
-            el.style.marginBottom = '20px';
-            el.style.marginTop = '20px';
-          });
-          document.body.appendChild(clone);
+          const docEl = document.getElementById('protocol-doc');
+          // Тимчасово скидаємо transform для коректного рендеру
+          const origTransform = docEl.style.transform;
+          const origMarginL   = docEl.style.marginLeft;
+          const origMarginR   = docEl.style.marginRight;
+          const origMarginB   = docEl.style.marginBottom;
+          docEl.style.transform   = 'none';
+          docEl.style.marginLeft  = 'auto';
+          docEl.style.marginRight = 'auto';
+          docEl.style.marginBottom = '0';
+
           await html2pdf().set({
             margin:      [20, 10, 20, 25],
             filename:    'Протокол_№' + meetingNum + '.pdf',
-            image:       { type: 'jpeg', quality: 0.9 },
+            image:       { type: 'jpeg', quality: 0.92 },
             html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
             jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak:   { mode: ['css', 'legacy'] }
-          }).from(clone).save();
-          document.body.removeChild(clone);
+          }).from(docEl).save();
+
+          // Відновлюємо transform
+          docEl.style.transform    = origTransform;
+          docEl.style.marginLeft   = origMarginL;
+          docEl.style.marginRight  = origMarginR;
+          docEl.style.marginBottom = origMarginB;
         } catch(e) {
           console.error(e);
           showToast('Помилка збереження PDF');
