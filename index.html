@@ -59,13 +59,25 @@ status('⏳ Рендеринг сторінки...');
 try {
 const el = document.getElementById('doc');
 
-// Рендеримо HTML в canvas — зберігає оригінальні шрифти
+// Встановлюємо фіксовану ширину A4 перед рендером
+const origStyle = el.getAttribute('style') || '';
+el.style.width = '794px';
+el.style.maxWidth = '794px';
+el.style.padding = '40px 60px';
+el.style.borderRadius = '0';
+el.style.boxShadow = 'none';
+
 const canvas = await html2canvas(el, {
-scale: 2,
+scale: 1,
 useCORS: true,
 backgroundColor: '#ffffff',
-logging: false
+logging: false,
+width: 794,
+windowWidth: 794
 });
+
+// Відновлюємо стиль
+el.setAttribute('style', origStyle);
 
 status('✅ Canvas готовий — генерую PDF...');
 
