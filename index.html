@@ -1773,6 +1773,10 @@ window.deleteExecutor = async function(idx) {
 // ── ДРУК ──
 let _printHTML = '';
 
+function loadScript(src) {
+  return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+}
+
 window.openSendScreen = async function() {
   await printMeeting();
 };
@@ -1892,8 +1896,69 @@ window.printMeeting = async function() {
     setTimeout(() => printBtn.addEventListener('click', handler), 500);
   });
 
-  // ── Кнопка ЗБЕРЕГТИ — в розробці ──
-  document.getElementById('btn-save').onclick = () => showToast('Зберегти — в розробці');
+  // ── Кнопка ЗБЕРЕГТИ ──
+  const saveBtn = document.getElementById('btn-save');
+  saveBtn.onclick = null;
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  if (isIOS) {
+    saveBtn.addEventListener('click', async () => {
+      saveBtn.disabled = true; saveBtn.textContent = '⏳...';
+      try {
+        if (!window.html2canvas) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+        if (!window.jspdf)      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+        const el = document.getElementById('protocol-doc');
+        const origStyle = el.getAttribute('style') || '';
+        el.style.cssText = 'width:794px;max-width:794px;transform:none;margin:0;box-shadow:none;padding:76px 38px 76px 95px;background:white;';
+        const canvas = await window.html2canvas(el, { scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false, width:794, windowWidth:794 });
+        el.setAttribute('style', origStyle);
+        const { jsPDF } = window.jspdf;
+        const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+        const pageW=210, pageH=297, margin=10, imgW=pageW-margin*2;
+        const scale = canvas.width / imgW;
+        const pageImgPx = Math.floor((pageH-margin*2)*scale);
+        const totalPages = Math.ceil(canvas.height/pageImgPx);
+        for (let i=0; i<totalPages; i++) {
+          if (i>0) pdf.addPage();
+          const srcY=i*pageImgPx, srcH=Math.min(pageImgPx, canvas.height-srcY);
+          const tmp=document.createElement('canvas'); tmp.width=canvas.width; tmp.height=srcH;
+          tmp.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcH,0,0,canvas.width,srcH);
+          pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,imgW,srcH/scale);
+        }
+        // Фото додатків
+        for (const [i,a] of localAttachments.entries()) {
+          if (a.type?.startsWith('image')&&a.dataUrl) {
+            pdf.addPage();
+            pdf.setFontSize(13); pdf.setFont('helvetica','bold');
+            pdf.text('Додаток '+(i+1),margin,margin+6);
+            if (a.description&&a.description!=='—') { pdf.setFontSize(10); pdf.setFont('helvetica','normal'); pdf.text(a.description,margin,margin+14); }
+            try { pdf.addImage(a.dataUrl,'JPEG',margin,margin+22,imgW,170,'','FAST'); } catch(e){}
+          }
+        }
+        const blob = pdf.output('blob');
+        const file = new File([blob],'Протокол_№'+meetingNum+'.pdf',{type:'application/pdf'});
+        try { await navigator.share({files:[file]}); } catch(e) { if(e.name!=='AbortError') showToast('Помилка: '+e.message); }
+      } catch(e) { showToast('Помилка: '+e.message); console.error(e); }
+      saveBtn.disabled=false; saveBtn.textContent='💾 Зберегти';
+    });
+  } else {
+    saveBtn.addEventListener('click', async () => {
+      saveBtn.disabled=true; saveBtn.textContent='⏳...';
+      try {
+        const el = document.getElementById('protocol-doc');
+        const origTransform=el.style.transform, origML=el.style.marginLeft, origMR=el.style.marginRight, origMB=el.style.marginBottom;
+        el.style.transform='none'; el.style.marginLeft='auto'; el.style.marginRight='auto'; el.style.marginBottom='0';
+        await html2pdf().set({
+          margin:[20,10,20,25], filename:'Протокол_№'+meetingNum+'.pdf',
+          image:{type:'jpeg',quality:0.92},
+          html2canvas:{scale:2,useCORS:true,logging:false,backgroundColor:'#ffffff'},
+          jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+          pagebreak:{mode:['css','legacy']}
+        }).from(el).save();
+        el.style.transform=origTransform; el.style.marginLeft=origML; el.style.marginRight=origMR; el.style.marginBottom=origMB;
+      } catch(e) { showToast('Помилка: '+e.message); }
+      saveBtn.disabled=false; saveBtn.textContent='💾 Зберегти';
+    });
+  }
 
   // ── Кнопка ВКЛАСТИ — в розробці ──
   document.getElementById('btn-share').onclick = () => showToast('Вкласти — в розробці');
