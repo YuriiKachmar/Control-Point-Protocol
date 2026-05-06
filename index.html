@@ -1903,7 +1903,86 @@ window.printMeeting = async function() {
     const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
     if (isIOS) {
       saveBtn.textContent = '📤 Зберегти / Поділитись';
-      saveBtn.addEventListener('click', () => window.print());
+      saveBtn.addEventListener('click', async () => {
+        saveBtn.disabled = true;
+        saveBtn.textContent = '⏳...';
+        try {
+          // Завантажуємо jsPDF динамічно
+          if (!window.jspdf) {
+            await new Promise((res, rej) => {
+              const s = document.createElement('script');
+              s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+              s.onload = res; s.onerror = rej;
+              document.head.appendChild(s);
+            });
+          }
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+          const lM=25, tM=20, w=175;
+          let y = tM;
+          const addLine = (txt, sz=10, bold=false, center=false) => {
+            pdf.setFontSize(sz); pdf.setFont('helvetica', bold?'bold':'normal');
+            const lines = pdf.splitTextToSize(String(txt||''), w);
+            lines.forEach(l => {
+              if (y > 277) { pdf.addPage(); y = tM; }
+              pdf.text(l, center?105:lM, y, center?{align:'center'}:{});
+              y += sz * 0.42;
+            });
+            y += 1.5;
+          };
+          addLine('ПРОТОКОЛ НАРАДИ №'+currentMeeting.number, 14, true, true);
+          addLine('Щодо ходу робіт на об\'єкті:', 10, false, true);
+          addLine(currentProject.officialName||currentProject.name||'', 11, true, true);
+          if (currentProject.address) addLine(currentProject.address, 9, false, true);
+          y += 3;
+          addLine(formatDateFull(currentMeeting.date)+(currentMeeting.location?' · '+currentMeeting.location:''), 9);
+          y += 4;
+          localItems.forEach(it => {
+            addLine(it.number+'. '+(it.description||'—'), 10, true);
+            if (it.executor) addLine('   Виконавець: '+it.executor, 9);
+            if (it.decision) addLine('   Рішення: '+it.decision, 9);
+            if (it.note)     addLine('   Примітка: '+it.note, 9);
+            y += 1;
+          });
+          if (localAttendees.length) {
+            y += 4;
+            addLine('Погоджено та затверджено присутніми:', 10, true);
+            y += 2;
+            localAttendees.forEach(a => { addLine((a.name||'')+(a.role?' — '+a.role:''), 10); y += 6; });
+          }
+          if (localAttachments.length) {
+            y += 4;
+            addLine('Додатки:', 10, true);
+            localAttachments.forEach((a,i) => addLine('Додаток '+(i+1)+' — '+(a.description||a.name||''), 9));
+          }
+          for (const [i,a] of localAttachments.entries()) {
+            if (a.type?.startsWith('image') && a.dataUrl) {
+              pdf.addPage(); y = tM;
+              pdf.setFontSize(13); pdf.setFont('helvetica','bold');
+              pdf.text('Додаток '+(i+1), lM, y); y += 7;
+              if (a.description && a.description !== '—') {
+                pdf.setFontSize(10); pdf.setFont('helvetica','normal');
+                pdf.text(a.description, lM, y); y += 7;
+              }
+              try { pdf.addImage(a.dataUrl,'JPEG',lM,y,w,180,'','FAST'); } catch(e){}
+            }
+          }
+          const blob = pdf.output('blob');
+          const file = new File([blob],'Протокол_№'+meetingNum+'.pdf',{type:'application/pdf'});
+          if (navigator.canShare && navigator.canShare({files:[file]})) {
+            await navigator.share({files:[file]});
+          } else {
+            const url = URL.createObjectURL(blob);
+            window.open(url,'_blank');
+            setTimeout(()=>URL.revokeObjectURL(url),15000);
+          }
+        } catch(e) {
+          console.error(e);
+          showToast('Помилка: '+(e.message||'невідома'));
+        }
+        saveBtn.disabled = false;
+        saveBtn.textContent = '📤 Зберегти / Поділитись';
+      });
     } else {
       // На комп'ютері — генерація PDF через html2pdf
       saveBtn.addEventListener('click', async () => {
