@@ -642,8 +642,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <div class="protocol-header-loc"  id="meeting-header-loc">—</div>
     </div>
     <div class="protocol-header-btns">
-      <button class="icon-btn" onclick="shareMeeting()">📤</button>
-      <button class="icon-btn" onclick="printMeeting()">🖨</button>
+      <button class="icon-btn" onclick="openSendScreen()">📤</button>
       <button class="icon-btn" onclick="showControlScreen()" title="Контроль" style="display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><circle cx="12" cy="13" r="8" stroke="white" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#60a5fa"/></svg></button>
       <button class="icon-btn" onclick="showToast('Налаштування протоколу — в розробці')">⚙️</button>
     </div>
@@ -720,6 +719,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 </div>
 
 <!-- ЕКРАН ПОПЕРЕДНЬОГО ПЕРЕГЛЯДУ ДРУКУ -->
+<!-- ЕКРАН ВІДПРАВИТИ -->
 <div id="screen-print" class="screen">
   <div class="app-header neutral" id="header-print">
     <div class="app-header-left">
@@ -727,31 +727,33 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     </div>
     <div class="app-header-right">
       <div>
-        <div class="app-header-title">Попередній перегляд 🖨</div>
+        <div class="app-header-title">Відправити 📤</div>
         <div class="app-header-sub" id="print-header-sub"></div>
       </div>
     </div>
   </div>
-  <div class="scroll-area no-fab" id="print-preview-area">
+  <div id="print-preview-area">
     <div id="protocol-doc"></div>
   </div>
-  <div style="position:fixed;bottom:32px;right:24px;display:flex;gap:10px;z-index:50;">
-    <button id="float-save-btn" style="
-      background:white; color:#2563eb; border:2px solid #2563eb; border-radius:16px;
-      padding:14px 24px; font-size:15px; font-weight:700;
-      font-family:inherit; cursor:pointer;
-      box-shadow:0 8px 24px rgba(0,0,0,0.15);
-      display:flex; align-items:center; gap:8px;
-      transition: transform 0.15s, box-shadow 0.15s;
-    ">💾 Зберегти</button>
-    <button id="float-print-btn" style="
-      background:#2563eb; color:white; border:none; border-radius:16px;
-      padding:14px 24px; font-size:15px; font-weight:700;
-      font-family:inherit; cursor:pointer;
-      box-shadow:0 8px 24px rgba(37,99,235,0.5), 0 2px 8px rgba(0,0,0,0.15);
-      display:flex; align-items:center; gap:8px;
-      transition: transform 0.15s, box-shadow 0.15s;
+  <div style="position:fixed;bottom:24px;left:0;right:0;display:flex;gap:10px;justify-content:center;z-index:50;padding:0 16px;">
+    <button id="btn-send-print" style="
+      flex:1; max-width:160px; padding:13px 8px;
+      background:#2563eb; color:white; border:none; border-radius:14px;
+      font-size:13px; font-weight:700; font-family:inherit; cursor:pointer;
+      box-shadow:0 6px 20px rgba(37,99,235,0.4);
     ">🖨 Друкувати</button>
+    <button id="btn-send-save" style="
+      flex:1; max-width:160px; padding:13px 8px;
+      background:white; color:#2563eb; border:2px solid #2563eb; border-radius:14px;
+      font-size:13px; font-weight:700; font-family:inherit; cursor:pointer;
+      box-shadow:0 6px 20px rgba(0,0,0,0.1);
+    ">💾 Зберегти</button>
+    <button id="btn-send-share" style="
+      flex:1; max-width:160px; padding:13px 8px;
+      background:#1e3a5f; color:white; border:none; border-radius:14px;
+      font-size:13px; font-weight:700; font-family:inherit; cursor:pointer;
+      box-shadow:0 6px 20px rgba(30,58,95,0.3);
+    ">📨 Вкласти</button>
   </div>
 </div>
 <div id="screen-analytics" class="screen">
@@ -1779,10 +1781,8 @@ window.deleteExecutor = async function(idx) {
     renderExecutors();
   } catch(e) { showToast('Помилка видалення'); }
 };
-// ── ДРУК ──
-window.printMeeting = async function() {
-  autoBackup('друк-' + currentMeeting.number);
-
+// ── ВІДПРАВИТИ ──
+async function buildPreview() {
   const displayName = esc(currentProject.officialName || currentProject.name || '');
   const address     = esc(currentProject.address || '');
   const meetingNum  = currentMeeting.number || '—';
@@ -1800,7 +1800,7 @@ window.printMeeting = async function() {
       </tr>`).join('');
 
   const sigs = localAttendees.length === 0
-    ? `<p style="color:#999;font-size:9pt;">Учасників не вказано</p>`
+    ? '<p style="color:#999;font-size:9pt;">Учасників не вказано</p>'
     : localAttendees.map(a => `
         <div class="sig-row">
           <div class="sig-name-wrap">
@@ -1811,31 +1811,22 @@ window.printMeeting = async function() {
           <div class="sig-line">дата</div>
         </div>`).join('');
 
-  // Завантажуємо додатки
-  let attachmentsHTML = '';
+  let attHTML = '';
   let photoPages = '';
   try {
     const uid = currentUser.uid;
     const aSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'));
     if (!aSnap.empty) {
-      const attList = aSnap.docs.map((d,i) => ({ num: i+1, ...d.data() }));
-      // Список в протоколі — без таблиці
-      const attRows = attList.map(a =>
-        `<div style="font-size:9.5pt;padding:2px 0;"><strong>Додаток ${a.num}</strong> — ${esc(a.description||a.name||'')}</div>`
-      ).join('');
-      attachmentsHTML = `
-    <div class="att-section">
-      <div class="att-title">Додатки:</div>
-      <div style="margin-top:5px;">${attRows}</div>
-    </div>`;
-      // Окремі аркуші для фото — кожне фото = окремий аркуш
+      const attList = aSnap.docs.map((d,i) => ({num:i+1,...d.data()}));
+      const attRows = attList.map(a => `<div style="font-size:9.5pt;padding:2px 0;"><strong>Додаток ${a.num}</strong> — ${esc(a.description||a.name||'')}</div>`).join('');
+      attHTML = `<div class="att-section"><div class="att-title">Додатки:</div><div style="margin-top:5px;">${attRows}</div></div>`;
       for (const a of attList) {
         if (a.type?.startsWith('image') && a.dataUrl) {
           photoPages += `<div class="photo-page-item">
-  <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
-  ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
-  <img src="${a.dataUrl}" style="width:100%;max-height:180mm;object-fit:contain;display:block;">
-</div>`;
+            <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
+            ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
+            <img src="${a.dataUrl}" style="width:100%;max-height:180mm;object-fit:contain;display:block;">
+          </div>`;
         }
       }
     }
@@ -1843,565 +1834,107 @@ window.printMeeting = async function() {
 
   const docHTML = `
     <div class="doc-title">Протокол наради №${meetingNum}</div>
-    <div class="doc-sub">
-      Щодо ходу робіт на об'єкті:<br>
-      <strong>${displayName}</strong>${address ? '<br>' + address : ''}
-    </div>
-    <div class="doc-meta">
-      <span>${meetingDate}</span>
-      <span>${meetingLoc}</span>
-    </div>
+    <div class="doc-sub">Щодо ходу робіт на об'єкті:<br><strong>${displayName}</strong>${address?'<br>'+address:''}</div>
+    <div class="doc-meta"><span>${meetingDate}</span><span>${meetingLoc}</span></div>
     <table>
-      <colgroup>
-        <col style="width:32px"><col><col style="width:18%"><col style="width:27%"><col style="width:13%">
-      </colgroup>
-      <thead>
-        <tr>
-          <th>№</th><th>Опис / питання</th><th>Виконавець</th><th>Прийняте рішення</th><th>Примітка</th>
-        </tr>
-      </thead>
+      <colgroup><col style="width:32px"><col><col style="width:18%"><col style="width:27%"><col style="width:13%"></colgroup>
+      <thead><tr><th>№</th><th>Опис / питання</th><th>Виконавець</th><th>Прийняте рішення</th><th>Примітка</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
-    <div class="sig-section">
-      <div class="sig-title">Погоджено та затверджено присутніми:</div>
-      ${sigs}
-    </div>
-    ${attachmentsHTML}`;
+    <div class="sig-section"><div class="sig-title">Погоджено та затверджено присутніми:</div>${sigs}</div>
+    ${attHTML}`;
 
-  // Вставляємо в #protocol-doc
-  const docEl = document.getElementById('protocol-doc');
-  if (docEl) docEl.innerHTML = docHTML;
+  document.getElementById('protocol-doc').innerHTML = docHTML;
 
-  // Фото аркуші — після #protocol-doc поза його межами
   const area = document.getElementById('print-preview-area');
   area.querySelectorAll('.photo-page').forEach(el => el.remove());
   if (photoPages) {
-    const photoWrap = document.createElement('div');
-    photoWrap.className = 'photo-page';
-    photoWrap.innerHTML = photoPages;
-    area.appendChild(photoWrap);
+    const pw = document.createElement('div');
+    pw.className = 'photo-page';
+    pw.innerHTML = photoPages;
+    area.appendChild(pw);
   }
 
-  applyPaletteToHeader(document.getElementById('header-print'), currentProject.palette || TILE_COLORS[currentProject.colorIdx||0]);
-  document.getElementById('print-header-sub').textContent = `Протокол № ${meetingNum}`;
+  return meetingNum;
+}
+
+function applyPreviewScale() {
+  const el   = document.getElementById('protocol-doc');
+  const area = document.getElementById('print-preview-area');
+  if (!el || !area) return;
+  const avW = area.clientWidth - 40;
+  const elW = 794;
+  let scale = 1;
+  if (avW > 0 && avW < elW) {
+    scale = avW / elW;
+    el.style.transform       = `scale(${scale})`;
+    el.style.transformOrigin = 'top center';
+    el.style.marginLeft      = `${(elW*(1-scale)/-2)}px`;
+    el.style.marginRight     = `${(elW*(1-scale)/-2)}px`;
+    el.style.marginBottom    = `${el.scrollHeight*scale - el.scrollHeight + 20}px`;
+  } else {
+    el.style.transform = 'none';
+    el.style.marginLeft = el.style.marginRight = 'auto';
+    el.style.marginBottom = '20px';
+  }
+  area.querySelectorAll('.photo-page-item').forEach(pi => {
+    if (scale < 1) {
+      pi.style.transform       = `scale(${scale})`;
+      pi.style.transformOrigin = 'top center';
+      pi.style.marginLeft      = `${(elW*(1-scale)/-2)}px`;
+      pi.style.marginRight     = `${(elW*(1-scale)/-2)}px`;
+      pi.style.marginTop       = '0';
+      pi.style.marginBottom    = `${pi.scrollHeight*scale - pi.scrollHeight + 20}px`;
+    } else {
+      pi.style.transform = 'none';
+      pi.style.marginLeft = pi.style.marginRight = 'auto';
+      pi.style.marginTop = pi.style.marginBottom = '20px';
+    }
+  });
+}
+
+window.openSendScreen = async function() {
+  autoBackup('відправити-' + currentMeeting.number);
+  const meetingNum = await buildPreview();
+
+  applyPalette(document.getElementById('header-print'), currentProject.palette || TILE_COLORS[currentProject.colorIdx||0]);
+  document.getElementById('print-header-sub').textContent = 'Протокол № ' + meetingNum;
+
+  document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=1.0, viewport-fit=cover';
   showScreen('screen-print');
 
-  // Підключаємо кнопки друку і збереження
-  const printBtn = document.getElementById('float-print-btn');
-  const saveBtn  = document.getElementById('float-save-btn');
-  function attachPrintBtn() {
-    printBtn.onclick = null;
-    printBtn.addEventListener('click', function handler() {
-      printBtn.removeEventListener('click', handler);
-      window.print();
-      setTimeout(attachPrintBtn, 100);
-    });
-  }
-  attachPrintBtn();
-  if (saveBtn) {
-    saveBtn.onclick = null;
-    const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-    if (isIOS) {
-      saveBtn.textContent = '📤 Зберегти / Поділитись';
-      saveBtn.addEventListener('click', async () => {
-        saveBtn.disabled = true;
-        saveBtn.textContent = '⏳...';
-        try {
-          // Завантажуємо бібліотеки динамічно
-          if (!window.html2canvas) {
-            await new Promise((res, rej) => {
-              const s = document.createElement('script');
-              s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-              s.onload = res; s.onerror = rej;
-              document.head.appendChild(s);
-            });
-          }
-          if (!window.jspdf) {
-            await new Promise((res, rej) => {
-              const s = document.createElement('script');
-              s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-              s.onload = res; s.onerror = rej;
-              document.head.appendChild(s);
-            });
-          }
+  setTimeout(applyPreviewScale, 50);
+  setTimeout(applyPreviewScale, 300);
+  window.addEventListener('resize', applyPreviewScale);
 
-          const el = document.getElementById('protocol-doc');
-          // Встановлюємо A4 ширину для коректного рендеру
-          const origStyle = el.getAttribute('style') || '';
-          el.style.width = '794px';
-          el.style.maxWidth = '794px';
-          el.style.transform = 'none';
-          el.style.margin = '0';
-          el.style.boxShadow = 'none';
+  // ── Кнопка ДРУКУВАТИ ──
+  const printBtn = document.getElementById('btn-send-print');
+  printBtn.onclick = null;
+  printBtn.addEventListener('click', function handler() {
+    printBtn.removeEventListener('click', handler);
+    window.print();
+    setTimeout(() => {
+      printBtn.addEventListener('click', handler);
+    }, 500);
+  });
 
-          const canvas = await window.html2canvas(el, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            logging: false,
-            width: 794,
-            windowWidth: 794
-          });
+  // ── Кнопка ЗБЕРЕГТИ — в розробці ──
+  document.getElementById('btn-send-save').onclick = () => showToast('В розробці');
 
-          // Відновлюємо стиль
-          el.setAttribute('style', origStyle);
-
-          const { jsPDF } = window.jspdf;
-          const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
-          const pageW = 210, pageH = 297, margin = 10;
-          const imgW = pageW - margin * 2;
-          const scale = canvas.width / imgW; // пікселів на мм (при scale:2 = 794*2/190)
-          const pageImgPx = Math.floor((pageH - margin * 2) * scale);
-          const totalPages = Math.ceil(canvas.height / pageImgPx);
-
-          for (let i = 0; i < totalPages; i++) {
-            if (i > 0) pdf.addPage();
-            const srcY = i * pageImgPx;
-            const srcH = Math.min(pageImgPx, canvas.height - srcY);
-            const tmp = document.createElement('canvas');
-            tmp.width = canvas.width; tmp.height = srcH;
-            tmp.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
-            pdf.addImage(tmp.toDataURL('image/jpeg', 0.92), 'JPEG', margin, margin, imgW, srcH / scale);
-          }
-
-          // Фото додатків на окремих сторінках
-          for (const [i, a] of localAttachments.entries()) {
-            if (a.type?.startsWith('image') && a.dataUrl) {
-              pdf.addPage();
-              pdf.setFontSize(13); pdf.setFont('helvetica','bold');
-              pdf.text('Додаток '+(i+1), margin, margin+5);
-              if (a.description && a.description !== '—') {
-                pdf.setFontSize(10); pdf.setFont('helvetica','normal');
-                pdf.text(a.description, margin, margin+13);
-              }
-              try { pdf.addImage(a.dataUrl,'JPEG',margin,margin+20,imgW,170,'','FAST'); } catch(e){}
-            }
-          }
-
-          const blob = pdf.output('blob');
-          const file = new File([blob], 'Протокол_№'+meetingNum+'.pdf', {type:'application/pdf'});
-          try {
-            await navigator.share({ files: [file] });
-          } catch(e) {
-            if (e.name !== 'AbortError') {
-              showToast('Помилка: '+e.message);
-            }
-          }
-        } catch(e) {
-          console.error(e);
-          showToast('Помилка: '+(e.message||'невідома'));
-        }
-        saveBtn.disabled = false;
-        saveBtn.textContent = '📤 Зберегти / Поділитись';
-      });
-    } else {
-      // На комп'ютері — генерація PDF через html2pdf
-      saveBtn.addEventListener('click', async () => {
-        saveBtn.disabled = true;
-        saveBtn.textContent = '⏳ Генерується...';
-        try {
-          const docEl = document.getElementById('protocol-doc');
-          // Тимчасово скидаємо transform для коректного рендеру
-          const origTransform = docEl.style.transform;
-          const origMarginL   = docEl.style.marginLeft;
-          const origMarginR   = docEl.style.marginRight;
-          const origMarginB   = docEl.style.marginBottom;
-          docEl.style.transform   = 'none';
-          docEl.style.marginLeft  = 'auto';
-          docEl.style.marginRight = 'auto';
-          docEl.style.marginBottom = '0';
-
-          await html2pdf().set({
-            margin:      [20, 10, 20, 25],
-            filename:    'Протокол_№' + meetingNum + '.pdf',
-            image:       { type: 'jpeg', quality: 0.92 },
-            html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
-            jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak:   { mode: ['css', 'legacy'] }
-          }).from(docEl).save();
-
-          // Відновлюємо transform
-          docEl.style.transform    = origTransform;
-          docEl.style.marginLeft   = origMarginL;
-          docEl.style.marginRight  = origMarginR;
-          docEl.style.marginBottom = origMarginB;
-        } catch(e) {
-          console.error(e);
-          showToast('Помилка збереження PDF');
-        }
-        saveBtn.disabled = false;
-        saveBtn.textContent = '💾 Зберегти';
-      });
-    }
-  }
-
-  // Дозволяємо pinch-zoom на екрані перегляду
-  document.querySelector('meta[name=viewport]').content =
-    'width=device-width, initial-scale=1.0, viewport-fit=cover';
-
-  // Масштабуємо — точно як в тестовому файлі
-  function applyScale() {
-    const el   = document.getElementById('protocol-doc');
-    const area = document.getElementById('print-preview-area');
-    if (!el || !area) return;
-    const availW = area.clientWidth - 40;
-    const elW    = 794;
-    let scale = 1;
-    if (availW > 0 && availW < elW) {
-      scale = availW / elW;
-      const origH   = el.scrollHeight;
-      const scaledH = origH * scale;
-      el.style.transform       = `scale(${scale})`;
-      el.style.transformOrigin = 'top center';
-      el.style.marginLeft      = `${(elW * (1 - scale)) / -2}px`;
-      el.style.marginRight     = `${(elW * (1 - scale)) / -2}px`;
-      el.style.marginBottom    = `${scaledH - origH + 20}px`;
-    } else {
-      el.style.transform    = 'none';
-      el.style.marginLeft   = 'auto';
-      el.style.marginRight  = 'auto';
-      el.style.marginBottom = '20px';
-    }
-    // Масштабуємо фото аркуші так само
-    area.querySelectorAll('.photo-page-item').forEach(pi => {
-      if (scale < 1) {
-        const origH   = pi.scrollHeight;
-        const scaledH = origH * scale;
-        pi.style.transform       = `scale(${scale})`;
-        pi.style.transformOrigin = 'top center';
-        pi.style.marginLeft      = `${(elW * (1 - scale)) / -2}px`;
-        pi.style.marginRight     = `${(elW * (1 - scale)) / -2}px`;
-        pi.style.marginTop       = '0';
-        pi.style.marginBottom    = `${scaledH - origH + 20}px`;
-      } else {
-        pi.style.transform    = 'none';
-        pi.style.marginLeft   = 'auto';
-        pi.style.marginRight  = 'auto';
-        pi.style.marginTop    = '20px';
-        pi.style.marginBottom = '20px';
-      }
-    });
-  }
-  setTimeout(applyScale, 50);
-  setTimeout(applyScale, 300);
-  window.addEventListener('resize', applyScale);
+  // ── Кнопка ВКЛАСТИ — в розробці ──
+  document.getElementById('btn-send-share').onclick = () => showToast('В розробці');
 };
 
-// ── ДОДАТКИ ══
-let _deletingAttIdx = null;
-
-async function loadAttachmentsLocal() {
-  const uid = currentUser.uid;
-  try {
-    const snap = await getDocs(query(
-      collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
-      orderBy('createdAt')
-    ));
-    localAttachments = [];
-    snap.forEach(d => localAttachments.push({ id: d.id, ...d.data() }));
-  } catch(e) { localAttachments = []; }
-}
-
-function renderAttachments() {
-  const list = document.getElementById('attachments-list');
-  if (!list) return;
-  if (localAttachments.length === 0) {
-    list.innerHTML = `<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:13px;padding:10px 0;">Додатків ще немає</div>`;
-    return;
-  }
-  list.innerHTML = '';
-  localAttachments.forEach((att, idx) => {
-    const isDeleting = _deletingAttIdx === idx;
-    const typeIcon = att.type?.startsWith('image') ? '🖼' : att.type === 'application/pdf' ? '📄' : '📎';
-    const row = document.createElement('div');
-    row.className = 'att-row' + (isDeleting ? ' att-deleting' : '');
-    row.innerHTML = `
-      <div class="att-num-cell"><span class="num-text">${idx+1}</span></div>
-      <div class="att-info">
-        <div class="att-desc-edit" style="font-size:13px;font-weight:700;color:#1e293b;min-height:20px;">${esc(att.description||'—')}</div>
-        <div style="font-size:10px;color:#94a3b8;margin-top:1px;">${esc(att.name||'')}</div>
-      </div>
-      <div class="att-type-icon">${typeIcon}</div>`;
-
-    // Редагування опису по кліку
-    const descEl = row.querySelector('.att-desc-edit');
-    descEl.addEventListener('click', e => {
-      e.stopPropagation();
-      if (_deletingAttIdx !== null) { _deletingAttIdx = null; renderAttachments(); return; }
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.value = att.description || '';
-      input.placeholder = 'Опис додатку...';
-      input.style.cssText = 'font-size:13px;font-weight:700;color:#1e293b;border:none;outline:none;background:transparent;width:100%;font-family:inherit;border-bottom:1px solid #2563eb;';
-      descEl.replaceWith(input);
-      input.focus();
-      async function saveDesc() {
-        const newDesc = input.value.trim();
-        att.description = newDesc;
-        try {
-          const uid = currentUser.uid;
-          if (att.id) await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments',att.id), { description: newDesc });
-        } catch(e) { console.warn(e); }
-        renderAttachments();
-      }
-      input.addEventListener('blur', () => setTimeout(saveDesc, 150));
-      input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
-    });
-
-    const numCell = row.querySelector('.att-num-cell');
-    numCell.addEventListener('click', e => {
-      e.stopPropagation();
-      if (_deletingAttIdx === idx) { deleteAttachment(idx); }
-      else { _deletingAttIdx = idx; renderAttachments(); }
-    });
-
-    // Перегляд по кліку на іконку типу
-    row.querySelector('.att-type-icon').addEventListener('click', e => {
-      e.stopPropagation();
-      if (att.dataUrl) {
-        const w = window.open('', '_blank');
-        if (w) {
-          w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">
-            ${att.type?.startsWith('image')
-              ? `<img src="${att.dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;">`
-              : `<p style="color:white;font-family:sans-serif;">Файл: ${esc(att.name)}</p>`}
-          </body></html>`);
-          w.document.close();
-        }
-      }
-    });
-
-    row.addEventListener('click', e => {
-      if (!e.target.closest('.att-num-cell') && _deletingAttIdx === idx) {
-        _deletingAttIdx = null; renderAttachments();
-      }
-    });
-
-    list.appendChild(row);
-  });
-}
-
-async function deleteAttachment(idx) {
-  const att = localAttachments[idx];
-  try {
-    const uid = currentUser.uid;
-    await deleteDoc(doc(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments',att.id));
-    localAttachments.splice(idx, 1);
-    _deletingAttIdx = null;
-    renderAttachments();
-    showToast('Додаток видалено');
-  } catch(e) { showToast('Помилка видалення'); }
-}
-
-window.openAddAttachment = function() {
-  const input = document.getElementById('att-file-input');
-  input.value = '';
-  input.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    await uploadAttachment(file);
-  };
-  input.click();
-};
-
-async function uploadAttachment(file) {
-  const uid = currentUser.uid;
-  const list = document.getElementById('attachments-list');
-
-  // Показуємо прогрес
-  const progressDiv = document.createElement('div');
-  progressDiv.style.cssText = 'background:white;border-radius:8px;padding:10px 12px;margin-bottom:4px;';
-  progressDiv.innerHTML = `
-    <div style="font-size:12px;color:#1e293b;margin-bottom:6px;">⏳ ${esc(file.name)}</div>
-    <div class="att-upload-progress"><div class="att-upload-progress-bar" id="att-progress-bar" style="width:30%"></div></div>`;
-  list.appendChild(progressDiv);
-
-  try {
-    let dataUrl;
-    const isImage = file.type.startsWith('image');
-
-    if (isImage) {
-      // Стискаємо фото через Canvas
-      dataUrl = await compressImage(file, 1200, 0.75);
-    } else {
-      // Інші файли — конвертуємо в Base64 напряму
-      dataUrl = await fileToBase64(file);
-    }
-
-    const bar = document.getElementById('att-progress-bar');
-    if (bar) bar.style.width = '70%';
-
-    // Запитуємо опис через модалку
-    const description = await askDescription(file.name);
-
-    if (bar) bar.style.width = '90%';
-
-    // Зберігаємо в Firestore
-    const ref = await addDoc(
-      collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
-      { name: file.name, description, dataUrl, type: file.type, createdAt: serverTimestamp() }
-    );
-
-    localAttachments.push({ id: ref.id, name: file.name, description, dataUrl, type: file.type });
-    progressDiv.remove();
-    renderAttachments();
-    showToast(`✅ ${file.name} додано`);
-  } catch(e) {
-    console.error('Upload error:', e);
-    progressDiv.remove();
-    showToast('Помилка: ' + (e.message || 'невідома'));
-  }
-}
-
-// Стискання зображення через Canvas
-function compressImage(file, maxWidth, quality) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let w = img.width, h = img.height;
-        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.onerror = reject;
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-// Конвертація файлу в Base64
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function askDescription(fileName) {
-  return new Promise(resolve => {
-    const { box, addCloseBtn, close } = createModal('Опис додатку', '📎 ');
-
-    const fileLabel = document.createElement('div');
-    fileLabel.style.cssText = 'font-size:12px;color:#6B6B6B;margin-bottom:10px;';
-    fileLabel.textContent = fileName;
-    box.appendChild(fileLabel);
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Введіть опис (необов\'язково)...';
-    input.style.cssText = `width:100%;padding:11px 12px;border:1px solid #EBEBEB;border-radius:10px;font-size:14px;font-family:'Arsenal',Arial,sans-serif;outline:none;color:#2D2D2D;margin-bottom:10px;`;
-    box.appendChild(input);
-
-    const saveBtn = document.createElement('button');
-    saveBtn.textContent = 'Зберегти';
-    saveBtn.style.cssText = `width:100%;padding:12px;border-radius:10px;border:none;background:#2D2D2D;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;margin-bottom:8px;`;
-    saveBtn.addEventListener('click', () => { close(); resolve(input.value.trim()); });
-    box.appendChild(saveBtn);
-
-    const skipBtn = addCloseBtn('Пропустити');
-    skipBtn.addEventListener('click', () => resolve(''));
-
-    setTimeout(() => input.focus(), 100);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') { close(); resolve(input.value.trim()); } });
-  });
-}
-
-// ══ КІНЕЦЬ ДОДАТКІВ ══
-window.showAllControlScreen = async function() {
-  const uid = currentUser.uid;
-  const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
-  const controlled = [];
-  for (const m of mSnap.docs) {
-    const iSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',m.id,'items'));
-    iSnap.forEach(i => {
-      const d = i.data();
-      if (d.control) controlled.push({ ...d, meetingNum: m.data().number, meetingId: m.id });
-    });
-  }
-  showControlModal(controlled, `Контроль — всі протоколи (${controlled.length})`);
-};
-
-// Контроль — поточний протокол
-window.showControlScreen = function() {
-  const controlled = localItems.filter(it => it.control);
-  showControlModal(controlled, `Контроль — Протокол № ${currentMeeting.number} (${controlled.length})`);
-};
-
-// ── ЄДИНА ФУНКЦІЯ МОДАЛКИ ──
-function createModal(title, iconHTML = '') {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
-  const box = document.createElement('div');
-  box.style.cssText = `background:white;border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:78vh;overflow-y:auto;font-family:'Arsenal',Arial,sans-serif;`;
-  const hdr = document.createElement('div');
-  hdr.style.cssText = 'font-size:16px;font-weight:700;color:#2D2D2D;margin-bottom:14px;display:flex;align-items:center;gap:8px;';
-  hdr.innerHTML = iconHTML + esc(title);
-  box.appendChild(hdr);
-  overlay.appendChild(box);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-  document.documentElement.appendChild(overlay);
-
-  function addCloseBtn(label = 'Закрити') {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.style.cssText = `width:100%;padding:11px;margin-top:12px;border-radius:10px;border:1px solid #EBEBEB;background:#F9FAFB;color:#6B6B6B;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
-    btn.addEventListener('click', () => overlay.remove());
-    box.appendChild(btn);
-    return btn;
-  }
-
-  function addActionBtn(label, bg, color) {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:${bg};color:${color};font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
-    box.appendChild(btn);
-    return btn;
-  }
-
-  function addRow(html) {
-    const row = document.createElement('div');
-    row.style.cssText = 'padding:8px 0;border-bottom:1px solid #EBEBEB;';
-    row.innerHTML = html;
-    box.appendChild(row);
-    return row;
-  }
-
-  return { overlay, box, addCloseBtn, addActionBtn, addRow, close: () => overlay.remove() };
-}
-
-function showControlModal(items, title) {
-  if (items.length === 0) { showToast('Немає пунктів на контролі'); return; }
-  const ctrlSVG = `<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="#C17058" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#C17058" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#C17058" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#C17058"/></svg>`;
-  const { addRow, addCloseBtn } = createModal(title, ctrlSVG);
-  items.forEach(it => {
-    const prefix = it.meetingNum ? 'Протокол №' + it.meetingNum + ' · ' : '';
-    const execLine = it.executor ? '<div style="font-size:11px;color:#6B6B6B;margin-top:1px;">' + esc(it.executor) + '</div>' : '';
-    addRow(
-      '<div style="font-size:9px;color:#C17058;font-weight:700;">' + prefix + 'Пункт ' + it.number + '</div>' +
-      '<div style="font-size:12px;font-weight:700;color:#2D2D2D;margin-top:2px;">' + esc(it.description||'—') + '</div>' +
-      execLine
-    );
-  });
-  addCloseBtn();
-}
-
-window.shareMeeting = async function() {
-  await printMeeting();
-};
+// Зворотня сумісність
+window.printMeeting  = window.openSendScreen;
+window.shareMeeting  = window.openSendScreen;
 
 window.leavePrintScreen = function() {
-  document.querySelector('meta[name=viewport]').content =
-    'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
+  document.querySelector('meta[name=viewport]').content = 'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
+  window.removeEventListener('resize', applyPreviewScale);
   showScreen('screen-meeting');
 };
+
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
 async function checkDailyControl() {
