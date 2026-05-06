@@ -1900,7 +1900,38 @@ window.printMeeting = async function() {
   attachPrintBtn();
   if (saveBtn) {
     saveBtn.onclick = null;
-    saveBtn.addEventListener('click', () => window.print());
+    saveBtn.addEventListener('click', async () => {
+      saveBtn.disabled = true;
+      saveBtn.textContent = '⏳ Генерується...';
+      try {
+        const area = document.getElementById('print-preview-area');
+        // Клонуємо вміст і скидаємо transform
+        const clone = area.cloneNode(true);
+        clone.style.cssText = 'width:794px;background:white;position:fixed;top:-9999px;left:0;';
+        clone.querySelectorAll('[style*="transform"]').forEach(el => {
+          el.style.transform = 'none';
+          el.style.marginLeft = 'auto';
+          el.style.marginRight = 'auto';
+          el.style.marginBottom = '20px';
+          el.style.marginTop = '20px';
+        });
+        document.body.appendChild(clone);
+        await html2pdf().set({
+          margin:      [20, 10, 20, 25],
+          filename:    'Протокол_№' + meetingNum + '.pdf',
+          image:       { type: 'jpeg', quality: 0.9 },
+          html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+          jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak:   { mode: ['css', 'legacy'] }
+        }).from(clone).save();
+        document.body.removeChild(clone);
+      } catch(e) {
+        console.error(e);
+        showToast('Помилка збереження PDF');
+      }
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 Зберегти';
+    });
   }
 
   // Дозволяємо pinch-zoom на екрані перегляду
