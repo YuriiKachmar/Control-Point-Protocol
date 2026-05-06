@@ -1785,6 +1785,144 @@ window.deleteExecutor = async function(idx) {
     renderExecutors();
   } catch(e) { showToast('Помилка видалення'); }
 };
+// ── ДОДАТКИ ──
+async function loadAttachmentsLocal() {
+  const {uid,pid,mid} = ids();
+  try {
+    const snap = await getDocs(query(collection(db,'users',uid,'projects',pid,'meetings',mid,'attachments'),orderBy('createdAt')));
+    localAttachments = []; snap.forEach(d => localAttachments.push({id:d.id,...d.data()}));
+  } catch(e) { localAttachments = []; }
+}
+
+function renderAttachments() {
+  const list = document.getElementById('attachments-list');
+  if (!list) return;
+  if (!localAttachments.length) { list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:13px;padding:10px 0;">Додатків ще немає</div>'; return; }
+  list.innerHTML = '';
+  localAttachments.forEach((att,idx) => {
+    const isDel = _deletingAttIdx===idx;
+    const icon  = att.type?.startsWith('image')?'🖼':att.type==='application/pdf'?'📄':'📎';
+    const row   = document.createElement('div');
+    row.className = 'att-file-row'+(isDel?' att-deleting':'');
+    row.innerHTML = `<div class="att-num-cell"><span class="num-text">${idx+1}</span></div><div class="att-info"><div class="att-desc-text">${esc(att.description||'—')}</div><div class="att-file-name">${esc(att.name||'')}</div></div><div class="att-type-icon">${icon}</div>`;
+    row.querySelector('.att-desc-text').addEventListener('click', e => {
+      e.stopPropagation();
+      if (_deletingAttIdx!==null){_deletingAttIdx=null;renderAttachments();return;}
+      const inp=document.createElement('input');inp.type='text';inp.value=att.description||'';inp.placeholder='Опис...';
+      inp.style.cssText="font-size:13px;font-weight:700;color:#1e293b;border:none;outline:none;background:transparent;width:100%;font-family:inherit;border-bottom:1px solid #2563eb;";
+      e.target.replaceWith(inp);inp.focus();
+      async function save(){att.description=inp.value.trim();try{const{uid,pid,mid}=ids();if(att.id)await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'attachments',att.id),{description:att.description});}catch(e){}renderAttachments();}
+      inp.addEventListener('blur',()=>setTimeout(save,150));inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur();});
+    });
+    row.querySelector('.att-num-cell').addEventListener('click',e=>{e.stopPropagation();if(_deletingAttIdx===idx){deleteAttachment(idx);}else{_deletingAttIdx=idx;renderAttachments();}});
+    row.querySelector('.att-type-icon').addEventListener('click',e=>{e.stopPropagation();if(att.dataUrl){const w=window.open('','_blank');if(w){w.document.write('<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">'+(att.type?.startsWith('image')?'<img src="'+att.dataUrl+'" style="max-width:100%;max-height:100vh;object-fit:contain;">':'<p style="color:white;">'+esc(att.name)+'</p>')+'</body></html>');w.document.close();}}});
+    row.addEventListener('click',e=>{if(!e.target.closest('.att-num-cell')&&_deletingAttIdx===idx){_deletingAttIdx=null;renderAttachments();}});
+    list.appendChild(row);
+  });
+}
+
+async function deleteAttachment(idx) {
+  const att=localAttachments[idx];
+  try{const{uid,pid,mid}=ids();await deleteDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'attachments',att.id));}catch(e){}
+  localAttachments.splice(idx,1);_deletingAttIdx=null;renderAttachments();showToast('Додаток видалено');
+}
+
+window.openAddAttachment=function(){const inp=document.getElementById('att-file-input');inp.value='';inp.onchange=async e=>{const f=e.target.files[0];if(f)await uploadAttachment(f);};inp.click();};
+
+async function uploadAttachment(file){
+  const{uid,pid,mid}=ids();const list=document.getElementById('attachments-list');
+  const pDiv=document.createElement('div');pDiv.className='att-progress-wrap';
+  pDiv.innerHTML='<div style="font-size:12px;color:#1e293b;margin-bottom:4px;">⏳ '+esc(file.name)+'</div><div class="att-progress-bar-bg"><div class="att-progress-bar" id="apb" style="width:30%"></div></div>';
+  list.appendChild(pDiv);
+  try{
+    let dataUrl;const bar=()=>document.getElementById('apb');
+    if(file.type.startsWith('image')){dataUrl=await compressImage(file,1200,0.75);if(bar())bar().style.width='70%';}
+    else{dataUrl=await fileToBase64(file);if(bar())bar().style.width='70%';}
+    const description=await askDescription(file.name);if(bar())bar().style.width='90%';
+    const ref=await addDoc(collection(db,'users',uid,'projects',pid,'meetings',mid,'attachments'),{name:file.name,description,dataUrl,type:file.type,createdAt:serverTimestamp()});
+    localAttachments.push({id:ref.id,name:file.name,description,dataUrl,type:file.type});
+    pDiv.remove();renderAttachments();showToast('✅ '+file.name+' додано');
+  }catch(e){pDiv.remove();showToast('Помилка: '+(e.message||'невідома'));}
+}
+
+function compressImage(file,maxW,q){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');let w=img.width,h=img.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);res(c.toDataURL('image/jpeg',q));};img.onerror=rej;img.src=e.target.result;};r.onerror=rej;r.readAsDataURL(file);});}
+function fileToBase64(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=rej;r.readAsDataURL(file);});}
+
+function askDescription(fileName){
+  return new Promise(resolve=>{
+    const{box,addCloseBtn,close}=createModal('Опис додатку','📎 ');
+    const lbl=document.createElement('div');lbl.style.cssText='font-size:12px;color:#6B6B6B;margin-bottom:10px;';lbl.textContent=fileName;box.appendChild(lbl);
+    const inp=document.createElement('input');inp.type='text';inp.placeholder="Введіть опис (необов'язково)...";
+    inp.style.cssText="width:100%;padding:11px 12px;border:1px solid #EBEBEB;border-radius:10px;font-size:14px;font-family:'Arsenal',Arial,sans-serif;outline:none;color:#2D2D2D;margin-bottom:10px;";
+    box.appendChild(inp);
+    const s=document.createElement('button');s.textContent='Зберегти';
+    s.style.cssText="width:100%;padding:12px;border-radius:10px;border:none;background:#2D2D2D;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;margin-bottom:8px;";
+    s.addEventListener('click',()=>{close();resolve(inp.value.trim());});box.appendChild(s);
+    const sk=addCloseBtn('Пропустити');sk.addEventListener('click',()=>resolve(''));
+    setTimeout(()=>inp.focus(),100);inp.addEventListener('keydown',e=>{if(e.key==='Enter'){close();resolve(inp.value.trim());}});
+  });
+}
+
+// ── КОНТРОЛЬ ──
+window.showAllControlScreen = async function() {
+  const uid = currentUser.uid;
+  const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
+  const ctrl = [];
+  for (const m of mSnap.docs) {
+    const iSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',m.id,'items'));
+    iSnap.forEach(i => { const d=i.data(); if(d.control) ctrl.push({...d,meetingNum:m.data().number}); });
+  }
+  showControlModal(ctrl, 'Контроль — всі протоколи ('+ctrl.length+')');
+};
+
+window.showControlScreen = function() {
+  const ctrl = localItems.filter(it => it.control);
+  showControlModal(ctrl, 'Контроль — Протокол № '+currentMeeting.number+' ('+ctrl.length+')');
+};
+
+function showControlModal(items, title) {
+  if (!items.length) { showToast('Немає пунктів на контролі'); return; }
+  const svg = '<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="#C17058" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#C17058" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#C17058" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#C17058"/></svg>';
+  const {addRow, addCloseBtn} = createModal(title, svg);
+  items.forEach(it => {
+    const prefix = it.meetingNum ? 'Протокол №'+it.meetingNum+' · ' : '';
+    const exec = it.executor ? '<div style="font-size:11px;color:#6B6B6B;margin-top:1px;">'+esc(it.executor)+'</div>' : '';
+    addRow('<div style="font-size:9px;color:#C17058;font-weight:700;">'+prefix+'Пункт '+it.number+'</div><div style="font-size:12px;font-weight:700;color:#2D2D2D;margin-top:2px;">'+esc(it.description||'—')+'</div>'+exec);
+  });
+  addCloseBtn();
+}
+
+function createModal(title, icon='') {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
+  const box = document.createElement('div');
+  box.style.cssText = "background:white;border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:78vh;overflow-y:auto;font-family:'Arsenal',Arial,sans-serif;";
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'font-size:16px;font-weight:700;color:#2D2D2D;margin-bottom:14px;display:flex;align-items:center;gap:8px;';
+  hdr.innerHTML = icon + esc(title);
+  box.appendChild(hdr);
+  overlay.appendChild(box);
+  overlay.addEventListener('click', e => { if(e.target===overlay) overlay.remove(); });
+  document.documentElement.appendChild(overlay);
+  const close = () => overlay.remove();
+  function addCloseBtn(label='Закрити') {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.style.cssText = "width:100%;padding:11px;margin-top:12px;border-radius:10px;border:1px solid #EBEBEB;background:#F9FAFB;color:#6B6B6B;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;";
+    b.addEventListener('click', close);
+    box.appendChild(b);
+    return b;
+  }
+  function addRow(html) {
+    const r = document.createElement('div');
+    r.style.cssText = 'padding:8px 0;border-bottom:1px solid #EBEBEB;';
+    r.innerHTML = html;
+    box.appendChild(r);
+    return r;
+  }
+  return { overlay, box, close, addCloseBtn, addRow };
+}
+
 // ── ВІДПРАВИТИ ──
 async function buildPreview() {
   const displayName = esc(currentProject.officialName || currentProject.name || '');
