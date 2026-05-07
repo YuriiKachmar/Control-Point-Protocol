@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PDF Test</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
 #doc { background:white; padding:60px 80px 60px 100px; max-width:794px; margin:0 auto 20px; font-size:10pt; color:#000; }
@@ -54,27 +55,48 @@ body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
 const status = t => document.getElementById('status').textContent = t;
 
 async function testSave() {
-status('⏳ Генерую PDF...');
+status('⏳ Рендеринг...');
 try {
 const el = document.getElementById('doc');
 
-// Клонуємо без трансформацій
-const clone = el.cloneNode(true);
-clone.style.cssText = 'position:fixed;top:-9999px;left:0;width:794px;background:white;padding:60px 80px 60px 100px;font-size:10pt;font-family:Arial,sans-serif;';
-document.body.appendChild(clone);
+// Встановлюємо фіксований розмір для рендеру
+const origStyle = el.getAttribute('style') || '';
+el.style.width = '794px';
+el.style.maxWidth = '794px';
+el.style.boxShadow = 'none';
+el.style.margin = '0';
 
-const blob = await html2pdf().set({
-margin: [20, 10, 20, 25],
-filename: 'Протокол_№3.pdf',
-image: { type:'jpeg', quality:0.95 },
-html2canvas: { scale:2, useCORS:true, logging:false, backgroundColor:'#ffffff' },
-jsPDF: { unit:'mm', format:'a4', orientation:'portrait' },
-pagebreak: { mode:['css','legacy'] }
-}).from(clone).outputPdf('blob');
+const canvas = await html2canvas(el, {
+scale: 2,
+useCORS: true,
+backgroundColor: '#ffffff',
+logging: false,
+width: 794,
+windowWidth: 794
+});
 
-document.body.removeChild(clone);
+el.setAttribute('style', origStyle);
 
-status('✅ PDF готовий — відкриваю...');
+status('✅ Canvas готовий — генерую PDF...');
+
+const { jsPDF } = window.jspdf;
+const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+const pageW=210, pageH=297, margin=10, imgW=pageW-margin*2;
+const scale = canvas.width / imgW;
+const pageImgPx = Math.floor((pageH-margin*2)*scale);
+const totalPages = Math.ceil(canvas.height/pageImgPx);
+
+for (let i=0; i<totalPages; i++) {
+if (i>0) pdf.addPage();
+const srcY = i*pageImgPx;
+const srcH = Math.min(pageImgPx, canvas.height-srcY);
+const tmp = document.createElement('canvas');
+tmp.width = canvas.width; tmp.height = srcH;
+tmp.getContext('2d').drawImage(canvas, 0, srcY, canvas.width, srcH, 0, 0, canvas.width, srcH);
+pdf.addImage(tmp.toDataURL('image/jpeg', 0.95), 'JPEG', margin, margin, imgW, srcH/scale);
+}
+
+const blob = pdf.output('blob');
 
 const url = URL.createObjectURL(blob);
 
