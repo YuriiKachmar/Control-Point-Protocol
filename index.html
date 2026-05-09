@@ -1798,7 +1798,6 @@ window.toggleAddExecutor = function() {
   setTimeout(() => nameInput.focus(), 50);
 };
 
-function attachExecutorBlur() { /* не потрібно — логіка в toggleAddExecutor */ }
 
 let _savingExecutor = false;
 let _fixedProjectId = null;
@@ -2477,93 +2476,6 @@ function showControlModal(items, title) {
 }
 
 // ── ГЕНЕРАЦІЯ PDF ──
-async function generatePDF(statusCallback) {
-  if (statusCallback) statusCallback('⏳ Підготовка документу...');
-
-  // Формуємо той самий HTML що і для попереднього перегляду
-  const displayName = esc(currentProject.officialName || currentProject.name || '');
-  const address     = esc(currentProject.address || '');
-  const meetingNum  = currentMeeting.number || '—';
-  const meetingDate = formatDateFull(currentMeeting.date);
-  const meetingLoc  = esc(currentMeeting.location || '');
-
-  const rows = localItems.length === 0
-    ? `<tr><td colspan="5" style="padding:10px;text-align:center;color:#999;">Пунктів немає</td></tr>`
-    : localItems.map((it, i) => `<tr>
-        <td style="text-align:center;${i%2?'background:#f8f8f8;':''}">${it.number}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.description||'')}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.executor||'')}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.decision||'')}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.note||'')}</td>
-      </tr>`).join('');
-
-  const sigs = localAttendees.length === 0 ? '' : localAttendees.map(a => `
-    <div style="display:flex;align-items:flex-end;gap:8px;padding:7px 0;border-bottom:1px solid #eee;">
-      <div style="flex:1;"><div style="font-weight:700;font-size:9.5pt;">${esc(a.name||'')}</div><div style="color:#555;font-size:8pt;">${esc(a.role||'')}</div></div>
-      <div style="border-bottom:1px solid #000;width:120px;padding-top:20px;text-align:center;font-size:7pt;color:#aaa;">підпис</div>
-      <div style="border-bottom:1px solid #000;width:90px;padding-top:20px;text-align:center;font-size:7pt;color:#aaa;">дата</div>
-    </div>`).join('');
-
-  let attachHTML = '';
-  let photoPagesHTML = '';
-  try {
-    const uid = currentUser.uid;
-    const aSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'));
-    if (!aSnap.empty) {
-      const attList = aSnap.docs.map((d,i) => ({ num: i+1, ...d.data() }));
-      attachHTML = `<div style="margin-top:16px;border-top:1px solid #e5e7eb;padding-top:10px;">
-        <div style="font-weight:700;font-size:9.5pt;margin-bottom:4px;">Додатки:</div>
-        ${attList.map(a => `<div style="font-size:9.5pt;padding:2px 0;"><strong>Додаток ${a.num}</strong> — ${esc(a.description||a.name||'')}</div>`).join('')}
-      </div>`;
-      for (const a of attList) {
-        if (a.type?.startsWith('image') && a.dataUrl) {
-          photoPagesHTML += `<div style="page-break-before:always;">
-            <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
-            ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:8px;">${esc(a.description)}</div>` : ''}
-            <img src="${a.dataUrl}" style="width:100%;max-height:230mm;object-fit:contain;display:block;">
-          </div>`;
-        }
-      }
-    }
-  } catch(e) { console.warn(e); }
-
-  const fullHTML = `<!DOCTYPE html><html><head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Arsenal:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-      * { box-sizing:border-box; margin:0; padding:0; }
-      body { font-family:'Arsenal',Arial,sans-serif; font-size:10pt; color:#000; }
-      @page { size:A4 portrait; margin:20mm 10mm 20mm 25mm; }
-      table { width:100%; border-collapse:collapse; table-layout:fixed; }
-      th { background:#2D2D2D!important; color:white!important; padding:5px 8px; text-align:left; font-size:8.5pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-      td { padding:5px 8px; border:1px solid #ccc; vertical-align:top; font-size:9.5pt; }
-      tr:nth-child(even) td { background:#f8f8f8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-    </style>
-  </head><body>
-    <div style="text-align:center;font-size:13pt;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Протокол наради №${meetingNum}</div>
-    <div style="text-align:center;font-size:9.5pt;margin-bottom:14px;line-height:1.6;">Щодо ходу робіт на об'єкті:<br><strong>${displayName}</strong>${address?'<br>'+address:''}</div>
-    <div style="display:flex;justify-content:space-between;font-size:9.5pt;margin-bottom:14px;padding-bottom:8px;">
-      <span>${meetingDate}</span><span>${meetingLoc}</span>
-    </div>
-    <table style="margin-bottom:18px;">
-      <colgroup><col style="width:32px"><col><col style="width:18%"><col style="width:27%"><col style="width:13%"></colgroup>
-      <thead><tr><th>№</th><th>Опис / питання</th><th>Виконавець</th><th>Прийняте рішення</th><th>Примітка</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <div style="margin-top:16px;padding-top:10px;">
-      <div style="font-weight:700;font-size:9.5pt;margin-bottom:8px;">Погоджено та затверджено присутніми:</div>
-      ${sigs}
-    </div>
-    ${attachHTML}
-    ${photoPagesHTML}
-  </body></html>`;
-
-  if (statusCallback) statusCallback('⏳ Генерується PDF...');
-
-  // Відкриваємо в новому вікні і друкуємо
-  return { html: fullHTML, filename: `Протокол_№${meetingNum}.pdf` };
-}
-
 window.shareMeeting = async function() {
   const whatsapp   = currentProject.whatsappGroup || '';
   const meetingNum = currentMeeting.number;
@@ -2660,7 +2572,6 @@ window.leavePrintScreen = function() {
     'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
   showScreen('screen-meeting');
 };
-window.executePrint = function() { window.print(); };
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
 async function checkDailyControl() {
