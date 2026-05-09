@@ -1112,10 +1112,10 @@ async function openMeeting(id, data) {
 }
 
 window.leaveMeeting = async function() {
-  // Знімаємо фокус — blur спрацює і збереже через onblur handler
-  if (document.activeElement) document.activeElement.blur();
-  // Невелика затримка щоб blur/save встиг виконатись
-  await new Promise(r => setTimeout(r, 300));
+  _savingItem = false;
+  _savingAtt  = false;
+  await saveActiveItem();
+  await saveActiveAtt();
   activeItemIdx = null;
   activeAttIdx  = null;
   loadMeetings();
@@ -1207,12 +1207,6 @@ function renderItems() {
 
       setTimeout(() => {
         row.querySelector('textarea')?.focus();
-
-        // Зберігаємо при blur полів — не при mousedown
-        row.querySelectorAll('textarea, input:not(.executor-input)').forEach(inp => {
-          inp.onblur = () => saveActiveItem();
-        });
-        row.querySelector('.executor-input').onblur = () => saveActiveItem();
 
         // Кнопка контролю в режимі редагування
         const ctrlBtnEdit = row.querySelector('.ctrl-btn');
@@ -1428,10 +1422,6 @@ function renderAttendees() {
         <input type="text" value="${esc(att.name||'')}" placeholder="ПІБ...">
         <input type="text" value="${esc(att.role||'')}" placeholder="Посада...">`;
       const inputs = row.querySelectorAll('input');
-      // Зберігаємо тільки при blur — не при mousedown
-      inputs.forEach(inp => {
-        inp.onblur = () => saveActiveAtt().then(() => renderAttendees());
-      });
       inputs[0].addEventListener('keydown', e => { if(e.key==='Enter') inputs[1].focus(); });
       setTimeout(() => inputs[0]?.focus(), 30);
     } else {
@@ -1515,7 +1505,7 @@ document.addEventListener('mousedown', e => {
   if (activeItemIdx !== null) {
     const active = itemsWrap?.querySelector('.item-row.active');
     if (active && !active.contains(e.target) && e.target !== addItemBtn && !e.target.closest('.item-row')) {
-      activeItemIdx = null; renderItems();
+      saveActiveItem().then(() => renderItems());
     }
   }
   if (deletingItemIdx !== null && !e.target.closest('.item-del-btn') && !e.target.closest('.item-row.deleting')) {
@@ -1524,7 +1514,7 @@ document.addEventListener('mousedown', e => {
   if (activeAttIdx !== null) {
     const active = attBody?.querySelector('.att-row.active');
     if (active && !active.contains(e.target) && e.target !== addAttBtn && !e.target.closest('.att-row')) {
-      activeAttIdx = null; renderAttendees();
+      saveActiveAtt().then(() => renderAttendees());
     }
   }
   if (deletingAttIdx !== null && !e.target.closest('.att-del-btn') && !e.target.closest('.att-row.deleting')) {
