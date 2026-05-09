@@ -1501,7 +1501,7 @@ document.addEventListener('mousedown', e => {
   }
   if (activeAttIdx !== null) {
     const active = attBody?.querySelector('.att-row.active');
-    if (active && !active.contains(e.target) && e.target !== addAttBtn) {
+    if (active && !active.contains(e.target) && e.target !== addAttBtn && !e.target.closest('.att-row')) {
       saveActiveAtt().then(() => renderAttendees());
     }
   }
