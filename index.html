@@ -134,28 +134,27 @@ status('✅ PDF готовий (' + Math.round(blob.size/1024) + ' KB) — пе�
 
 const file = new File([blob], 'Протокол_№3.pdf', {type:'application/pdf'});
 const url = URL.createObjectURL(blob);
-const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-const isAndroid = /Android/.test(navigator.userAgent);
 
-if ((isIOS || isAndroid) && navigator.share) {
+// Показуємо debug інфо
+const ua = navigator.userAgent;
+const isIPhone = /iPhone/.test(ua);
+const isIPad = /iPad/.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+const hasShare = typeof navigator.share === 'function';
+status(`iPhone:${isIPhone} iPad:${isIPad} share:${hasShare}`);
+
+if (hasShare) {
 try {
 await navigator.share({files:[file]});
 status('✅ Передано!');
 setTimeout(()=>URL.revokeObjectURL(url), 5000);
 return;
 } catch(e) {
-if (e.name==='AbortError') { status('ℹ️ Скасовано'); URL.revokeObjectURL(url); return; }
+status('❌ '+e.name+': '+e.message);
+if (e.name==='AbortError') { URL.revokeObjectURL(url); return; }
 }
 }
 
-if (isIOS) {
-// iPad/iPhone fallback — відкриваємо в поточному вікні
-window.location.href = url;
-status('✅ PDF відкрито — збережіть через 📤');
-return;
-}
-
-// Комп'ютер і Android — пряме завантаження
+// Комп'ютер — пряме завантаження
 const a = document.createElement('a');
 a.href = url; a.download = 'Протокол_№3.pdf'; a.click();
 status('✅ PDF завантажується...');
