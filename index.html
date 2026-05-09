@@ -134,9 +134,10 @@ status('✅ PDF готовий (' + Math.round(blob.size/1024) + ' KB) — пе�
 
 const file = new File([blob], 'Протокол_№3.pdf', {type:'application/pdf'});
 const url = URL.createObjectURL(blob);
-const isMobile = /iPhone|iPad|iPod|Android/.test(navigator.userAgent);
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+const isAndroid = /Android/.test(navigator.userAgent);
 
-if (isMobile && navigator.share) {
+if ((isIOS || isAndroid) && navigator.share) {
 try {
 await navigator.share({files:[file]});
 status('✅ Передано!');
@@ -147,7 +148,14 @@ if (e.name==='AbortError') { status('ℹ️ Скасовано'); URL.revokeObje
 }
 }
 
-// Комп'ютер або fallback — пряме завантаження
+if (isIOS) {
+// iPad/iPhone fallback — відкриваємо в поточному вікні
+window.location.href = url;
+status('✅ PDF відкрито — збережіть через 📤');
+return;
+}
+
+// Комп'ютер і Android — пряме завантаження
 const a = document.createElement('a');
 a.href = url; a.download = 'Протокол_№3.pdf'; a.click();
 status('✅ PDF завантажується...');
