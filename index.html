@@ -1,4 +1,3 @@
-Content is user-generated and unverified.
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -8,6 +7,7 @@ Content is user-generated and unverified.
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Control Point">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Control Point Protocol&quot;,&quot;short_name&quot;:&quot;Control Point&quot;,&quot;start_url&quot;:&quot;/Control-Point-Protocol/&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%239CA3AF&quot;,&quot;theme_color&quot;:&quot;%232D2D2D&quot;,&quot;orientation&quot;:&quot;portrait&quot;}">
 <title>Control Point</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400&display=swap');
@@ -679,7 +679,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="proto-block-head"><span id="attachments-title">📎 Додатки до протоколу</span></div>
     <div id="attachments-list"></div>
     <input type="file" id="att-file-input" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;">
-    <button class="center-btn blue" id="add-att-btn" onclick="openAddAttachment()">＋</button>
+    <button class="center-btn blue" id="add-file-btn">＋</button>
 
     <div class="block-divider"></div>
 
@@ -1114,6 +1114,7 @@ async function openMeeting(id, data) {
 window.leaveMeeting = async function() {
   await saveActiveItem();
   await saveActiveAtt();
+  loadMeetings();
   showScreen('screen-project');
 };
 
@@ -1476,6 +1477,10 @@ document.getElementById('add-att-btn').addEventListener('click', () => {
     renderAttendees();
     setTimeout(() => document.querySelector('.att-row.active input')?.focus(), 30);
   });
+});
+
+document.getElementById('add-file-btn').addEventListener('click', () => {
+  openAddAttachment();
 });
 
 // Клік поза — зберегти
