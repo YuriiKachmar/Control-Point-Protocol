@@ -1128,8 +1128,13 @@ async function loadItemsLocal() {
   deletingItemIdx = null;
 }
 
+let _savingItem = false;
+let _savingAtt  = false;
+
 async function saveActiveItem() {
-  if (activeItemIdx === null) return;
+  if (_savingItem) return;
+  _savingItem = true;
+  if (activeItemIdx === null) { _savingItem = false; return; }
   const row = document.querySelector('.item-row.active');
   if (!row) return;
   const textarea = row.querySelector('textarea');
@@ -1387,6 +1392,7 @@ async function saveActiveAtt() {
       att.id = ref.id;
     }
   } catch(e) { console.warn('Save att error:', e); }
+  _savingAtt = false;
   activeAttIdx = null;
 }
 
