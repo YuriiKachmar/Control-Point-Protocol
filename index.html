@@ -1114,58 +1114,76 @@ async function openMeeting(id, data) {
 window.leaveMeeting = async function() {
   const savedItemIdx = activeItemIdx;
   const savedAttIdx  = activeAttIdx;
-  // Скидаємо одразу щоб mousedown не зміг викликати повторне збереження
-  activeItemIdx = null;
-  activeAttIdx  = null;
-  _savingItem = false;
-  _savingAtt  = false;
-  // Зберігаємо використовуючи збережені індекси
+
+  // Читаємо дані з DOM поки екран ще видимий
+  let itemData = null;
   if (savedItemIdx !== null) {
     const row = document.querySelector('.item-row.active');
     if (row) {
-      const item = localItems[savedItemIdx];
-      if (item) {
-        item.description = row.querySelector('textarea')?.value.trim() || '';
-        item.executor    = row.querySelector('.executor-input')?.value.trim() || '';
-        const inputs     = row.querySelectorAll('.item-cell input:not(.executor-input)');
-        item.decision    = inputs[0]?.value.trim() || '';
-        item.note        = inputs[1]?.value.trim() || '';
-        try {
-          const {uid,pid,mid} = ids();
-          if (item.id) {
-            await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'items',item.id),
-              {description:item.description,executor:item.executor,decision:item.decision,note:item.note});
-          } else {
-            const ref = await addDoc(collection(db,'users',uid,'projects',pid,'meetings',mid,'items'),
-              {number:item.number,description:item.description,executor:item.executor,decision:item.decision,note:item.note,createdAt:serverTimestamp()});
-            item.id = ref.id;
-          }
-        } catch(e) { console.warn(e); }
-      }
+      const inputs = row.querySelectorAll('.item-cell input:not(.executor-input)');
+      itemData = {
+        description: row.querySelector('textarea')?.value.trim() || '',
+        executor:    row.querySelector('.executor-input')?.value.trim() || '',
+        decision:    inputs[0]?.value.trim() || '',
+        note:        inputs[1]?.value.trim() || ''
+      };
     }
   }
+  let attData = null;
   if (savedAttIdx !== null) {
     const row = document.querySelector('.att-row.active');
     if (row) {
-      const att = localAttendees[savedAttIdx];
-      if (att) {
-        const ins = row.querySelectorAll('input');
-        att.name = ins[0]?.value.trim() || att.name || '';
-        att.role = ins[1]?.value.trim() || '';
-        try {
-          const {uid,pid,mid} = ids();
-          if (att.id) {
-            await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'attendees',att.id),
-              {name:att.name,role:att.role});
-          } else {
-            const ref = await addDoc(collection(db,'users',uid,'projects',pid,'meetings',mid,'attendees'),
-              {name:att.name,role:att.role,createdAt:serverTimestamp()});
-            att.id = ref.id;
-          }
-        } catch(e) { console.warn(e); }
-      }
+      const ins = row.querySelectorAll('input');
+      attData = {
+        name: ins[0]?.value.trim() || '',
+        role: ins[1]?.value.trim() || ''
+      };
     }
   }
+
+  // Скидаємо щоб mousedown не викликав повторне збереження
+  activeItemIdx = null;
+  activeAttIdx  = null;
+  _savingItem   = false;
+  _savingAtt    = false;
+
+  // Зберігаємо в Firestore
+  if (savedItemIdx !== null && itemData) {
+    const item = localItems[savedItemIdx];
+    if (item) {
+      Object.assign(item, itemData);
+      try {
+        const {uid,pid,mid} = ids();
+        if (item.id) {
+          await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'items',item.id),
+            {description:item.description,executor:item.executor,decision:item.decision,note:item.note});
+        } else {
+          const ref = await addDoc(collection(db,'users',uid,'projects',pid,'meetings',mid,'items'),
+            {number:item.number,description:item.description,executor:item.executor,decision:item.decision,note:item.note,control:false,createdAt:serverTimestamp()});
+          item.id = ref.id;
+        }
+      } catch(e) { console.warn(e); }
+    }
+  }
+  if (savedAttIdx !== null && attData) {
+    const att = localAttendees[savedAttIdx];
+    if (att) {
+      att.name = attData.name || att.name || '';
+      att.role = attData.role || '';
+      try {
+        const {uid,pid,mid} = ids();
+        if (att.id) {
+          await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'attendees',att.id),
+            {name:att.name,role:att.role});
+        } else {
+          const ref = await addDoc(collection(db,'users',uid,'projects',pid,'meetings',mid,'attendees'),
+            {name:att.name,role:att.role,createdAt:serverTimestamp()});
+          att.id = ref.id;
+        }
+      } catch(e) { console.warn(e); }
+    }
+  }
+
   loadMeetings();
   showScreen('screen-project');
 };
