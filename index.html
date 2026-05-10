@@ -2121,23 +2121,24 @@ window.printMeeting = async function() {
         try {
           await navigator.share({files:[file]});
           setTimeout(()=>URL.revokeObjectURL(url), 5000);
-          return;
         } catch(e) {
-          if (e.name==='AbortError') { URL.revokeObjectURL(url); return; }
+          if (e.name!=='AbortError') {
+            const a2 = document.createElement('a');
+            a2.href = url; a2.download = filename; a2.click();
+            setTimeout(()=>URL.revokeObjectURL(url), 10000);
+          }
         }
+      } else {
+        // Комп'ютер — завантаження
+        const a2 = document.createElement('a');
+        a2.href = url; a2.download = filename; a2.click();
+        setTimeout(()=>URL.revokeObjectURL(url), 10000);
       }
-      // Комп'ютер — завантаження
-      const a2 = document.createElement('a');
-      a2.href = url; a2.download = filename; a2.click();
-      setTimeout(()=>URL.revokeObjectURL(url), 10000);
 
     } catch(e) { showToast('Помилка: '+(e.message||'невідома')); console.error(e); }
     saveBtn.disabled = false;
     saveBtn.textContent = '💾 Зберегти';
   });
-
-  // ── Кнопка ВКЛАСТИ — в розробці ──
-  document.getElementById('btn-share').onclick = () => showToast('Вкласти — в розробці');
 
   // Дозволяємо pinch-zoom на екрані перегляду
   document.querySelector('meta[name=viewport]').content =
