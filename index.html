@@ -637,7 +637,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <!-- ЕКРАН 3 — ПРОТОКОЛ -->
 <div id="screen-meeting" class="screen">
   <div id="meeting-header" class="protocol-header">
-    <button class="back-btn" onclick="leaveMeeting()">◀</button>
+    <button class="back-btn" onclick="leaveMeeting()">◀ Назад</button>
     <div class="protocol-header-center">
       <div class="protocol-header-num"  id="meeting-header-num">Протокол №—</div>
       <div class="protocol-header-date" id="meeting-header-date">—</div>
@@ -1972,18 +1972,18 @@ window.printMeeting = async function() {
   setTimeout(applyPreviewScale, 300);
   window.addEventListener('resize', applyPreviewScale);
 
-  // ── Кнопка ДРУКУВАТИ ──
-  const printBtn = document.getElementById('btn-print');
-  printBtn.onclick = null;
-  printBtn.addEventListener('click', function handler() {
-    printBtn.removeEventListener('click', handler);
-    window.print();
-    setTimeout(() => printBtn.addEventListener('click', handler), 500);
-  });
+  // ── Кнопка ДРУКУВАТИ — скидаємо всі listeners через clone ──
+  const printBtnOld = document.getElementById('btn-print');
+  const printBtn = printBtnOld.cloneNode(true);
+  printBtnOld.parentNode.replaceChild(printBtn, printBtnOld);
+  printBtn.addEventListener('click', () => window.print());
 
-  // ── Кнопка ЗБЕРЕГТИ ──
-  const saveBtn = document.getElementById('btn-save');
-  saveBtn.onclick = null;
+  // ── Кнопка ЗБЕРЕГТИ — скидаємо стан і listeners через clone ──
+  const saveBtnOld = document.getElementById('btn-save');
+  const saveBtn = saveBtnOld.cloneNode(true);
+  saveBtnOld.parentNode.replaceChild(saveBtn, saveBtnOld);
+  saveBtn.disabled = false;
+  saveBtn.textContent = '💾 Зберегти';
   saveBtn.addEventListener('click', async () => {
     saveBtn.disabled = true;
     saveBtn.textContent = '⏳...';
@@ -2505,19 +2505,27 @@ function applyPreviewScale() {
   if (!el || !area) return;
   const avW = area.clientWidth - 40;
   const elW = 794;
-  if (avW > 0 && avW < elW) {
-    const scale = avW / elW;
-    el.style.transform       = `scale(${scale})`;
-    el.style.transformOrigin = 'top center';
-    el.style.marginLeft      = `${elW*(1-scale)/-2}px`;
-    el.style.marginRight     = `${elW*(1-scale)/-2}px`;
-    el.style.marginBottom    = `${el.scrollHeight*scale - el.scrollHeight + 20}px`;
-  } else {
-    el.style.transform    = 'none';
-    el.style.marginLeft   = 'auto';
-    el.style.marginRight  = 'auto';
-    el.style.marginBottom = '20px';
+  const scale = (avW > 0 && avW < elW) ? avW / elW : 1;
+
+  function applyScale(elem) {
+    if (scale < 1) {
+      elem.style.transform       = `scale(${scale})`;
+      elem.style.transformOrigin = 'top center';
+      elem.style.marginLeft      = `${elW*(1-scale)/-2}px`;
+      elem.style.marginRight     = `${elW*(1-scale)/-2}px`;
+      elem.style.marginBottom    = `${elem.scrollHeight*scale - elem.scrollHeight + 20}px`;
+      elem.style.marginTop       = '0';
+    } else {
+      elem.style.transform    = 'none';
+      elem.style.marginLeft   = 'auto';
+      elem.style.marginRight  = 'auto';
+      elem.style.marginBottom = '20px';
+      elem.style.marginTop    = '20px';
+    }
   }
+
+  applyScale(el);
+  area.querySelectorAll('.photo-page-item').forEach(pi => applyScale(pi));
 }
 
 window.leavePrintScreen = function() {
