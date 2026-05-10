@@ -706,7 +706,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     </div>
     <div class="settings-section">
       <div class="settings-label">Резервне копіювання</div>
-      <div class="settings-row" onclick="manualBackup()"><span>💾 Зробити резервну копію</span><span class="settings-val">→</span></div>
+      <div class="settings-row" onclick="testControlCheck()"><span>🔔 Перевірити контроль (тест)</span><span class="settings-val">→</span></div>
       <div class="settings-row" onclick="showToast('Відновлення — в розробці')"><span>🔄 Відновити з резервної копії</span><span class="settings-val">→</span></div>
     </div>
     <div class="settings-section">
@@ -2537,6 +2537,12 @@ window.leavePrintScreen = function() {
 };
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
+window.testControlCheck = async function() {
+  localStorage.removeItem('cp_control_check');
+  await checkDailyControl();
+  showToast('Перевірку виконано');
+};
+
 async function checkDailyControl() {
   const today = new Date().toISOString().slice(0, 10);
   const lastCheck = localStorage.getItem('cp_control_check');
