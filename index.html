@@ -1037,7 +1037,6 @@ async function loadMeetings() {
     return;
   }
   list.innerHTML = '';
-  list.innerHTML = '';
   for (const d of snap.docs) {
     const m = d.data();
     // Рахуємо пункти на контролі напряму
@@ -1408,6 +1407,7 @@ async function deleteItem(idx) {
 }
 
 document.getElementById('add-item-btn').addEventListener('click', () => {
+  _savingItem = false; // скидаємо guard перед збереженням
   saveActiveItem().then(() => {
     const num = localItems.length + 1;
     localItems.push({ id: null, number: num, description:'', executor:'', decision:'', note:'', control: false });
@@ -1531,6 +1531,7 @@ async function deleteAtt(idx) {
 }
 
 document.getElementById('add-att-btn').addEventListener('click', () => {
+  _savingAtt = false; // скидаємо guard перед збереженням
   saveActiveAtt().then(() => {
     localAttendees.push({ id: null, name:'', role:'' });
     activeAttIdx   = localAttendees.length - 1;
@@ -2476,97 +2477,6 @@ function showControlModal(items, title) {
 }
 
 // ── ГЕНЕРАЦІЯ PDF ──
-window.shareMeeting = async function() {
-  const whatsapp   = currentProject.whatsappGroup || '';
-  const meetingNum = currentMeeting.number;
-
-  const { box, addCloseBtn, close } = createModal('Поділитись протоколом', '📤 ');
-
-  const status = document.createElement('div');
-  status.style.cssText = 'font-size:12px;color:#6B6B6B;text-align:center;padding:4px 0 8px;';
-  status.textContent = 'Оберіть спосіб:';
-  box.appendChild(status);
-
-  function makeBtn(label, bg, color) {
-    const b = document.createElement('button');
-    b.textContent = label;
-    b.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:${bg};color:${color};font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
-    box.appendChild(b);
-    return b;
-  }
-
-  // Кнопка — зберегти PDF
-  const saveBtn = makeBtn('💾 Зберегти PDF', '#2D2D2D', 'white');
-  saveBtn.addEventListener('click', async () => {
-    saveBtn.disabled = true;
-    status.textContent = '⏳ Підготовка...';
-    try {
-      const { html } = await generatePDF(t => { status.textContent = t; });
-      const w = window.open('', '_blank');
-      if (!w) { showToast('Дозвольте спливаючі вікна в браузері'); return; }
-      w.document.write(html);
-      w.document.close();
-      // Підказка для iOS
-      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-      if (isIOS) {
-        status.textContent = '✅ Документ відкрито. Натисніть 📤 → Опції → PDF → Зберегти у файли';
-      } else {
-        status.textContent = '✅ Документ відкрито. Натисніть Ctrl+P → Зберегти як PDF';
-      }
-    } catch(e) {
-      status.textContent = '❌ Помилка';
-      console.error(e);
-    }
-    saveBtn.disabled = false;
-  });
-
-  // Кнопка — WhatsApp група
-  if (whatsapp) {
-    const wb = makeBtn('📱 WhatsApp група', '#25D366', 'white');
-    wb.addEventListener('click', async () => {
-      wb.disabled = true;
-      status.textContent = '⏳ Підготовка...';
-      try {
-        const { html } = await generatePDF(t => { status.textContent = t; });
-        const w = window.open('', '_blank');
-        if (!w) { showToast('Дозвольте спливаючі вікна'); return; }
-        w.document.write(html);
-        w.document.close();
-        window.open(whatsapp, '_blank');
-        status.textContent = '✅ Збережіть PDF через 📤 і прикріпіть у групу';
-      } catch(e) { status.textContent = '❌ Помилка'; }
-      wb.disabled = false;
-    });
-  }
-
-  // Кнопка — поділитись через системний Share Sheet (тільки мобільний)
-  if (/iPhone|iPad|iPod|Android/.test(navigator.userAgent)) {
-    const shareBtn = makeBtn('📤 Поділитись через...', '#F9FAFB', '#2D2D2D');
-    shareBtn.style.border = '1px solid #EBEBEB';
-    shareBtn.addEventListener('click', async () => {
-      shareBtn.disabled = true;
-      status.textContent = '⏳ Підготовка...';
-      try {
-        const { html, filename } = await generatePDF(t => { status.textContent = t; });
-        const blob = new Blob([html], { type: 'text/html' });
-        const file = new File([blob], filename.replace('.pdf', '.html'), { type: 'text/html' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'Протокол №' + meetingNum });
-          close();
-        } else {
-          const w = window.open('', '_blank');
-          if (w) { w.document.write(html); w.document.close(); }
-          status.textContent = '✅ Збережіть через 📤 → PDF';
-        }
-      } catch(e) { status.textContent = '❌ Помилка'; }
-      shareBtn.disabled = false;
-    });
-  }
-
-  box.appendChild(status);
-  addCloseBtn('Скасувати');
-};
-
 window.leavePrintScreen = function() {
   document.querySelector('meta[name=viewport]').content =
     'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
