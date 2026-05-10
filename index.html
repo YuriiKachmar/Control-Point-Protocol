@@ -617,17 +617,16 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-project" class="screen">
   <div class="app-header neutral" id="header-project">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-home')">◀</button>
-      <div>
-        <div class="app-header-title">Усі протоколи</div>
-        <div class="app-header-sub" id="project-header-name">—</div>
-      </div>
+      <button class="back-btn" onclick="showScreen('screen-home')">◀ Назад</button>
+    </div>
+    <div style="position:absolute;left:0;right:0;text-align:center;pointer-events:none;">
+      <div class="app-header-title" id="project-header-title">Усі протоколи</div>
+      <div class="app-header-sub" id="project-header-name">—</div>
     </div>
     <div class="app-header-right">
       <button class="icon-btn" onclick="showAllControlScreen()">
         <svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:middle;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="currentColor"/></svg>
       </button>
-      <button class="icon-btn" onclick="showScreen('screen-analytics')">📊</button>
       <button class="icon-btn" onclick="openProjectSettings()">⚙️</button>
     </div>
   </div>
@@ -1969,6 +1968,10 @@ window.printMeeting = async function() {
   document.getElementById('print-header-sub').textContent = `Протокол № ${meetingNum}`;
   showScreen('screen-print');
 
+  setTimeout(applyPreviewScale, 50);
+  setTimeout(applyPreviewScale, 300);
+  window.addEventListener('resize', applyPreviewScale);
+
   // ── Кнопка ДРУКУВАТИ ──
   const printBtn = document.getElementById('btn-print');
   printBtn.onclick = null;
@@ -2496,9 +2499,31 @@ function showControlModal(items, title) {
 }
 
 // ── ГЕНЕРАЦІЯ PDF ──
+function applyPreviewScale() {
+  const el   = document.getElementById('protocol-doc');
+  const area = document.getElementById('print-preview-area');
+  if (!el || !area) return;
+  const avW = area.clientWidth - 40;
+  const elW = 794;
+  if (avW > 0 && avW < elW) {
+    const scale = avW / elW;
+    el.style.transform       = `scale(${scale})`;
+    el.style.transformOrigin = 'top center';
+    el.style.marginLeft      = `${elW*(1-scale)/-2}px`;
+    el.style.marginRight     = `${elW*(1-scale)/-2}px`;
+    el.style.marginBottom    = `${el.scrollHeight*scale - el.scrollHeight + 20}px`;
+  } else {
+    el.style.transform    = 'none';
+    el.style.marginLeft   = 'auto';
+    el.style.marginRight  = 'auto';
+    el.style.marginBottom = '20px';
+  }
+}
+
 window.leavePrintScreen = function() {
   document.querySelector('meta[name=viewport]').content =
     'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
+  window.removeEventListener('resize', applyPreviewScale);
   showScreen('screen-meeting');
 };
 
