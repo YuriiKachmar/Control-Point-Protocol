@@ -6,8 +6,9 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Control Point">
-<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Control Point Protocol&quot;,&quot;short_name&quot;:&quot;Control Point&quot;,&quot;start_url&quot;:&quot;/Control-Point-Protocol/&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%239CA3AF&quot;,&quot;theme_color&quot;:&quot;%232D2D2D&quot;,&quot;orientation&quot;:&quot;portrait&quot;}">
+<meta name="apple-mobile-web-app-title" content="ПРОТОКОЛ">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;ПРОТОКОЛ&quot;,&quot;short_name&quot;:&quot;ПРОТОКОЛ&quot;,&quot;start_url&quot;:&quot;/Control-Point-Protocol/&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%239CA3AF&quot;,&quot;theme_color&quot;:&quot;%232D2D2D&quot;,&quot;orientation&quot;:&quot;portrait&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;icon-192.png&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/png&quot;},{&quot;src&quot;:&quot;icon-512.png&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/png&quot;}]}">
 <title>Control Point</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400&display=swap');
@@ -559,8 +560,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <!-- LOADER -->
 <div id="screen-loader" class="screen active">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;">
-    <div class="loader-icon">📋</div>
-    <div class="loader-text">Control Point</div>
+    <img src="icon-192.png" style="width:96px;height:96px;border-radius:22px;margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+    <div class="loader-text">Control Point <strong>PROTOCOL</strong></div>
     <div class="spinner"></div>
   </div>
 </div>
@@ -568,7 +569,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <!-- AUTH -->
 <div id="screen-auth" class="screen">
   <div class="auth-logo">
-    <div class="auth-logo-icon">📋</div>
+    <img src="icon-192.png" style="width:72px;height:72px;border-radius:18px;margin:0 auto 14px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.3);">
     <h1>Control Point</h1>
     <p>Протоколи нарад</p>
   </div>
@@ -847,7 +848,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, increment }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -861,9 +862,11 @@ const firebaseConfig = {
   appId: "1:756000624671:web:55a70d705b332dcc4f452a"
 };
 
-const app     = initializeApp(firebaseConfig);
-const auth    = getAuth(app);
-const db      = getFirestore(app);
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+setPersistence(auth, browserLocalPersistence).catch(console.warn);
 
 let currentUser    = null;
 let currentProject = null;
