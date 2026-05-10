@@ -1233,6 +1233,7 @@ async function saveActiveItem() {
       await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid), { openItemsCount: increment(1) });
     }
   } catch(e) { console.warn('Save item error:', e); }
+  _savingItem = false;
   activeItemIdx = null;
 }
 
