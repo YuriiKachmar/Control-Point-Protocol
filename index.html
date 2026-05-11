@@ -105,8 +105,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 /* ══ GLOBAL SPINNER ══ */
 #global-spinner { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.25); z-index:9999; align-items:center; justify-content:center; }
 #global-spinner.active { display:flex; }
-#global-spinner .spin-box { width:56px; height:56px; background:rgba(30,58,95,0.9); border-radius:16px; display:flex; align-items:center; justify-content:center; }
-#global-spinner .spin-box .spin { width:28px; height:28px; border:3px solid rgba(255,255,255,0.2); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; }
+#global-spinner .spin-box { width:80px; height:80px; background:rgba(255,255,255,0.95); border-radius:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 24px rgba(0,0,0,0.2); }
+#global-spinner .spin-box img { width:52px; height:52px; animation:hourglass-pulse 1.2s ease-in-out infinite; }
+@keyframes hourglass-pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.7;transform:scale(0.9);} }
 
 /* ══ AUTH ══ */
 #screen-auth { background: linear-gradient(160deg, #1e3a5f 0%, #0f2744 60%, #1a1a2e 100%); align-items: center; justify-content: center; padding: 32px 24px; overflow-y: auto; }
@@ -652,7 +653,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="protocol-header-btns">
       <button class="icon-btn" onclick="openSendScreen()"><img src="icon-send.png" style="width:20px;height:20px;vertical-align:middle;"></button>
       <button class="icon-btn" onclick="showControlScreen()" title="Контроль" style="display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><circle cx="12" cy="13" r="8" stroke="white" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#60a5fa"/></svg></button>
-      <button class="icon-btn" onclick="showToast('Налаштування протоколу — в розробці')"><img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;"></button>
+      <button class="icon-btn" onclick="openMeetingSettings()"><img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;"></button>
     </div>
   </div>
 
@@ -826,6 +827,42 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   </div>
 </div>
 
+<!-- ОПЕРАЦІЇ З ПРОТОКОЛОМ -->
+<div id="screen-meeting-settings" class="screen">
+  <div class="app-header neutral" id="header-meeting-settings">
+    <div class="app-header-left">
+      <button class="back-btn" onclick="leaveMeetingSettings()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
+    </div>
+    <div class="app-header-right">
+      <div>
+        <div class="app-header-title">Операції з протоколом <img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"></div>
+        <div class="app-header-sub" id="ms-header-sub"></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-area no-fab">
+    <div class="settings-section">
+      <div class="settings-label">Дані протоколу</div>
+      <div class="settings-card">
+        <div class="settings-field">
+          <label class="settings-field-label">Номер протоколу</label>
+          <input class="settings-field-input" id="ms-number" type="number" placeholder="Номер">
+        </div>
+        <div class="settings-field">
+          <label class="settings-field-label">Місце проведення</label>
+          <input class="settings-field-input" id="ms-location" type="text" placeholder="Місце проведення">
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">Небезпечна зона</div>
+      <div class="settings-row settings-danger" onclick="deleteMeeting()">
+        <span>🗑 Видалити протокол</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast"></div>
 
@@ -851,7 +888,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 </div>
 
 <!-- GLOBAL SPINNER -->
-<div id="global-spinner"><div class="spin-box"><div class="spin"></div></div></div>
+<div id="global-spinner"><div class="spin-box"><img src="icon-wait.png" alt="⏳"></div></div>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -2484,6 +2521,69 @@ function askDescription(fileName) {
 }
 
 // ══ КІНЕЦЬ ДОДАТКІВ ══
+// ── НАЛАШТУВАННЯ ПРОТОКОЛУ ──
+window.openMeetingSettings = function() {
+  const palette = currentProject.palette || TILE_COLORS[currentProject.colorIdx||0];
+  const hdr = document.getElementById('header-meeting-settings');
+  hdr.style.background = palette.bg;
+  hdr.querySelectorAll('.back-btn,.icon-btn').forEach(b => {
+    b.style.background  = 'rgba(0,0,0,0.08)';
+    b.style.color       = palette.text;
+    b.style.borderColor = 'rgba(0,0,0,0.1)';
+  });
+  hdr.querySelectorAll('.app-header-title,.app-header-sub').forEach(e => e.style.color = palette.text);
+  document.getElementById('ms-header-sub').textContent = `Протокол № ${currentMeeting.number}`;
+  document.getElementById('ms-number').value   = currentMeeting.number || '';
+  document.getElementById('ms-location').value = currentMeeting.location || '';
+  document.getElementById('ms-number').onblur  = () => saveMeetingSettings();
+  document.getElementById('ms-location').onblur = () => saveMeetingSettings();
+  showScreen('screen-meeting-settings');
+};
+
+async function saveMeetingSettings() {
+  const number   = parseInt(document.getElementById('ms-number').value) || currentMeeting.number;
+  const location = document.getElementById('ms-location').value.trim();
+  try {
+    const {uid,pid,mid} = ids();
+    await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid), { number, location });
+    currentMeeting.number   = number;
+    currentMeeting.location = location;
+    document.getElementById('ms-header-sub').textContent      = `Протокол № ${number}`;
+    document.getElementById('meeting-header-num').textContent = `Протокол № ${number}`;
+    document.getElementById('meeting-header-loc').textContent = location || '—';
+    document.getElementById('attachments-title').textContent  = `📎 Додатки до протоколу №${number}`;
+    showToast('✓ Збережено');
+  } catch(e) { console.warn(e); }
+}
+
+window.leaveMeetingSettings = function() {
+  showScreen('screen-meeting');
+};
+
+window.deleteMeeting = async function() {
+  if (!confirm(`Видалити Протокол №${currentMeeting.number}? Це незворотньо.`)) return;
+  showSpinner();
+  try {
+    const {uid,pid,mid} = ids();
+    for (const sub of ['items','attendees','attachments']) {
+      const snap = await getDocs(collection(db,'users',uid,'projects',pid,'meetings',mid,sub));
+      for (const d of snap.docs) await deleteDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,sub,d.id));
+    }
+    await deleteDoc(doc(db,'users',uid,'projects',pid,'meetings',mid));
+    await updateDoc(doc(db,'users',uid,'projects',pid), { meetingsCount: increment(-1) });
+    hideSpinner();
+    showToast('✅ Протокол видалено');
+    currentMeeting = null;
+    loadMeetings(pid);
+    showScreen('screen-project');
+  } catch(e) {
+    hideSpinner();
+    showToast('Помилка видалення');
+    console.error(e);
+  }
+};
+
+// ── КОНТРОЛЬ ──
 window.showAllControlScreen = async function() {
   const uid = currentUser.uid;
   const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
