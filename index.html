@@ -829,7 +829,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="modal-title">Додати новий об'єкт</div>
     <input class="modal-input" id="new-project-name" placeholder="Назва об'єкту" type="text">
     <input class="modal-input" id="new-project-address" placeholder="Адреса" type="text">
-    <button class="modal-btn modal-btn-primary" onclick="saveProject()">Зберегти</button>
+    <button id="btn-save-project" class="modal-btn modal-btn-primary" onclick="saveProject()">Зберегти</button>
     <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-project')">Скасувати</button>
   </div>
 </div>
@@ -838,7 +838,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div class="modal-overlay" id="modal-meeting" onclick="handleModalClick(event,'modal-meeting')">
   <div class="modal">
     <div class="modal-title">Додати новий протокол</div>
-    <button class="modal-btn modal-btn-primary" onclick="saveMeeting()">Створити протокол</button>
+    <button id="btn-create-meeting" class="modal-btn modal-btn-primary">Створити протокол</button>
     <input class="modal-input" id="new-meeting-location" placeholder="Місце проведення (необов'язково)" type="text">
     <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-meeting')">Скасувати</button>
   </div>
@@ -879,6 +879,7 @@ let activeAttIdx     = null;
 let deletingItemIdx = null;
 let deletingAttIdx  = null;
 let _fixedMeetingProjId = null;
+let _savingMeeting = false;
 let longPressTimer  = null;
 
 const TILE_COLORS = [
@@ -1069,21 +1070,33 @@ async function loadMeetings() {
 window.openAddMeeting = () => {
   document.getElementById('new-meeting-location').value = '';
   _fixedMeetingProjId = currentProject.id;
+  // Скидаємо listeners на кнопці через clone
+  const btn = document.getElementById('btn-create-meeting');
+  if (btn) {
+    const newBtn = btn.cloneNode(true);
+    btn.parentNode.replaceChild(newBtn, btn);
+    newBtn.addEventListener('click', saveMeeting);
+  }
   openModal('modal-meeting');
 };
 
 window.saveMeeting = async function() {
+  if (_savingMeeting) return;
+  _savingMeeting = true;
   const location = document.getElementById('new-meeting-location').value.trim();
   const projId   = _fixedMeetingProjId || currentProject.id;
   try {
     const uid    = currentUser.uid;
     const ref    = collection(db,'users',uid,'projects',projId,'meetings');
     const snap   = await getDocs(ref);
-    const number = snap.size + 1;
+    let maxNum = 0;
+    snap.forEach(d => { const n = d.data().number || 0; if (n > maxNum) maxNum = n; });
+    const number = maxNum + 1;
     await addDoc(ref, { number, location, date: serverTimestamp(), status:'draft', openItemsCount:0, createdAt: serverTimestamp() });
     await updateDoc(doc(db,'users',uid,'projects',projId), { meetingsCount: increment(1) });
     closeModal('modal-meeting'); showToast(`✅ Протокол №${number} створено`); loadMeetings();
-  } catch(e) { showToast('Помилка збереження'); }
+  } catch(e) { showToast('Помилка збереження'); console.error(e); }
+  _savingMeeting = false;
 };
 
 // ── MEETING SCREEN ──
