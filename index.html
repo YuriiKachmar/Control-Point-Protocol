@@ -1117,26 +1117,20 @@ async function saveMeeting(projId) {
   if (!projId) return;
   const btn = document.getElementById('btn-create-meeting');
   if (btn) btn.disabled = true;
-  let newNumber = 0;
   try {
     const uid         = currentUser.uid;
     const meetingsRef = collection(db,'users',uid,'projects',projId,'meetings');
     const location    = document.getElementById('new-meeting-location').value.trim();
-
-    await runTransaction(db, async (transaction) => {
-      const snap = await getDocs(query(meetingsRef, orderBy('number','desc'), limit(1)));
-      const maxNum = snap.empty ? 0 : (snap.docs[0].data().number || 0);
-      newNumber = maxNum + 1;
-      const newRef = doc(meetingsRef);
-      transaction.set(newRef, {
-        number: newNumber, location, date: serverTimestamp(),
-        status: 'draft', openItemsCount: 0, controlCount: 0, createdAt: serverTimestamp()
-      });
-      transaction.update(doc(db,'users',uid,'projects',projId), { meetingsCount: increment(1) });
+    const snap        = await getDocs(query(meetingsRef, orderBy('number','desc'), limit(1)));
+    const maxNum      = snap.empty ? 0 : (snap.docs[0].data().number || 0);
+    const number      = maxNum + 1;
+    await addDoc(meetingsRef, {
+      number, location, date: serverTimestamp(),
+      status: 'draft', openItemsCount: 0, controlCount: 0, createdAt: serverTimestamp()
     });
-
+    await updateDoc(doc(db,'users',uid,'projects',projId), { meetingsCount: increment(1) });
     closeModal('modal-meeting');
-    showToast(`✅ Протокол №${newNumber} створено`);
+    showToast(`✅ Протокол №${number} створено`);
     if (currentProject?.id === projId) loadMeetings(projId);
   } catch(e) {
     console.error(e);
