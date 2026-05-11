@@ -1030,8 +1030,11 @@ function openProject(id, data, palette) {
 // ── MEETINGS ──
 async function loadMeetings() {
   if (!currentProject) return;
-  const uid  = currentUser.uid;
-  const snap = await getDocs(query(collection(db,'users',uid,'projects',currentProject.id,'meetings'), orderBy('number','desc')));
+  const uid = currentUser.uid;
+  const pid = currentProject.id; // фіксуємо ID одразу
+  const snap = await getDocs(query(collection(db,'users',uid,'projects',pid,'meetings'), orderBy('number','desc')));
+  // Перевіряємо що поточний проект не змінився поки завантажувались дані
+  if (!currentProject || currentProject.id !== pid) return;
   const list = document.getElementById('meetings-list');
   if (snap.empty) {
     list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Протоколів ще немає.</p></div>`;
