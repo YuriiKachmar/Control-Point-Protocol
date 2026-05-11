@@ -12,74 +12,37 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { height: 100%; }
-body { font-family: 'Arsenal', Arial, sans-serif; background: #9CA3AF; color: #1a1a2e; height: 100vh; height: 100dvh; overflow: hidden; user-select: none; }
+body { font-family: 'Arsenal', Arial, sans-serif; background: #f0f2f0; color: #1a1a2e; height: 100vh; height: 100dvh; overflow: hidden; user-select: none; }
 body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { display: none !important; }
 .screen { display: none; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
 .screen.active { display: flex; }
-
-/* ══ ПАЛІТРА ПАСТЕЛЬНИХ КОЛЬОРІВ ══ */
-:root {
-  --tile-1: #DBEAFE; --tile-1d: #1E3A8A; --tile-1m: #3B82F6;
-  --tile-2: #F3E8FF; --tile-2d: #581C87; --tile-2m: #A855F7;
-  --tile-3: #DCFCE7; --tile-3d: #14532D; --tile-3m: #22C55E;
-  --tile-4: #FEF9C3; --tile-4d: #78350F; --tile-4m: #CA8A04;
-  --tile-5: #FFE4E6; --tile-5d: #881337; --tile-5m: #F43F5E;
-  --tile-6: #CCFBF1; --tile-6d: #134E4A; --tile-6m: #14B8A6;
-  --tile-7: #FEE2E2; --tile-7d: #7F1D1D; --tile-7m: #EF4444;
-  --tile-8: #E0E7FF; --tile-8d: #312E81; --tile-8m: #6366F1;
-}
 
 /* ══ ХЕДЕР ══ */
 .app-header {
   padding: 10px 16px;
   padding-top: max(10px, calc(env(safe-area-inset-top) + 6px));
   display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0; transition: background 0.3s;
+  flex-shrink: 0; transition: background 0.4s;
 }
-.app-header.neutral { background: #2D2D2D; }
+.app-header.neutral { background: #64748b; }
 .app-header-left  { display: flex; align-items: center; gap: 10px; }
-.app-header-right { display: flex; gap: 6px; }
-.app-header-title { font-size: 17px; font-weight: 700; }
-.app-header-sub   { font-size: 11px; margin-top: 1px; opacity: 0.6; }
-
-/* Кнопки хедера — адаптуються до кольору */
-.back-btn {
-  font-size: 13px; cursor: pointer; padding: 4px 9px;
-  border-radius: 7px; border: none; font-family: inherit;
-  background: rgba(0,0,0,0.08); color: inherit;
-}
-.icon-btn {
-  background: rgba(0,0,0,0.07);
-  border: 1px solid rgba(0,0,0,0.1);
-  border-radius: 8px; font-size: 18px;
-  padding: 4px 9px; cursor: pointer;
-  font-family: inherit; white-space: nowrap; line-height: 1.4;
-  color: inherit;
-}
-
-/* Хедер екрану 1 — темний */
-#screen-home .app-header { background: #2D2D2D; }
-#screen-home .app-header .back-btn { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); }
-#screen-home .app-header .icon-btn { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.65); }
-#screen-home .app-header .app-header-title { color: white; }
-#screen-home .app-header .app-header-sub { color: rgba(255,255,255,0.4); }
-#screen-settings .app-header { background: #2D2D2D; }
-#screen-settings .app-header .back-btn { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); }
-#screen-settings .app-header .app-header-title { color: white; }
+.app-header-right { display: flex; gap: 8px; }
+.app-header-title { color: white; font-size: 17px; font-weight: 700; }
+.app-header-sub   { color: rgba(255,255,255,0.65); font-size: 11px; margin-top: 1px; }
+.back-btn { color: rgba(255,255,255,0.85); font-size: 14px; cursor: pointer; padding: 4px 8px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); font-family: inherit; }
+.icon-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; font-size: 20px; padding: 4px 10px; cursor: pointer; font-family: inherit; white-space: nowrap; line-height: 1.4; }
 
 /* ══ FAB ══ */
 .fab {
   display: flex; align-items: center; justify-content: center;
-  width: 46px; height: 46px; border-radius: 14px;
-  border: none; font-size: 26px; cursor: pointer;
-  margin: 7px auto 4px; line-height: 1; flex-shrink: 0;
-  background: #2563eb; color: white;
-  box-shadow: 0 6px 20px rgba(37,99,235,0.45), 0 2px 6px rgba(0,0,0,0.15);
-  transition: transform 0.15s, box-shadow 0.15s;
+  width: 52px; height: 52px; background: #2563eb; border-radius: 14px;
+  border: none; color: white; font-size: 28px; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(37,99,235,0.4);
+  margin: 8px auto 4px; line-height: 1; flex-shrink: 0;
 }
-.fab:active { transform: scale(0.93); box-shadow: 0 3px 10px rgba(37,99,235,0.3); }
+.fab:active { opacity: 0.85; }
 
-/* Ландшафтний режим */
+/* Ландшафтний режим телефону */
 @media (max-height: 500px) {
   .app-header { padding: 4px 12px; padding-top: max(4px, calc(env(safe-area-inset-top) + 2px)); }
   .app-header-title { font-size: 14px; }
@@ -89,7 +52,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 }
 
 /* ══ SCROLL ══ */
-.scroll-area { flex: 1; overflow-y: auto; padding: 16px 16px 24px; -webkit-overflow-scrolling: touch; background: #9CA3AF; }
+.scroll-area { flex: 1; overflow-y: auto; padding: 16px 16px 24px; -webkit-overflow-scrolling: touch; }
 .scroll-area.no-fab { padding: 16px 16px 24px; }
 
 /* ══ LOADER ══ */
@@ -118,14 +81,14 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
 /* ══ ПЛИТКИ ══ */
 .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.project-tile { border-radius: 14px; padding: 14px; cursor: pointer; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.15s; position: relative; overflow: hidden; }
+.project-tile { border-radius: 16px; padding: 20px 16px; cursor: pointer; min-height: 130px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.18); transition: transform 0.15s; position: relative; overflow: hidden; }
 .project-tile:active { transform: scale(0.97); }
-.project-tile-name { font-size: 16px; font-weight: 700; line-height: 1.3; }
-.project-tile-address { font-size: 10px; margin-top: 3px; opacity: 0.6; }
-.project-tile-footer { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 12px; }
-.project-tile-count { font-size: 11px; font-weight: 700; opacity: 0.45; }
-.project-tile-label { font-size: 10px; opacity: 0.45; }
-.project-tile-shared { font-size: 10px; color: #C17058; margin-top: 2px; }
+.project-tile::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%); pointer-events: none; }
+.project-tile-name { color: white; font-size: 22px; font-weight: 700; line-height: 1.3; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+.project-tile-address { color: rgba(255,255,255,0.65); font-size: 11px; margin-top: 4px; }
+.project-tile-footer { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 16px; }
+.project-tile-count { color: rgba(255,255,255,0.9); font-size: 28px; font-weight: 700; line-height: 1; }
+.project-tile-label { color: rgba(255,255,255,0.6); font-size: 11px; }
 
 /* ══ КАРТКИ ПРОТОКОЛІВ ══ */
 .meeting-card { background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: transform 0.15s; border-left: 4px solid #e2e8f0; }
@@ -264,21 +227,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .block-divider { height: 28px; display: flex; align-items: center; justify-content: center; margin: 4px 0; }
 .block-divider::before { content: ''; width: 48px; height: 3px; background: #cbd5e1; border-radius: 2px; }
 
-/* ══ ДОДАТКИ ══ */
-.att-row { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; background: white; border-radius: 8px; margin-bottom: 4px; min-height: 44px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
-.att-num-cell { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; height: 100%; border-right: 1px solid #f1f5f9; min-height: 44px; }
-.att-num-cell .num-text { font-size: 10px; color: #94a3b8; }
-.att-row.att-deleting .att-num-cell::before,
-.att-row.att-deleting .att-num-cell::after { content: ''; position: absolute; background: #ef4444; width: 65%; height: 2px; top: 50%; left: 17.5%; border-radius: 2px; pointer-events: none; }
-.att-row.att-deleting .att-num-cell::before { transform: translateY(-50%) rotate(45deg); }
-.att-row.att-deleting .att-num-cell::after  { transform: translateY(-50%) rotate(-45deg); }
-.att-row.att-deleting .att-num-cell { background: rgba(239,68,68,0.07); }
-.att-info { padding: 6px 10px; cursor: pointer; }
-.att-name { font-size: 13px; font-weight: 700; color: #1e293b; }
-.att-desc { font-size: 11px; color: #64748b; margin-top: 1px; }
-.att-type-icon { padding: 0 10px; font-size: 18px; color: #94a3b8; }
-.att-upload-progress { height: 3px; background: #e2e8f0; border-radius: 2px; margin: 2px 0; overflow: hidden; }
-.att-upload-progress-bar { height: 100%; background: #2563eb; border-radius: 2px; transition: width 0.2s; }
+/* ══ ПОПЕРЕДНІЙ ПЕРЕГЛЯД ДРУКУ ══ */
 #print-preview-area {
   flex: 1;
   overflow-y: auto;
@@ -308,8 +257,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 #protocol-doc .doc-title { text-align:center; font-size:13pt; font-weight:700; text-transform:uppercase; margin-bottom:6px; }
 #protocol-doc .doc-sub { text-align:center; font-size:9.5pt; margin-bottom:14px; line-height:1.6; }
 #protocol-doc .doc-meta { display:flex; justify-content:space-between; font-size:9.5pt; margin-bottom:14px; padding-bottom:8px; }
-#protocol-doc .att-section { margin-top:16px; padding-top:10px; border-top:1px solid #e5e7eb; }
-#protocol-doc .att-title { font-weight:700; font-size:9.5pt; margin-bottom:4px; }
+#protocol-doc .sig-section { margin-top:16px; padding-top:10px; }
 #protocol-doc .sig-title { font-weight:700; font-size:9.5pt; margin-bottom:8px; }
 #protocol-doc .sig-row { display:flex; align-items:flex-end; gap:8px; padding:7px 0; border-bottom:1px solid #eee; }
 #protocol-doc .sig-row:last-child { border-bottom:none; }
@@ -323,10 +271,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   body { background: white !important; }
   body > *:not(#screen-print) { display: none !important; }
   #screen-print { display: flex !important; height: auto !important; }
-  .app-header, #btn-print, #btn-save, #btn-share { display: none !important; }
+  .app-header, #float-print-btn { display: none !important; }
   #print-preview-area {
     padding: 0 !important;
-    margin: 0 !important;
     background: white !important;
     overflow: visible !important;
     display: block !important;
@@ -339,35 +286,6 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     transform: none !important;
     margin: 0 !important;
   }
-  .photo-page {
-    margin: 0 !important;
-    padding: 0 !important;
-    background: white !important;
-  }
-  .photo-page-item {
-    page-break-before: always;
-    break-before: page;
-    width: 100% !important;
-    min-height: auto !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    transform: none !important;
-    margin: 0 !important;
-    background: white !important;
-  }
-}
-
-/* Фото аркуші в preview */
-.photo-page { display: block; }
-.photo-page-item {
-  width: 794px;
-  min-height: 1123px;
-  background: white;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.4);
-  padding: 76px 38px 76px 95px;
-  margin: 20px auto 0;
-  box-sizing: border-box;
-  font-family: 'Arsenal', Arial, sans-serif;
 }
 .ctrl-btn {
   display: flex; align-items: center; justify-content: center;
@@ -479,7 +397,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .modal-btn-cancel  { background: #f1f5f9; color: #64748b; }
 
 .settings-section { margin-bottom: 24px; }
-.settings-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6); margin-bottom: 8px; padding: 0 4px; }
+.settings-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px; padding: 0 4px; }
 .settings-row { background: white; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; cursor: pointer; }
 .settings-row span { font-size: 14px; color: #1a1a2e; }
 .settings-val { font-size: 13px; color: #94a3b8; }
@@ -550,7 +468,6 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .executor-new-right { padding: 6px 10px; }
 .exec-del { background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 2px 4px; }
 </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -616,15 +533,13 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="app-header-left">
       <button class="back-btn" onclick="showScreen('screen-home')">◀</button>
       <div>
-        <div class="app-header-title">Усі протоколи</div>
-        <div class="app-header-sub" id="project-header-name">—</div>
+        <div class="app-header-title" id="project-header-name">—</div>
+        <div class="app-header-sub" id="project-header-address">—</div>
       </div>
     </div>
     <div class="app-header-right">
-      <button class="icon-btn" onclick="showAllControlScreen()">
-        <svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:middle;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="currentColor"/></svg>
-      </button>
       <button class="icon-btn" onclick="showScreen('screen-analytics')">📊</button>
+      <button class="icon-btn" onclick="showToast('Пошук — в розробці')">🔍</button>
       <button class="icon-btn" onclick="openProjectSettings()">⚙️</button>
     </div>
   </div>
@@ -642,7 +557,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <div class="protocol-header-loc"  id="meeting-header-loc">—</div>
     </div>
     <div class="protocol-header-btns">
-      <button class="icon-btn" onclick="openSendScreen()">📤</button>
+      <button class="icon-btn" onclick="shareMeeting()">📤</button>
+      <button class="icon-btn" onclick="printMeeting()">🖨</button>
       <button class="icon-btn" onclick="showControlScreen()" title="Контроль" style="display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><circle cx="12" cy="13" r="8" stroke="white" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#60a5fa"/></svg></button>
       <button class="icon-btn" onclick="showToast('Налаштування протоколу — в розробці')">⚙️</button>
     </div>
@@ -675,9 +591,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
     <!-- ДОДАТКИ -->
     <div class="proto-block-head"><span id="attachments-title">📎 Додатки до протоколу</span></div>
-    <div id="attachments-list"></div>
-    <input type="file" id="att-file-input" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;">
-    <button class="center-btn blue" id="add-att-btn" onclick="openAddAttachment()">＋</button>
+    <div class="att-empty">Додатків ще немає</div>
+    <button class="center-btn gray" onclick="showToast('Додатки — в розробці')">📎</button>
 
     <div class="block-divider"></div>
 
@@ -692,8 +607,6 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   <div class="app-header neutral">
     <div class="app-header-left">
       <button class="back-btn" onclick="showScreen('screen-home')">◀ Назад</button>
-    </div>
-    <div class="app-header-right">
       <div class="app-header-title">Налаштування загальні ⚙️</div>
     </div>
   </div>
@@ -718,34 +631,30 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   </div>
 </div>
 
-<!-- ЕКРАН ВІДПРАВИТИ -->
+<!-- ЕКРАН ПОПЕРЕДНЬОГО ПЕРЕГЛЯДУ ДРУКУ -->
 <div id="screen-print" class="screen">
   <div class="app-header neutral" id="header-print">
     <div class="app-header-left">
       <button class="back-btn" onclick="leavePrintScreen()">◀ Назад</button>
-    </div>
-    <div class="app-header-right">
-      <div>
-        <div class="app-header-title">Відправити 📤</div>
-        <div class="app-header-sub" id="print-header-sub"></div>
-      </div>
+      <div class="app-header-title">Попередній перегляд 🖨</div>
     </div>
   </div>
-  <div id="print-preview-area" class="scroll-area no-fab">
+  <div class="scroll-area no-fab" id="print-preview-area">
     <div id="protocol-doc"></div>
   </div>
-  <div style="position:fixed;bottom:24px;left:0;right:0;display:flex;gap:8px;justify-content:center;padding:0 16px;z-index:50;">
-    <button id="btn-print" style="flex:1;max-width:150px;padding:13px 6px;background:#2563eb;color:white;border:none;border-radius:14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 6px 20px rgba(37,99,235,0.4);">🖨 Друкувати</button>
-    <button id="btn-save"  style="flex:1;max-width:150px;padding:13px 6px;background:white;color:#2563eb;border:2px solid #2563eb;border-radius:14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.1);">💾 Зберегти</button>
-    <button id="btn-share" style="flex:1;max-width:150px;padding:13px 6px;background:#1e3a5f;color:white;border:none;border-radius:14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 12px rgba(30,58,95,0.3);">📨 Вкласти</button>
-  </div>
+  <button id="float-print-btn" style="
+    position:fixed; bottom:32px; right:24px;
+    background:#2563eb; color:white; border:none; border-radius:16px;
+    padding:14px 24px; font-size:15px; font-weight:700;
+    font-family:inherit; cursor:pointer;
+    box-shadow:0 4px 20px rgba(37,99,235,0.45);
+    display:flex; align-items:center; gap:8px; z-index:50;
+  ">🖨 Друкувати</button>
 </div>
 <div id="screen-analytics" class="screen">
   <div class="app-header neutral">
     <div class="app-header-left">
       <button class="back-btn" onclick="showScreen('screen-project')">◀ Назад</button>
-    </div>
-    <div class="app-header-right">
       <div class="app-header-title">Аналітика 📊</div>
     </div>
   </div>
@@ -758,13 +667,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-project-settings" class="screen">
   <div class="app-header neutral" id="header-project-settings">
     <div class="app-header-left">
-      <button class="back-btn" onclick="leaveProjectSettings()">◀ Назад</button>
-    </div>
-    <div class="app-header-right">
-      <div>
-        <div class="app-header-title">Налаштування об'єкту ⚙️</div>
-        <div class="app-header-sub" id="ps-header-sub"></div>
-      </div>
+      <button class="back-btn" onclick="showScreen('screen-project')">◀ Назад</button>
+      <div class="app-header-title">Налаштування об'єкту ⚙️</div>
     </div>
   </div>
   <div class="scroll-area no-fab">
@@ -789,10 +693,6 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
           <label class="settings-field-label">📱 Посилання WhatsApp групи</label>
           <input class="settings-field-input" id="ps-whatsapp" type="url" placeholder="https://chat.whatsapp.com/...">
         </div>
-        <div class="settings-field">
-          <label class="settings-field-label">Колір об'єкту</label>
-          <div id="color-picker" style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 0;"></div>
-        </div>
       </div>
     </div>
 
@@ -804,11 +704,11 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
         <div class="settings-card" style="margin-top:8px;">
           <div class="executor-new-grid">
             <div class="executor-new-left">
-              <input type="text" id="new-exec-name" placeholder="ПІБ..." autocomplete="off" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
-              <input type="tel"  id="new-exec-phone" placeholder="Телефон" autocomplete="off" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;margin-top:6px;">
+              <input type="text" id="new-exec-name" placeholder="ПІБ..." style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
+              <input type="tel"  id="new-exec-phone" placeholder="Телефон" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;margin-top:6px;">
             </div>
             <div class="executor-new-right">
-              <input type="email" id="new-exec-email" placeholder="Email" autocomplete="off" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
+              <input type="email" id="new-exec-email" placeholder="Email" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
             </div>
           </div>
         </div>
@@ -859,34 +759,24 @@ const firebaseConfig = {
   appId: "1:756000624671:web:55a70d705b332dcc4f452a"
 };
 
-const app     = initializeApp(firebaseConfig);
-const auth    = getAuth(app);
-const db      = getFirestore(app);
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
 let currentUser    = null;
 let currentProject = null;
 let currentMeeting = null;
 
 // Локальні дані для інлайн-редагування
-let localItems       = [];
-let localAttendees   = [];
-let localAttachments = [];
-let activeItemIdx    = null;
-let activeAttIdx     = null;
+let localItems     = [];
+let localAttendees = [];
+let activeItemIdx  = null;
+let activeAttIdx   = null;
 let deletingItemIdx = null;
 let deletingAttIdx  = null;
 let longPressTimer  = null;
 
-const TILE_COLORS = [
-  { bg:'#DBEAFE', text:'#1E3A8A', sub:'#3B82F6' },
-  { bg:'#F3E8FF', text:'#581C87', sub:'#A855F7' },
-  { bg:'#DCFCE7', text:'#14532D', sub:'#22C55E' },
-  { bg:'#FEF9C3', text:'#78350F', sub:'#CA8A04' },
-  { bg:'#FFE4E6', text:'#881337', sub:'#F43F5E' },
-  { bg:'#CCFBF1', text:'#134E4A', sub:'#14B8A6' },
-  { bg:'#FEE2E2', text:'#7F1D1D', sub:'#EF4444' },
-  { bg:'#E0E7FF', text:'#312E81', sub:'#6366F1' },
-];
+const TILE_COLORS = ['#1e3a5f','#166534','#7c2d12','#4c1d95','#0f766e','#9f1239','#854d0e','#1e40af'];
 
 // ── HELPERS ──
 window.showScreen = function(id) {
@@ -965,22 +855,27 @@ async function loadProjects() {
   let idx = 0;
   for (const d of snap.docs) {
     const p = d.data();
-    const colorIdx = p.colorIdx !== undefined ? p.colorIdx : idx;
-    const palette  = TILE_COLORS[colorIdx % TILE_COLORS.length];
+    const color    = TILE_COLORS[idx % TILE_COLORS.length];
+    const gradient = `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`;
+    // Рахуємо протоколи напряму
     const mSnap = await getDocs(collection(db,'users',uid,'projects',d.id,'meetings'));
     const count = mSnap.size;
     const tile = document.createElement('div');
     tile.className = 'project-tile';
-    tile.style.background = palette.bg;
+    tile.style.background = gradient;
     tile.innerHTML = `
       <div>
-        <div class="project-tile-name" style="color:${palette.text};">${esc(p.name)}</div>
-        <div class="project-tile-address" style="color:${palette.sub};">${esc(p.address||'')}</div>
+        <div class="project-tile-name">${esc(p.name)}</div>
+        <div class="project-tile-address">${esc(p.address||'')}</div>
       </div>
       <div class="project-tile-footer">
-        <div class="project-tile-count" style="color:${palette.sub};">${count} протокол${count===1?'':count<5?'и':'ів'}</div>
+        <div>
+          <div class="project-tile-count">${count}</div>
+          <div class="project-tile-label">протоколів</div>
+        </div>
+        <div style="font-size:28px;opacity:0.4">📋</div>
       </div>`;
-    tile.onclick = () => openProject(d.id, p, palette);
+    tile.onclick = () => openProject(d.id, p, gradient, color);
     grid.appendChild(tile);
     idx++;
   }
@@ -1002,22 +897,11 @@ window.saveProject = async function() {
   } catch(e) { showToast('Помилка збереження'); }
 };
 
-function openProject(id, data, palette) {
-  currentProject = { id, ...data, palette };
-  document.getElementById('project-header-name').textContent = data.name;
-  // Хедер = колір плитки
-  const hdr = document.getElementById('header-project');
-  hdr.style.background = palette.bg;
-  hdr.style.color      = palette.text;
-  // Кнопки хедера
-  hdr.querySelectorAll('.back-btn, .icon-btn').forEach(btn => {
-    btn.style.background = `rgba(0,0,0,0.08)`;
-    btn.style.color = palette.text;
-    btn.style.borderColor = `rgba(0,0,0,0.1)`;
-  });
-  hdr.querySelectorAll('.app-header-title, .app-header-sub').forEach(el => {
-    el.style.color = palette.text;
-  });
+function openProject(id, data, gradient, color) {
+  currentProject = { id, ...data, gradient, color };
+  document.getElementById('project-header-name').textContent    = data.name;
+  document.getElementById('project-header-address').textContent = data.address || '';
+  document.getElementById('header-project').style.background    = gradient;
   loadMeetings();
   showScreen('screen-project');
 }
@@ -1044,7 +928,7 @@ async function loadMeetings() {
 
     const card = document.createElement('div');
     card.className = 'meeting-card';
-    card.style.borderLeftColor = currentProject.palette?.text || "#1e3a5f";
+    card.style.borderLeftColor = currentProject.color;
 
     const ctrlSvg = `<svg viewBox="0 0 24 24" fill="none" width="14" height="14" style="vertical-align:middle;margin-right:3px;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg>`;
 
@@ -1083,29 +967,18 @@ window.saveMeeting = async function() {
 // ── MEETING SCREEN ──
 async function openMeeting(id, data) {
   currentMeeting = { id, ...data };
-  const palette = currentProject.palette || { bg:'#2D2D2D', text:'#fff', sub:'#aaa' };
   const h = document.getElementById('meeting-header');
-  h.style.background = palette.bg;
-  // Кнопки і текст хедера
-  h.querySelectorAll('.back-btn, .icon-btn').forEach(btn => {
-    btn.style.background = `rgba(0,0,0,0.08)`;
-    btn.style.color = palette.text;
-    btn.style.borderColor = `rgba(0,0,0,0.1)`;
-  });
-  h.querySelectorAll('.protocol-header-num, .protocol-header-date, .protocol-header-loc').forEach(el => {
-    el.style.color = palette.text;
-  });
+  h.style.background = currentProject.gradient;
   document.getElementById('meeting-header-num').textContent  = `Протокол № ${data.number}`;
   document.getElementById('meeting-header-date').textContent = formatDateFull(data.date);
   document.getElementById('meeting-header-loc').textContent  = data.location || '—';
   document.getElementById('attachments-title').textContent   = `📎 Додатки до протоколу №${data.number}`;
+
+  // Завантажуємо в локальні масиви
   await loadItemsLocal();
   await loadAttendeesLocal();
-  await loadAttachmentsLocal();
-  _deletingAttIdx = null;
   renderItems();
   renderAttendees();
-  renderAttachments();
   showScreen('screen-meeting');
 }
 
@@ -1513,27 +1386,6 @@ document.addEventListener('touchstart', e => {
   }
 }, {passive:true});
 
-window.leaveProjectSettings = function() {
-  const palette = currentProject.palette || TILE_COLORS[currentProject.colorIdx||0];
-  applyPaletteToHeader(document.getElementById('header-project'), palette);
-  // Оновлюємо список протоколів і плитки
-  loadMeetings();
-  loadProjects();
-  showScreen('screen-project');
-};
-function applyPaletteToHeader(hdr, palette) {
-  if (!hdr || !palette) return;
-  hdr.style.background = palette.bg;
-  hdr.querySelectorAll('.back-btn, .icon-btn').forEach(btn => {
-    btn.style.background  = 'rgba(0,0,0,0.08)';
-    btn.style.color       = palette.text;
-    btn.style.borderColor = 'rgba(0,0,0,0.1)';
-  });
-  hdr.querySelectorAll('.app-header-title, .app-header-sub, .protocol-header-num, .protocol-header-date, .protocol-header-loc').forEach(el => {
-    el.style.color = palette.text;
-  });
-}
-
 // ── НАЛАШТУВАННЯ ОБ'ЄКТУ ──
 let localExecutors = [];
 let deletingExecutorIdx = null;
@@ -1543,33 +1395,11 @@ window.openProjectSettings = async function() {
   document.getElementById('ps-address').value  = currentProject.address      || '';
   document.getElementById('ps-official').value = currentProject.officialName || '';
   document.getElementById('ps-whatsapp').value = currentProject.whatsappGroup || '';
-  document.getElementById('ps-header-sub').textContent = currentProject.name || '';
-  const hdrSettings = document.getElementById('header-project-settings');
-  applyPaletteToHeader(hdrSettings, currentProject.palette || TILE_COLORS[currentProject.colorIdx||0]);
-  // Color picker
-  const picker = document.getElementById('color-picker');
-  picker.innerHTML = '';
-  const currentIdx = currentProject.colorIdx || 0;
-  TILE_COLORS.forEach((p, i) => {
-    const dot = document.createElement('div');
-    dot.style.cssText = `width:30px;height:30px;border-radius:50%;background:${p.bg};cursor:pointer;border:3px solid ${i===currentIdx?p.text:'transparent'};box-shadow:0 1px 4px rgba(0,0,0,0.1);transition:border 0.2s;`;
-    dot.addEventListener('click', async () => {
-      picker.querySelectorAll('div').forEach((d,j) => {
-        d.style.border = `3px solid ${j===i?TILE_COLORS[j].text:'transparent'}`;
-      });
-      currentProject.colorIdx = i;
-      currentProject.palette  = TILE_COLORS[i];
-      const uid = currentUser.uid;
-      await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { colorIdx: i });
-      // Оновлюємо хедер налаштувань
-      applyPaletteToHeader(document.getElementById('header-project-settings'), TILE_COLORS[i]);
-    });
-    picker.appendChild(dot);
-  });
-  showScreen('screen-project-settings');
+  document.getElementById('header-project-settings').style.background = currentProject.gradient;
   await loadExecutorsLocal();
   deletingExecutorIdx = null;
   renderExecutors();
+  showScreen('screen-project-settings');
   attachExecutorBlur();
 
   // Автозбереження основних даних при виході з поля
@@ -1592,10 +1422,10 @@ async function saveBasicData() {
     currentProject.address       = address;
     currentProject.officialName  = officialName;
     currentProject.whatsappGroup = whatsappGroup;
-    document.getElementById('project-header-name').textContent = name;
-    document.getElementById('ps-header-sub').textContent = name;
+    document.getElementById('project-header-name').textContent    = name;
+    document.getElementById('project-header-address').textContent = address;
     showToast('✓ Збережено');
-    // Не викликаємо loadProjects() — оновимо при поверненні
+    loadProjects();
   } catch(e) { console.warn('Save basic data error:', e); }
 }
 
@@ -1707,57 +1537,42 @@ window.toggleAddExecutor = function() {
   const wrap = document.getElementById('executor-new-wrap');
   const isOpen = wrap.style.display !== 'none';
   if (isOpen) {
-    // Закриваємо тільки якщо поля порожні
-    const name = document.getElementById('new-exec-name')?.value.trim();
-    if (name) {
-      // Є дані — зберігаємо
-      saveNewExecutorForProject(_fixedProjectId);
-      return;
-    }
     wrap.style.display = 'none';
-    return;
+  } else {
+    wrap.style.display = 'block';
+    document.getElementById('new-exec-name').value  = '';
+    document.getElementById('new-exec-phone').value = '';
+    setTimeout(() => document.getElementById('new-exec-name').focus(), 50);
   }
-  wrap.style.display = 'block';
-  document.getElementById('new-exec-name').value  = '';
-  document.getElementById('new-exec-phone').value = '';
-  document.getElementById('new-exec-email').value = '';
-  _fixedProjectId = currentProject.id;
-  const nameInput  = document.getElementById('new-exec-name');
-  const phoneInput = document.getElementById('new-exec-phone');
-  const emailInput = document.getElementById('new-exec-email');
-  nameInput.onkeydown  = e => { if (e.key === 'Enter') phoneInput.focus(); };
-  phoneInput.onkeydown = e => { if (e.key === 'Enter') emailInput.focus(); };
-  emailInput.onblur = () => setTimeout(() => saveNewExecutorForProject(_fixedProjectId), 150);
-  setTimeout(() => nameInput.focus(), 50);
 };
 
-function attachExecutorBlur() { /* не потрібно — логіка в toggleAddExecutor */ }
+// Автозбереження при виході з поля телефону
+function attachExecutorBlur() {
+  const phoneInput = document.getElementById('new-exec-phone');
+  const nameInput  = document.getElementById('new-exec-name');
+  const emailInput = document.getElementById('new-exec-email');
+  if (emailInput) emailInput.addEventListener('blur', () => setTimeout(saveNewExecutor, 150));
+  if (nameInput)  nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') phoneInput?.focus(); });
+  if (phoneInput) phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') emailInput?.focus(); });
+}
 
-let _savingExecutor = false;
-let _fixedProjectId = null;
-async function saveNewExecutorForProject(projectId) {
-  if (_savingExecutor) return;
+window.saveNewExecutor = async function() {
   const name  = document.getElementById('new-exec-name')?.value.trim();
   const phone = document.getElementById('new-exec-phone')?.value.trim();
   const email = document.getElementById('new-exec-email')?.value.trim();
   if (!name) return;
-  _savingExecutor = true;
   try {
     const uid = currentUser.uid;
     const ref = await addDoc(
-      collection(db,'users',uid,'projects',projectId,'executors'),
+      collection(db,'users',uid,'projects',currentProject.id,'executors'),
       { name, phone: phone||'', email: email||'', memberStatus: 'none', createdAt: serverTimestamp() }
     );
-    if (currentProject.id === projectId) {
-      localExecutors.push({ id: ref.id, name, phone: phone||'', email: email||'', memberStatus: 'none' });
-      renderExecutors();
-    }
+    localExecutors.push({ id: ref.id, name, phone: phone||'', email: email||'', memberStatus: 'none' });
+    renderExecutors();
     document.getElementById('executor-new-wrap').style.display = 'none';
     showToast(`✅ ${name} додано`);
-  } catch(e) { console.warn(e); showToast('Помилка збереження'); }
-  _savingExecutor = false;
-}
-window.saveNewExecutor = () => saveNewExecutorForProject(currentProject.id);
+  } catch(e) { console.warn(e); }
+};
 
 window.deleteExecutor = async function(idx) {
   const ex = localExecutors[idx];
@@ -1773,15 +1588,7 @@ window.deleteExecutor = async function(idx) {
 // ── ДРУК ──
 let _printHTML = '';
 
-function loadScript(src) {
-  return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
-}
-
-window.openSendScreen = async function() {
-  await printMeeting();
-};
-
-window.printMeeting = async function() {
+window.printMeeting = function() {
   autoBackup('друк-' + currentMeeting.number);
 
   const displayName = esc(currentProject.officialName || currentProject.name || '');
@@ -1812,36 +1619,6 @@ window.printMeeting = async function() {
           <div class="sig-line">дата</div>
         </div>`).join('');
 
-  // Завантажуємо додатки
-  let attachmentsHTML = '';
-  let photoPages = '';
-  try {
-    const uid = currentUser.uid;
-    const aSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'));
-    if (!aSnap.empty) {
-      const attList = aSnap.docs.map((d,i) => ({ num: i+1, ...d.data() }));
-      // Список в протоколі — без таблиці
-      const attRows = attList.map(a =>
-        `<div style="font-size:9.5pt;padding:2px 0;"><strong>Додаток ${a.num}</strong> — ${esc(a.description||a.name||'')}</div>`
-      ).join('');
-      attachmentsHTML = `
-    <div class="att-section">
-      <div class="att-title">Додатки:</div>
-      <div style="margin-top:5px;">${attRows}</div>
-    </div>`;
-      // Окремі аркуші для фото — кожне фото = окремий аркуш
-      for (const a of attList) {
-        if (a.type?.startsWith('image') && a.dataUrl) {
-          photoPages += `<div class="photo-page-item">
-  <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
-  ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
-  <img src="${a.dataUrl}" style="width:100%;max-height:180mm;object-fit:contain;display:block;">
-</div>`;
-        }
-      }
-    }
-  } catch(e) { console.warn(e); }
-
   const docHTML = `
     <div class="doc-title">Протокол наради №${meetingNum}</div>
     <div class="doc-sub">
@@ -1866,102 +1643,27 @@ window.printMeeting = async function() {
     <div class="sig-section">
       <div class="sig-title">Погоджено та затверджено присутніми:</div>
       ${sigs}
-    </div>
-    ${attachmentsHTML}`;
+    </div>`;
 
   // Вставляємо в #protocol-doc
-  const docEl = document.getElementById('protocol-doc');
-  if (docEl) docEl.innerHTML = docHTML;
+  const doc = document.getElementById('protocol-doc');
+  if (doc) doc.innerHTML = docHTML;
 
-  // Фото аркуші — після #protocol-doc поза його межами
-  const area = document.getElementById('print-preview-area');
-  area.querySelectorAll('.photo-page').forEach(el => el.remove());
-  if (photoPages) {
-    const photoWrap = document.createElement('div');
-    photoWrap.className = 'photo-page';
-    photoWrap.innerHTML = photoPages;
-    area.appendChild(photoWrap);
-  }
-
-  applyPaletteToHeader(document.getElementById('header-print'), currentProject.palette || TILE_COLORS[currentProject.colorIdx||0]);
-  document.getElementById('print-header-sub').textContent = `Протокол № ${meetingNum}`;
+  document.getElementById('header-print').style.background = currentProject.gradient;
   showScreen('screen-print');
 
-  // ── Кнопка ДРУКУВАТИ ──
-  const printBtn = document.getElementById('btn-print');
-  printBtn.onclick = null;
-  printBtn.addEventListener('click', function handler() {
-    printBtn.removeEventListener('click', handler);
-    window.print();
-    setTimeout(() => printBtn.addEventListener('click', handler), 500);
-  });
-
-  // ── Кнопка ЗБЕРЕГТИ ──
-  const saveBtn = document.getElementById('btn-save');
-  saveBtn.onclick = null;
-  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-  if (isIOS) {
-    saveBtn.addEventListener('click', async () => {
-      saveBtn.disabled = true; saveBtn.textContent = '⏳...';
-      try {
-        if (!window.html2canvas) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-        if (!window.jspdf)      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-        const el = document.getElementById('protocol-doc');
-        const origStyle = el.getAttribute('style') || '';
-        el.style.cssText = 'width:794px;max-width:794px;transform:none;margin:0;box-shadow:none;padding:76px 38px 76px 95px;background:white;';
-        const canvas = await window.html2canvas(el, { scale:2, useCORS:true, backgroundColor:'#ffffff', logging:false, width:794, windowWidth:794 });
-        el.setAttribute('style', origStyle);
-        const { jsPDF } = window.jspdf;
-        const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
-        const pageW=210, pageH=297, margin=10, imgW=pageW-margin*2;
-        const scale = canvas.width / imgW;
-        const pageImgPx = Math.floor((pageH-margin*2)*scale);
-        const totalPages = Math.ceil(canvas.height/pageImgPx);
-        for (let i=0; i<totalPages; i++) {
-          if (i>0) pdf.addPage();
-          const srcY=i*pageImgPx, srcH=Math.min(pageImgPx, canvas.height-srcY);
-          const tmp=document.createElement('canvas'); tmp.width=canvas.width; tmp.height=srcH;
-          tmp.getContext('2d').drawImage(canvas,0,srcY,canvas.width,srcH,0,0,canvas.width,srcH);
-          pdf.addImage(tmp.toDataURL('image/jpeg',0.92),'JPEG',margin,margin,imgW,srcH/scale);
-        }
-        // Фото додатків
-        for (const [i,a] of localAttachments.entries()) {
-          if (a.type?.startsWith('image')&&a.dataUrl) {
-            pdf.addPage();
-            pdf.setFontSize(13); pdf.setFont('helvetica','bold');
-            pdf.text('Додаток '+(i+1),margin,margin+6);
-            if (a.description&&a.description!=='—') { pdf.setFontSize(10); pdf.setFont('helvetica','normal'); pdf.text(a.description,margin,margin+14); }
-            try { pdf.addImage(a.dataUrl,'JPEG',margin,margin+22,imgW,170,'','FAST'); } catch(e){}
-          }
-        }
-        const blob = pdf.output('blob');
-        const file = new File([blob],'Протокол_№'+meetingNum+'.pdf',{type:'application/pdf'});
-        try { await navigator.share({files:[file]}); } catch(e) { if(e.name!=='AbortError') showToast('Помилка: '+e.message); }
-      } catch(e) { showToast('Помилка: '+e.message); console.error(e); }
-      saveBtn.disabled=false; saveBtn.textContent='💾 Зберегти';
-    });
-  } else {
-    saveBtn.addEventListener('click', async () => {
-      saveBtn.disabled=true; saveBtn.textContent='⏳...';
-      try {
-        const el = document.getElementById('protocol-doc');
-        const origTransform=el.style.transform, origML=el.style.marginLeft, origMR=el.style.marginRight, origMB=el.style.marginBottom;
-        el.style.transform='none'; el.style.marginLeft='auto'; el.style.marginRight='auto'; el.style.marginBottom='0';
-        await html2pdf().set({
-          margin:[20,10,20,25], filename:'Протокол_№'+meetingNum+'.pdf',
-          image:{type:'jpeg',quality:0.92},
-          html2canvas:{scale:2,useCORS:true,logging:false,backgroundColor:'#ffffff'},
-          jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
-          pagebreak:{mode:['css','legacy']}
-        }).from(el).save();
-        el.style.transform=origTransform; el.style.marginLeft=origML; el.style.marginRight=origMR; el.style.marginBottom=origMB;
-      } catch(e) { showToast('Помилка: '+e.message); }
-      saveBtn.disabled=false; saveBtn.textContent='💾 Зберегти';
+  // Підключаємо кнопку друку напряму — важливо для iOS
+  const printBtn = document.getElementById('float-print-btn');
+  function attachPrintBtn() {
+    printBtn.onclick = null;
+    printBtn.addEventListener('click', function handler() {
+      printBtn.removeEventListener('click', handler);
+      window.print();
+      // Переприєднуємо після закриття діалогу
+      setTimeout(attachPrintBtn, 100);
     });
   }
-
-  // ── Кнопка ВКЛАСТИ — в розробці ──
-  document.getElementById('btn-share').onclick = () => showToast('Вкласти — в розробці');
+  attachPrintBtn();
 
   // Дозволяємо pinch-zoom на екрані перегляду
   document.querySelector('meta[name=viewport]').content =
@@ -1974,9 +1676,8 @@ window.printMeeting = async function() {
     if (!el || !area) return;
     const availW = area.clientWidth - 40;
     const elW    = 794;
-    let scale = 1;
     if (availW > 0 && availW < elW) {
-      scale = availW / elW;
+      const scale   = availW / elW;
       const origH   = el.scrollHeight;
       const scaledH = origH * scale;
       el.style.transform       = `scale(${scale})`;
@@ -1990,523 +1691,155 @@ window.printMeeting = async function() {
       el.style.marginRight  = 'auto';
       el.style.marginBottom = '20px';
     }
-    // Масштабуємо фото аркуші так само
-    area.querySelectorAll('.photo-page-item').forEach(pi => {
-      if (scale < 1) {
-        const origH   = pi.scrollHeight;
-        const scaledH = origH * scale;
-        pi.style.transform       = `scale(${scale})`;
-        pi.style.transformOrigin = 'top center';
-        pi.style.marginLeft      = `${(elW * (1 - scale)) / -2}px`;
-        pi.style.marginRight     = `${(elW * (1 - scale)) / -2}px`;
-        pi.style.marginTop       = '0';
-        pi.style.marginBottom    = `${scaledH - origH + 20}px`;
-      } else {
-        pi.style.transform    = 'none';
-        pi.style.marginLeft   = 'auto';
-        pi.style.marginRight  = 'auto';
-        pi.style.marginTop    = '20px';
-        pi.style.marginBottom = '20px';
-      }
-    });
   }
   setTimeout(applyScale, 50);
   setTimeout(applyScale, 300);
   window.addEventListener('resize', applyScale);
 };
 
-// Контроль — всі протоколи об'єкту
-// ══ ДОДАТКИ ══
-let _deletingAttIdx = null;
-
-async function loadAttachmentsLocal() {
-  const uid = currentUser.uid;
-  try {
-    const snap = await getDocs(query(
-      collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
-      orderBy('createdAt')
-    ));
-    localAttachments = [];
-    snap.forEach(d => localAttachments.push({ id: d.id, ...d.data() }));
-  } catch(e) { localAttachments = []; }
-}
-
-function renderAttachments() {
-  const list = document.getElementById('attachments-list');
-  if (!list) return;
-  if (localAttachments.length === 0) {
-    list.innerHTML = `<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:13px;padding:10px 0;">Додатків ще немає</div>`;
-    return;
-  }
-  list.innerHTML = '';
-  localAttachments.forEach((att, idx) => {
-    const isDeleting = _deletingAttIdx === idx;
-    const typeIcon = att.type?.startsWith('image') ? '🖼' : att.type === 'application/pdf' ? '📄' : '📎';
-    const row = document.createElement('div');
-    row.className = 'att-row' + (isDeleting ? ' att-deleting' : '');
-    row.innerHTML = `
-      <div class="att-num-cell"><span class="num-text">${idx+1}</span></div>
-      <div class="att-info">
-        <div class="att-desc-edit" style="font-size:13px;font-weight:700;color:#1e293b;min-height:20px;">${esc(att.description||'—')}</div>
-        <div style="font-size:10px;color:#94a3b8;margin-top:1px;">${esc(att.name||'')}</div>
-      </div>
-      <div class="att-type-icon">${typeIcon}</div>`;
-
-    // Редагування опису по кліку
-    const descEl = row.querySelector('.att-desc-edit');
-    descEl.addEventListener('click', e => {
-      e.stopPropagation();
-      if (_deletingAttIdx !== null) { _deletingAttIdx = null; renderAttachments(); return; }
-      const input = document.createElement('input');
-      input.type = 'text';
-      input.value = att.description || '';
-      input.placeholder = 'Опис додатку...';
-      input.style.cssText = 'font-size:13px;font-weight:700;color:#1e293b;border:none;outline:none;background:transparent;width:100%;font-family:inherit;border-bottom:1px solid #2563eb;';
-      descEl.replaceWith(input);
-      input.focus();
-      async function saveDesc() {
-        const newDesc = input.value.trim();
-        att.description = newDesc;
-        try {
-          const uid = currentUser.uid;
-          if (att.id) await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments',att.id), { description: newDesc });
-        } catch(e) { console.warn(e); }
-        renderAttachments();
-      }
-      input.addEventListener('blur', () => setTimeout(saveDesc, 150));
-      input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
-    });
-
-    const numCell = row.querySelector('.att-num-cell');
-    numCell.addEventListener('click', e => {
-      e.stopPropagation();
-      if (_deletingAttIdx === idx) { deleteAttachment(idx); }
-      else { _deletingAttIdx = idx; renderAttachments(); }
-    });
-
-    // Перегляд по кліку на іконку типу
-    row.querySelector('.att-type-icon').addEventListener('click', e => {
-      e.stopPropagation();
-      if (att.dataUrl) {
-        const w = window.open('', '_blank');
-        if (w) {
-          w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">
-            ${att.type?.startsWith('image')
-              ? `<img src="${att.dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;">`
-              : `<p style="color:white;font-family:sans-serif;">Файл: ${esc(att.name)}</p>`}
-          </body></html>`);
-          w.document.close();
-        }
-      }
-    });
-
-    row.addEventListener('click', e => {
-      if (!e.target.closest('.att-num-cell') && _deletingAttIdx === idx) {
-        _deletingAttIdx = null; renderAttachments();
-      }
-    });
-
-    list.appendChild(row);
-  });
-}
-
-async function deleteAttachment(idx) {
-  const att = localAttachments[idx];
-  try {
-    const uid = currentUser.uid;
-    await deleteDoc(doc(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments',att.id));
-    localAttachments.splice(idx, 1);
-    _deletingAttIdx = null;
-    renderAttachments();
-    showToast('Додаток видалено');
-  } catch(e) { showToast('Помилка видалення'); }
-}
-
-window.openAddAttachment = function() {
-  const input = document.getElementById('att-file-input');
-  input.value = '';
-  input.onchange = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    await uploadAttachment(file);
-  };
-  input.click();
-};
-
-async function uploadAttachment(file) {
-  const uid = currentUser.uid;
-  const list = document.getElementById('attachments-list');
-
-  // Показуємо прогрес
-  const progressDiv = document.createElement('div');
-  progressDiv.style.cssText = 'background:white;border-radius:8px;padding:10px 12px;margin-bottom:4px;';
-  progressDiv.innerHTML = `
-    <div style="font-size:12px;color:#1e293b;margin-bottom:6px;">⏳ ${esc(file.name)}</div>
-    <div class="att-upload-progress"><div class="att-upload-progress-bar" id="att-progress-bar" style="width:30%"></div></div>`;
-  list.appendChild(progressDiv);
-
-  try {
-    let dataUrl;
-    const isImage = file.type.startsWith('image');
-
-    if (isImage) {
-      // Стискаємо фото через Canvas
-      dataUrl = await compressImage(file, 1200, 0.75);
-    } else {
-      // Інші файли — конвертуємо в Base64 напряму
-      dataUrl = await fileToBase64(file);
-    }
-
-    const bar = document.getElementById('att-progress-bar');
-    if (bar) bar.style.width = '70%';
-
-    // Запитуємо опис через модалку
-    const description = await askDescription(file.name);
-
-    if (bar) bar.style.width = '90%';
-
-    // Зберігаємо в Firestore
-    const ref = await addDoc(
-      collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
-      { name: file.name, description, dataUrl, type: file.type, createdAt: serverTimestamp() }
-    );
-
-    localAttachments.push({ id: ref.id, name: file.name, description, dataUrl, type: file.type });
-    progressDiv.remove();
-    renderAttachments();
-    showToast(`✅ ${file.name} додано`);
-  } catch(e) {
-    console.error('Upload error:', e);
-    progressDiv.remove();
-    showToast('Помилка: ' + (e.message || 'невідома'));
-  }
-}
-
-// Стискання зображення через Canvas
-function compressImage(file, maxWidth, quality) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let w = img.width, h = img.height;
-        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', quality));
-      };
-      img.onerror = reject;
-      img.src = e.target.result;
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-// Конвертація файлу в Base64
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = e => resolve(e.target.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
-function askDescription(fileName) {
-  return new Promise(resolve => {
-    const { box, addCloseBtn, close } = createModal('Опис додатку', '📎 ');
-
-    const fileLabel = document.createElement('div');
-    fileLabel.style.cssText = 'font-size:12px;color:#6B6B6B;margin-bottom:10px;';
-    fileLabel.textContent = fileName;
-    box.appendChild(fileLabel);
-
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.placeholder = 'Введіть опис (необов\'язково)...';
-    input.style.cssText = `width:100%;padding:11px 12px;border:1px solid #EBEBEB;border-radius:10px;font-size:14px;font-family:'Arsenal',Arial,sans-serif;outline:none;color:#2D2D2D;margin-bottom:10px;`;
-    box.appendChild(input);
-
-    const saveBtn = document.createElement('button');
-    saveBtn.textContent = 'Зберегти';
-    saveBtn.style.cssText = `width:100%;padding:12px;border-radius:10px;border:none;background:#2D2D2D;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;margin-bottom:8px;`;
-    saveBtn.addEventListener('click', () => { close(); resolve(input.value.trim()); });
-    box.appendChild(saveBtn);
-
-    const skipBtn = addCloseBtn('Пропустити');
-    skipBtn.addEventListener('click', () => resolve(''));
-
-    setTimeout(() => input.focus(), 100);
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') { close(); resolve(input.value.trim()); } });
-  });
-}
-
-// ══ КІНЕЦЬ ДОДАТКІВ ══
-window.showAllControlScreen = async function() {
-  const uid = currentUser.uid;
-  const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
-  const controlled = [];
-  for (const m of mSnap.docs) {
-    const iSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',m.id,'items'));
-    iSnap.forEach(i => {
-      const d = i.data();
-      if (d.control) controlled.push({ ...d, meetingNum: m.data().number, meetingId: m.id });
-    });
-  }
-  showControlModal(controlled, `Контроль — всі протоколи (${controlled.length})`);
-};
-
-// Контроль — поточний протокол
+// ── КОНТРОЛЬ ПРОТОКОЛУ ──
 window.showControlScreen = function() {
   const controlled = localItems.filter(it => it.control);
-  showControlModal(controlled, `Контроль — Протокол № ${currentMeeting.number} (${controlled.length})`);
-};
+  if (controlled.length === 0) {
+    showToast('Немає пунктів на контролі');
+    return;
+  }
 
-// ── ЄДИНА ФУНКЦІЯ МОДАЛКИ ──
-function createModal(title, iconHTML = '') {
+  // Показуємо модалку зі списком пунктів на контролі
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
+
   const box = document.createElement('div');
-  box.style.cssText = `background:white;border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:78vh;overflow-y:auto;font-family:'Arsenal',Arial,sans-serif;`;
-  const hdr = document.createElement('div');
-  hdr.style.cssText = 'font-size:16px;font-weight:700;color:#2D2D2D;margin-bottom:14px;display:flex;align-items:center;gap:8px;';
-  hdr.innerHTML = iconHTML + esc(title);
-  box.appendChild(hdr);
-  overlay.appendChild(box);
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-  document.documentElement.appendChild(overlay);
+  box.style.cssText = 'background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;';
 
-  function addCloseBtn(label = 'Закрити') {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.style.cssText = `width:100%;padding:11px;margin-top:12px;border-radius:10px;border:1px solid #EBEBEB;background:#F9FAFB;color:#6B6B6B;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
-    btn.addEventListener('click', () => overlay.remove());
-    box.appendChild(btn);
-    return btn;
-  }
+  const title = document.createElement('div');
+  title.textContent = `🔔 На контролі (${controlled.length})`;
+  title.style.cssText = 'font-size:17px;font-weight:700;color:#1e3a5f;margin-bottom:16px;';
+  box.appendChild(title);
 
-  function addActionBtn(label, bg, color) {
-    const btn = document.createElement('button');
-    btn.textContent = label;
-    btn.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:${bg};color:${color};font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
-    box.appendChild(btn);
-    return btn;
-  }
-
-  function addRow(html) {
+  controlled.forEach(it => {
     const row = document.createElement('div');
-    row.style.cssText = 'padding:8px 0;border-bottom:1px solid #EBEBEB;';
-    row.innerHTML = html;
+    row.style.cssText = 'padding:10px 0;border-bottom:1px solid #f1f5f9;';
+    row.innerHTML = `
+      <div style="font-size:13px;font-weight:700;color:#1e293b;">${it.number}. ${esc(it.description||'—')}</div>
+      ${it.executor ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Виконавець: ${esc(it.executor)}</div>` : ''}
+      ${it.decision ? `<div style="font-size:11px;color:#64748b;">Рішення: ${esc(it.decision)}</div>` : ''}`;
     box.appendChild(row);
-    return row;
-  }
-
-  return { overlay, box, addCloseBtn, addActionBtn, addRow, close: () => overlay.remove() };
-}
-
-function showControlModal(items, title) {
-  if (items.length === 0) { showToast('Немає пунктів на контролі'); return; }
-  const ctrlSVG = `<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="#C17058" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#C17058" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#C17058" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#C17058"/></svg>`;
-  const { addRow, addCloseBtn } = createModal(title, ctrlSVG);
-  items.forEach(it => {
-    const prefix = it.meetingNum ? 'Протокол №' + it.meetingNum + ' · ' : '';
-    const execLine = it.executor ? '<div style="font-size:11px;color:#6B6B6B;margin-top:1px;">' + esc(it.executor) + '</div>' : '';
-    addRow(
-      '<div style="font-size:9px;color:#C17058;font-weight:700;">' + prefix + 'Пункт ' + it.number + '</div>' +
-      '<div style="font-size:12px;font-weight:700;color:#2D2D2D;margin-top:2px;">' + esc(it.description||'—') + '</div>' +
-      execLine
-    );
-  });
-  addCloseBtn();
-}
-
-// ── ГЕНЕРАЦІЯ PDF ──
-async function generatePDF(statusCallback) {
-  if (statusCallback) statusCallback('⏳ Підготовка документу...');
-
-  // Формуємо той самий HTML що і для попереднього перегляду
-  const displayName = esc(currentProject.officialName || currentProject.name || '');
-  const address     = esc(currentProject.address || '');
-  const meetingNum  = currentMeeting.number || '—';
-  const meetingDate = formatDateFull(currentMeeting.date);
-  const meetingLoc  = esc(currentMeeting.location || '');
-
-  const rows = localItems.length === 0
-    ? `<tr><td colspan="5" style="padding:10px;text-align:center;color:#999;">Пунктів немає</td></tr>`
-    : localItems.map((it, i) => `<tr>
-        <td style="text-align:center;${i%2?'background:#f8f8f8;':''}">${it.number}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.description||'')}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.executor||'')}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.decision||'')}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.note||'')}</td>
-      </tr>`).join('');
-
-  const sigs = localAttendees.length === 0 ? '' : localAttendees.map(a => `
-    <div style="display:flex;align-items:flex-end;gap:8px;padding:7px 0;border-bottom:1px solid #eee;">
-      <div style="flex:1;"><div style="font-weight:700;font-size:9.5pt;">${esc(a.name||'')}</div><div style="color:#555;font-size:8pt;">${esc(a.role||'')}</div></div>
-      <div style="border-bottom:1px solid #000;width:120px;padding-top:20px;text-align:center;font-size:7pt;color:#aaa;">підпис</div>
-      <div style="border-bottom:1px solid #000;width:90px;padding-top:20px;text-align:center;font-size:7pt;color:#aaa;">дата</div>
-    </div>`).join('');
-
-  let attachHTML = '';
-  let photoPagesHTML = '';
-  try {
-    const uid = currentUser.uid;
-    const aSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'));
-    if (!aSnap.empty) {
-      const attList = aSnap.docs.map((d,i) => ({ num: i+1, ...d.data() }));
-      attachHTML = `<div style="margin-top:16px;border-top:1px solid #e5e7eb;padding-top:10px;">
-        <div style="font-weight:700;font-size:9.5pt;margin-bottom:4px;">Додатки:</div>
-        ${attList.map(a => `<div style="font-size:9.5pt;padding:2px 0;"><strong>Додаток ${a.num}</strong> — ${esc(a.description||a.name||'')}</div>`).join('')}
-      </div>`;
-      for (const a of attList) {
-        if (a.type?.startsWith('image') && a.dataUrl) {
-          photoPagesHTML += `<div style="page-break-before:always;">
-            <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
-            ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:8px;">${esc(a.description)}</div>` : ''}
-            <img src="${a.dataUrl}" style="width:100%;max-height:230mm;object-fit:contain;display:block;">
-          </div>`;
-        }
-      }
-    }
-  } catch(e) { console.warn(e); }
-
-  const fullHTML = `<!DOCTYPE html><html><head>
-    <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Arsenal:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-      * { box-sizing:border-box; margin:0; padding:0; }
-      body { font-family:'Arsenal',Arial,sans-serif; font-size:10pt; color:#000; }
-      @page { size:A4 portrait; margin:20mm 10mm 20mm 25mm; }
-      table { width:100%; border-collapse:collapse; table-layout:fixed; }
-      th { background:#2D2D2D!important; color:white!important; padding:5px 8px; text-align:left; font-size:8.5pt; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-      td { padding:5px 8px; border:1px solid #ccc; vertical-align:top; font-size:9.5pt; }
-      tr:nth-child(even) td { background:#f8f8f8; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
-    </style>
-  </head><body>
-    <div style="text-align:center;font-size:13pt;font-weight:700;text-transform:uppercase;margin-bottom:6px;">Протокол наради №${meetingNum}</div>
-    <div style="text-align:center;font-size:9.5pt;margin-bottom:14px;line-height:1.6;">Щодо ходу робіт на об'єкті:<br><strong>${displayName}</strong>${address?'<br>'+address:''}</div>
-    <div style="display:flex;justify-content:space-between;font-size:9.5pt;margin-bottom:14px;padding-bottom:8px;">
-      <span>${meetingDate}</span><span>${meetingLoc}</span>
-    </div>
-    <table style="margin-bottom:18px;">
-      <colgroup><col style="width:32px"><col><col style="width:18%"><col style="width:27%"><col style="width:13%"></colgroup>
-      <thead><tr><th>№</th><th>Опис / питання</th><th>Виконавець</th><th>Прийняте рішення</th><th>Примітка</th></tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
-    <div style="margin-top:16px;padding-top:10px;">
-      <div style="font-weight:700;font-size:9.5pt;margin-bottom:8px;">Погоджено та затверджено присутніми:</div>
-      ${sigs}
-    </div>
-    ${attachHTML}
-    ${photoPagesHTML}
-  </body></html>`;
-
-  if (statusCallback) statusCallback('⏳ Генерується PDF...');
-
-  // Відкриваємо в новому вікні і друкуємо
-  return { html: fullHTML, filename: `Протокол_№${meetingNum}.pdf` };
-}
-
-window.shareMeeting = async function() {
-  const whatsapp   = currentProject.whatsappGroup || '';
-  const meetingNum = currentMeeting.number;
-
-  const { box, addCloseBtn, close } = createModal('Поділитись протоколом', '📤 ');
-
-  const status = document.createElement('div');
-  status.style.cssText = 'font-size:12px;color:#6B6B6B;text-align:center;padding:4px 0 8px;';
-  status.textContent = 'Оберіть спосіб:';
-  box.appendChild(status);
-
-  function makeBtn(label, bg, color) {
-    const b = document.createElement('button');
-    b.textContent = label;
-    b.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:${bg};color:${color};font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
-    box.appendChild(b);
-    return b;
-  }
-
-  // Кнопка — зберегти PDF
-  const saveBtn = makeBtn('💾 Зберегти PDF', '#2D2D2D', 'white');
-  saveBtn.addEventListener('click', async () => {
-    saveBtn.disabled = true;
-    status.textContent = '⏳ Підготовка...';
-    try {
-      const { html } = await generatePDF(t => { status.textContent = t; });
-      const w = window.open('', '_blank');
-      if (!w) { showToast('Дозвольте спливаючі вікна в браузері'); return; }
-      w.document.write(html);
-      w.document.close();
-      // Підказка для iOS
-      const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
-      if (isIOS) {
-        status.textContent = '✅ Документ відкрито. Натисніть 📤 → Опції → PDF → Зберегти у файли';
-      } else {
-        status.textContent = '✅ Документ відкрито. Натисніть Ctrl+P → Зберегти як PDF';
-      }
-    } catch(e) {
-      status.textContent = '❌ Помилка';
-      console.error(e);
-    }
-    saveBtn.disabled = false;
   });
 
-  // Кнопка — WhatsApp група
-  if (whatsapp) {
-    const wb = makeBtn('📱 WhatsApp група', '#25D366', 'white');
-    wb.addEventListener('click', async () => {
-      wb.disabled = true;
-      status.textContent = '⏳ Підготовка...';
-      try {
-        const { html } = await generatePDF(t => { status.textContent = t; });
-        const w = window.open('', '_blank');
-        if (!w) { showToast('Дозвольте спливаючі вікна'); return; }
-        w.document.write(html);
-        w.document.close();
-        window.open(whatsapp, '_blank');
-        status.textContent = '✅ Збережіть PDF через 📤 і прикріпіть у групу';
-      } catch(e) { status.textContent = '❌ Помилка'; }
-      wb.disabled = false;
-    });
-  }
+  const closeBtn = document.createElement('button');
+  closeBtn.textContent = 'Закрити';
+  closeBtn.style.cssText = 'width:100%;padding:13px;margin-top:16px;border-radius:12px;border:none;background:#f1f5f9;color:#64748b;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;';
+  closeBtn.addEventListener('click', () => overlay.remove());
+  box.appendChild(closeBtn);
 
-  // Кнопка — поділитись через системний Share Sheet (тільки мобільний)
-  if (/iPhone|iPad|iPod|Android/.test(navigator.userAgent)) {
-    const shareBtn = makeBtn('📤 Поділитись через...', '#F9FAFB', '#2D2D2D');
-    shareBtn.style.border = '1px solid #EBEBEB';
-    shareBtn.addEventListener('click', async () => {
-      shareBtn.disabled = true;
-      status.textContent = '⏳ Підготовка...';
-      try {
-        const { html, filename } = await generatePDF(t => { status.textContent = t; });
-        const blob = new Blob([html], { type: 'text/html' });
-        const file = new File([blob], filename.replace('.pdf', '.html'), { type: 'text/html' });
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({ files: [file], title: 'Протокол №' + meetingNum });
-          close();
-        } else {
-          const w = window.open('', '_blank');
-          if (w) { w.document.write(html); w.document.close(); }
-          status.textContent = '✅ Збережіть через 📤 → PDF';
-        }
-      } catch(e) { status.textContent = '❌ Помилка'; }
-      shareBtn.disabled = false;
-    });
-  }
-
-  box.appendChild(status);
-  addCloseBtn('Скасувати');
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  overlay.appendChild(box);
+  document.documentElement.appendChild(overlay);
 };
 
 window.leavePrintScreen = function() {
+  // Відновлюємо заборону zoom при виході
   document.querySelector('meta[name=viewport]').content =
     'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
   showScreen('screen-meeting');
 };
 window.executePrint = function() { window.print(); };
+
+// ── ПОДІЛИТИСЬ ──
+window.shareMeeting = function() {
+  const displayName = currentProject.officialName || currentProject.name || '';
+  const meetingNum  = currentMeeting.number;
+  const meetingDate = formatDateFull(currentMeeting.date);
+  const meetingLoc  = currentMeeting.location || '';
+  const whatsapp    = currentProject.whatsappGroup || '';
+
+  let text = `📋 ПРОТОКОЛ НАРАДИ №${meetingNum}\n`;
+  text += `📅 ${meetingDate}${meetingLoc ? ' · ' + meetingLoc : ''}\n`;
+  text += `🏗 ${displayName}\n\n`;
+  if (localItems.length > 0) {
+    text += `ПУНКТИ:\n`;
+    localItems.forEach(it => {
+      text += `${it.number}. ${it.description || '—'}`;
+      if (it.executor) text += ` | ${it.executor}`;
+      if (it.decision) text += ` → ${it.decision}`;
+      text += '\n';
+    });
+  }
+  if (localAttendees.length > 0) {
+    text += `\nПРИСУТНІ: ${localAttendees.map(a => a.name).join(', ')}`;
+  }
+  window._shareText    = text;
+  window._shareWhatsapp = whatsapp;
+
+  // Показуємо модалку
+  const overlay = document.createElement('div');
+  overlay.className = 'share-overlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;';
+
+  const makeBtn = (id, bg, color, label) => {
+    const b = document.createElement('button');
+    b.id = id;
+    b.textContent = label;
+    b.style.cssText = `width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:${bg};color:${color};font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;`;
+    return b;
+  };
+
+  const title = document.createElement('div');
+  title.textContent = '📤 Поділитись протоколом';
+  title.style.cssText = 'font-size:17px;font-weight:700;color:#1e3a5f;text-align:center;margin-bottom:16px;';
+  box.appendChild(title);
+
+  if (whatsapp) {
+    box.appendChild(makeBtn('sh-whatsapp', '#25D366', 'white', '📱 WhatsApp група'));
+  }
+  box.appendChild(makeBtn('sh-viber',  '#7360f2', 'white',   '📱 Viber'));
+  box.appendChild(makeBtn('sh-sms',    '#16a34a', 'white',   '💬 SMS'));
+  box.appendChild(makeBtn('sh-other',  '#f1f5f9', '#475569', '📤 Інший месенджер'));
+  box.appendChild(makeBtn('sh-cancel', '#f1f5f9', '#94a3b8', 'Скасувати'));
+
+  const hint = document.createElement('div');
+  hint.textContent = 'Натискання відкриє відповідний додаток';
+  hint.style.cssText = 'font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;';
+  box.appendChild(hint);
+
+  overlay.appendChild(box);
+  document.documentElement.appendChild(overlay);
+
+  const enc = encodeURIComponent(text);
+
+  const close = () => overlay.remove();
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
+  box.querySelector('#sh-cancel').addEventListener('click', close);
+
+  if (whatsapp) {
+    box.querySelector('#sh-whatsapp').addEventListener('click', () => {
+      window.open(whatsapp.includes('chat.whatsapp.com') ? whatsapp : `https://wa.me/?text=${enc}`, '_blank');
+      close();
+    });
+  }
+  box.querySelector('#sh-viber').addEventListener('click', () => {
+    window.open(`viber://forward?text=${enc}`, '_blank');
+    close();
+  });
+  box.querySelector('#sh-sms').addEventListener('click', () => {
+    window.open(`sms:?body=${enc}`, '_blank');
+    close();
+  });
+  box.querySelector('#sh-other').addEventListener('click', () => {
+    if (navigator.share) {
+      navigator.share({ title: `Протокол №${meetingNum}`, text }).catch(() => {});
+    } else {
+      navigator.clipboard?.writeText(text);
+      showToast('📋 Текст скопійовано');
+    }
+    close();
+  });
+};
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
 async function checkDailyControl() {
