@@ -3,46 +3,86 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Control Point">
+<meta name="apple-mobile-web-app-title" content="ПРОТОКОЛ">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;ПРОТОКОЛ&quot;,&quot;short_name&quot;:&quot;ПРОТОКОЛ&quot;,&quot;start_url&quot;:&quot;/Control-Point-Protocol/&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;%239CA3AF&quot;,&quot;theme_color&quot;:&quot;%232D2D2D&quot;,&quot;orientation&quot;:&quot;portrait&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;icon-192.png&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/png&quot;},{&quot;src&quot;:&quot;icon-512.png&quot;,&quot;sizes&quot;:&quot;512x512&quot;,&quot;type&quot;:&quot;image/png&quot;}]}">
 <title>Control Point</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Arsenal:ital,wght@0,400;0,700;1,400&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { height: 100%; }
-body { font-family: 'Arsenal', Arial, sans-serif; background: #f0f2f0; color: #1a1a2e; height: 100vh; height: 100dvh; overflow: hidden; user-select: none; }
+body { font-family: 'Arsenal', Arial, sans-serif; background: #9CA3AF; color: #1a1a2e; height: 100vh; height: 100dvh; overflow: hidden; user-select: none; }
 body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { display: none !important; }
 .screen { display: none; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; }
 .screen.active { display: flex; }
+
+/* ══ ПАЛІТРА ПАСТЕЛЬНИХ КОЛЬОРІВ ══ */
+:root {
+  --tile-1: #DBEAFE; --tile-1d: #1E3A8A; --tile-1m: #3B82F6;
+  --tile-2: #F3E8FF; --tile-2d: #581C87; --tile-2m: #A855F7;
+  --tile-3: #DCFCE7; --tile-3d: #14532D; --tile-3m: #22C55E;
+  --tile-4: #FEF9C3; --tile-4d: #78350F; --tile-4m: #CA8A04;
+  --tile-5: #FFE4E6; --tile-5d: #881337; --tile-5m: #F43F5E;
+  --tile-6: #CCFBF1; --tile-6d: #134E4A; --tile-6m: #14B8A6;
+  --tile-7: #FEE2E2; --tile-7d: #7F1D1D; --tile-7m: #EF4444;
+  --tile-8: #E0E7FF; --tile-8d: #312E81; --tile-8m: #6366F1;
+}
 
 /* ══ ХЕДЕР ══ */
 .app-header {
   padding: 10px 16px;
   padding-top: max(10px, calc(env(safe-area-inset-top) + 6px));
   display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0; transition: background 0.4s;
+  flex-shrink: 0; transition: background 0.3s;
 }
-.app-header.neutral { background: #64748b; }
+.app-header.neutral { background: #2D2D2D; }
 .app-header-left  { display: flex; align-items: center; gap: 10px; }
-.app-header-right { display: flex; gap: 8px; }
-.app-header-title { color: white; font-size: 17px; font-weight: 700; }
-.app-header-sub   { color: rgba(255,255,255,0.65); font-size: 11px; margin-top: 1px; }
-.back-btn { color: rgba(255,255,255,0.85); font-size: 14px; cursor: pointer; padding: 4px 8px; border-radius: 6px; border: none; background: rgba(255,255,255,0.12); font-family: inherit; }
-.icon-btn { background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; color: white; font-size: 20px; padding: 4px 10px; cursor: pointer; font-family: inherit; white-space: nowrap; line-height: 1.4; }
+.app-header-right { display: flex; gap: 6px; }
+.app-header-title { font-size: 17px; font-weight: 700; }
+.app-header-sub   { font-size: 11px; margin-top: 1px; opacity: 0.6; }
+
+/* Кнопки хедера — адаптуються до кольору */
+.back-btn {
+  font-size: 13px; cursor: pointer; padding: 4px 9px;
+  border-radius: 7px; border: none; font-family: inherit;
+  background: rgba(0,0,0,0.08); color: inherit;
+}
+.icon-btn {
+  background: rgba(0,0,0,0.07);
+  border: 1px solid rgba(0,0,0,0.1);
+  border-radius: 8px; font-size: 18px;
+  padding: 4px 9px; cursor: pointer;
+  font-family: inherit; white-space: nowrap; line-height: 1.4;
+  color: inherit;
+}
+
+/* Хедер екрану 1 — темний */
+#screen-home .app-header { background: #2D2D2D; }
+#screen-home .app-header .back-btn { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); }
+#screen-home .app-header .icon-btn { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.65); }
+#screen-home .app-header .app-header-title { color: white; }
+#screen-home .app-header .app-header-sub { color: rgba(255,255,255,0.4); }
+#screen-settings .app-header { background: #2D2D2D; }
+#screen-settings .app-header .back-btn { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.75); }
+#screen-settings .app-header .app-header-title { color: white; }
 
 /* ══ FAB ══ */
 .fab {
   display: flex; align-items: center; justify-content: center;
-  width: 52px; height: 52px; background: #2563eb; border-radius: 14px;
-  border: none; color: white; font-size: 28px; cursor: pointer;
-  box-shadow: 0 4px 16px rgba(37,99,235,0.4);
-  margin: 8px auto 4px; line-height: 1; flex-shrink: 0;
+  width: 46px; height: 46px; border-radius: 14px;
+  border: none; font-size: 26px; cursor: pointer;
+  margin: 7px auto 4px; line-height: 1; flex-shrink: 0;
+  background: #2563eb; color: white;
+  box-shadow: 0 6px 20px rgba(37,99,235,0.45), 0 2px 6px rgba(0,0,0,0.15);
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.fab:active { opacity: 0.85; }
+.fab:active { transform: scale(0.93); box-shadow: 0 3px 10px rgba(37,99,235,0.3); }
 
-/* Ландшафтний режим телефону */
+/* Ландшафтний режим */
 @media (max-height: 500px) {
   .app-header { padding: 4px 12px; padding-top: max(4px, calc(env(safe-area-inset-top) + 2px)); }
   .app-header-title { font-size: 14px; }
@@ -52,7 +92,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 }
 
 /* ══ SCROLL ══ */
-.scroll-area { flex: 1; overflow-y: auto; padding: 16px 16px 24px; -webkit-overflow-scrolling: touch; }
+.scroll-area { flex: 1; overflow-y: auto; padding: 16px 16px 24px; -webkit-overflow-scrolling: touch; background: #9CA3AF; }
 .scroll-area.no-fab { padding: 16px 16px 24px; }
 
 /* ══ LOADER ══ */
@@ -61,6 +101,13 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .loader-text { color: rgba(255,255,255,0.6); font-size: 15px; }
 .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.15); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══ GLOBAL SPINNER ══ */
+#global-spinner { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.25); z-index:9999; align-items:center; justify-content:center; }
+#global-spinner.active { display:flex; }
+#global-spinner .spin-box { width:80px; height:80px; background:rgba(255,255,255,0.95); border-radius:20px; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 24px rgba(0,0,0,0.2); }
+#global-spinner .spin-box img { width:52px; height:52px; animation:hourglass-pulse 1.2s ease-in-out infinite; }
+@keyframes hourglass-pulse { 0%,100%{opacity:1;transform:scale(1);} 50%{opacity:0.7;transform:scale(0.9);} }
 
 /* ══ AUTH ══ */
 #screen-auth { background: linear-gradient(160deg, #1e3a5f 0%, #0f2744 60%, #1a1a2e 100%); align-items: center; justify-content: center; padding: 32px 24px; overflow-y: auto; }
@@ -81,14 +128,14 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
 /* ══ ПЛИТКИ ══ */
 .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.project-tile { border-radius: 16px; padding: 20px 16px; cursor: pointer; min-height: 130px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 4px 16px rgba(0,0,0,0.18); transition: transform 0.15s; position: relative; overflow: hidden; }
+.project-tile { border-radius: 14px; padding: 14px; cursor: pointer; min-height: 100px; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.15s; position: relative; overflow: hidden; }
 .project-tile:active { transform: scale(0.97); }
-.project-tile::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%); pointer-events: none; }
-.project-tile-name { color: white; font-size: 22px; font-weight: 700; line-height: 1.3; text-shadow: 0 1px 4px rgba(0,0,0,0.3); }
-.project-tile-address { color: rgba(255,255,255,0.65); font-size: 11px; margin-top: 4px; }
-.project-tile-footer { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 16px; }
-.project-tile-count { color: rgba(255,255,255,0.9); font-size: 28px; font-weight: 700; line-height: 1; }
-.project-tile-label { color: rgba(255,255,255,0.6); font-size: 11px; }
+.project-tile-name { font-size: 16px; font-weight: 700; line-height: 1.3; }
+.project-tile-address { font-size: 10px; margin-top: 3px; opacity: 0.6; }
+.project-tile-footer { display: flex; align-items: flex-end; justify-content: space-between; margin-top: 12px; }
+.project-tile-count { font-size: 11px; font-weight: 700; opacity: 0.45; }
+.project-tile-label { font-size: 10px; opacity: 0.45; }
+.project-tile-shared { font-size: 10px; color: #C17058; margin-top: 2px; }
 
 /* ══ КАРТКИ ПРОТОКОЛІВ ══ */
 .meeting-card { background: white; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); cursor: pointer; display: flex; align-items: center; justify-content: space-between; transition: transform 0.15s; border-left: 4px solid #e2e8f0; }
@@ -227,7 +274,21 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .block-divider { height: 28px; display: flex; align-items: center; justify-content: center; margin: 4px 0; }
 .block-divider::before { content: ''; width: 48px; height: 3px; background: #cbd5e1; border-radius: 2px; }
 
-/* ══ ПОПЕРЕДНІЙ ПЕРЕГЛЯД ДРУКУ ══ */
+/* ══ ДОДАТКИ ══ */
+.att-row { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; background: white; border-radius: 8px; margin-bottom: 4px; min-height: 44px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden; }
+.att-num-cell { position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; height: 100%; border-right: 1px solid #f1f5f9; min-height: 44px; }
+.att-num-cell .num-text { font-size: 10px; color: #94a3b8; }
+.att-row.att-deleting .att-num-cell::before,
+.att-row.att-deleting .att-num-cell::after { content: ''; position: absolute; background: #ef4444; width: 65%; height: 2px; top: 50%; left: 17.5%; border-radius: 2px; pointer-events: none; }
+.att-row.att-deleting .att-num-cell::before { transform: translateY(-50%) rotate(45deg); }
+.att-row.att-deleting .att-num-cell::after  { transform: translateY(-50%) rotate(-45deg); }
+.att-row.att-deleting .att-num-cell { background: rgba(239,68,68,0.07); }
+.att-info { padding: 6px 10px; cursor: pointer; }
+.att-name { font-size: 13px; font-weight: 700; color: #1e293b; }
+.att-desc { font-size: 11px; color: #64748b; margin-top: 1px; }
+.att-type-icon { padding: 0 10px; font-size: 18px; color: #94a3b8; }
+.att-upload-progress { height: 3px; background: #e2e8f0; border-radius: 2px; margin: 2px 0; overflow: hidden; }
+.att-upload-progress-bar { height: 100%; background: #2563eb; border-radius: 2px; transition: width 0.2s; }
 #print-preview-area {
   flex: 1;
   overflow-y: auto;
@@ -240,15 +301,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 }
 #protocol-doc {
   width: 794px;
-  min-height: 1123px;
-  background: white;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.4);
-  padding: 76px 38px 76px 95px;
-  flex-shrink: 0;
-  font-family: 'Arsenal', Arial, sans-serif;
-  font-size: 10pt;
-  color: #000;
-  margin: 0 auto 20px;
+  min-height: auto;
 }
 #protocol-doc table { width:100%; border-collapse:collapse; margin-bottom:18px; table-layout:fixed; font-size:9.5pt; }
 #protocol-doc th { background:#1e3a5f; color:white; padding:5px 8px; text-align:left; font-size:8.5pt; border:1px solid #1e3a5f; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
@@ -257,7 +310,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 #protocol-doc .doc-title { text-align:center; font-size:13pt; font-weight:700; text-transform:uppercase; margin-bottom:6px; }
 #protocol-doc .doc-sub { text-align:center; font-size:9.5pt; margin-bottom:14px; line-height:1.6; }
 #protocol-doc .doc-meta { display:flex; justify-content:space-between; font-size:9.5pt; margin-bottom:14px; padding-bottom:8px; }
-#protocol-doc .sig-section { margin-top:16px; padding-top:10px; }
+#protocol-doc .att-section { margin-top:16px; padding-top:10px; border-top:1px solid #e5e7eb; }
+#protocol-doc .att-title { font-weight:700; font-size:9.5pt; margin-bottom:4px; }
 #protocol-doc .sig-title { font-weight:700; font-size:9.5pt; margin-bottom:8px; }
 #protocol-doc .sig-row { display:flex; align-items:flex-end; gap:8px; padding:7px 0; border-bottom:1px solid #eee; }
 #protocol-doc .sig-row:last-child { border-bottom:none; }
@@ -271,9 +325,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   body { background: white !important; }
   body > *:not(#screen-print) { display: none !important; }
   #screen-print { display: flex !important; height: auto !important; }
-  .app-header, #float-print-btn { display: none !important; }
+  .app-header, #btn-print, #btn-save, #btn-share { display: none !important; }
   #print-preview-area {
     padding: 0 !important;
+    margin: 0 !important;
     background: white !important;
     overflow: visible !important;
     display: block !important;
@@ -286,6 +341,35 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     transform: none !important;
     margin: 0 !important;
   }
+  .photo-page {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+  .photo-page-item {
+    page-break-before: always;
+    break-before: page;
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    margin: 0 !important;
+    background: white !important;
+  }
+}
+
+/* Фото аркуші в preview */
+.photo-page { display: block; }
+.photo-page-item {
+  width: 794px;
+  min-height: auto;
+  background: white;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.4);
+  padding: 76px 38px 76px 95px;
+  margin: 20px auto 0;
+  box-sizing: border-box;
+  font-family: 'Arsenal', Arial, sans-serif;
 }
 .ctrl-btn {
   display: flex; align-items: center; justify-content: center;
@@ -397,7 +481,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .modal-btn-cancel  { background: #f1f5f9; color: #64748b; }
 
 .settings-section { margin-bottom: 24px; }
-.settings-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #94a3b8; margin-bottom: 8px; padding: 0 4px; }
+.settings-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.6); margin-bottom: 8px; padding: 0 4px; }
 .settings-row { background: white; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; cursor: pointer; }
 .settings-row span { font-size: 14px; color: #1a1a2e; }
 .settings-val { font-size: 13px; color: #94a3b8; }
@@ -468,14 +552,15 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .executor-new-right { padding: 6px 10px; }
 .exec-del { background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 2px 4px; }
 </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
 <!-- LOADER -->
 <div id="screen-loader" class="screen active">
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;">
-    <div class="loader-icon">📋</div>
-    <div class="loader-text">Control Point</div>
+    <img src="icon-192.png" style="width:96px;height:96px;border-radius:22px;margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+    <div class="loader-text">Control Point <strong>PROTOCOL</strong></div>
     <div class="spinner"></div>
   </div>
 </div>
@@ -483,7 +568,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <!-- AUTH -->
 <div id="screen-auth" class="screen">
   <div class="auth-logo">
-    <div class="auth-logo-icon">📋</div>
+    <img src="icon-192.png" style="width:72px;height:72px;border-radius:18px;margin:0 auto 14px;display:block;box-shadow:0 4px 16px rgba(0,0,0,0.3);">
     <h1>Control Point</h1>
     <p>Протоколи нарад</p>
   </div>
@@ -508,19 +593,19 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   <div class="app-header neutral">
     <div class="app-header-left">
       <div>
-        <div class="app-header-title">📋 Control Point <strong>PROTOCOL</strong></div>
+        <div class="app-header-title"><img src="icon-192.png" style="width:22px;height:22px;border-radius:5px;vertical-align:middle;margin-right:6px;">Control Point <strong>PROTOCOL</strong></div>
         <div class="app-header-sub">Протоколи нарад</div>
       </div>
     </div>
     <div class="app-header-right">
-      <button class="icon-btn" onclick="showScreen('screen-settings')">⚙️</button>
+      <button class="icon-btn" onclick="showScreen('screen-settings')"><img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;"></button>
     </div>
   </div>
   <button class="fab" onclick="openAddProject()">＋</button>
   <div class="scroll-area">
     <div class="projects-grid" id="projects-list">
       <div class="empty-state" style="grid-column:1/-1">
-        <div class="icon">🏗️</div>
+        <img src="icon-192.png" style="width:48px;height:48px;border-radius:12px;margin-bottom:16px;opacity:0.6;">
         <p>Немає об'єктів.<br>Натисніть <strong>+</strong></p>
       </div>
     </div>
@@ -531,16 +616,17 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-project" class="screen">
   <div class="app-header neutral" id="header-project">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-home')">◀</button>
-      <div>
-        <div class="app-header-title" id="project-header-name">—</div>
-        <div class="app-header-sub" id="project-header-address">—</div>
-      </div>
+      <button class="back-btn" onclick="showScreen('screen-home')"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
+    </div>
+    <div style="position:absolute;left:0;right:0;text-align:center;pointer-events:none;">
+      <div class="app-header-title" id="project-header-title">Усі протоколи</div>
+      <div class="app-header-sub" id="project-header-name">—</div>
     </div>
     <div class="app-header-right">
-      <button class="icon-btn" onclick="showScreen('screen-analytics')">📊</button>
-      <button class="icon-btn" onclick="showToast('Пошук — в розробці')">🔍</button>
-      <button class="icon-btn" onclick="openProjectSettings()">⚙️</button>
+      <button class="icon-btn" onclick="showAllControlScreen()">
+        <svg viewBox="0 0 24 24" fill="none" width="18" height="18" style="vertical-align:middle;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="currentColor"/></svg>
+      </button>
+      <button class="icon-btn" onclick="openProjectSettings()"><img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;"></button>
     </div>
   </div>
   <button class="fab" onclick="openAddMeeting()">＋</button>
@@ -550,17 +636,16 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <!-- ЕКРАН 3 — ПРОТОКОЛ -->
 <div id="screen-meeting" class="screen">
   <div id="meeting-header" class="protocol-header">
-    <button class="back-btn" onclick="leaveMeeting()">◀</button>
+    <button class="back-btn" onclick="leaveMeeting()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     <div class="protocol-header-center">
       <div class="protocol-header-num"  id="meeting-header-num">Протокол №—</div>
       <div class="protocol-header-date" id="meeting-header-date">—</div>
       <div class="protocol-header-loc"  id="meeting-header-loc">—</div>
     </div>
     <div class="protocol-header-btns">
-      <button class="icon-btn" onclick="shareMeeting()">📤</button>
-      <button class="icon-btn" onclick="printMeeting()">🖨</button>
+      <button class="icon-btn" onclick="openSendScreen()"><img src="icon-send.png" style="width:20px;height:20px;vertical-align:middle;"></button>
       <button class="icon-btn" onclick="showControlScreen()" title="Контроль" style="display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" fill="none" width="20" height="20"><circle cx="12" cy="13" r="8" stroke="white" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#60a5fa" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#60a5fa"/></svg></button>
-      <button class="icon-btn" onclick="showToast('Налаштування протоколу — в розробці')">⚙️</button>
+      <button class="icon-btn" onclick="openMeetingSettings()"><img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;"></button>
     </div>
   </div>
 
@@ -591,8 +676,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
     <!-- ДОДАТКИ -->
     <div class="proto-block-head"><span id="attachments-title">📎 Додатки до протоколу</span></div>
-    <div class="att-empty">Додатків ще немає</div>
-    <button class="center-btn gray" onclick="showToast('Додатки — в розробці')">📎</button>
+    <div id="attachments-list"></div>
+    <input type="file" id="att-file-input" accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none;">
+    <button class="center-btn blue" id="add-file-btn">＋</button>
 
     <div class="block-divider"></div>
 
@@ -606,8 +692,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-settings" class="screen">
   <div class="app-header neutral">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-home')">◀ Назад</button>
-      <div class="app-header-title">Налаштування загальні ⚙️</div>
+      <button class="back-btn" onclick="showScreen('screen-home')"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
+    </div>
+    <div class="app-header-right">
+      <div class="app-header-title">Налаштування загальні <img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"></div>
     </div>
   </div>
   <div class="scroll-area no-fab">
@@ -617,7 +705,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     </div>
     <div class="settings-section">
       <div class="settings-label">Резервне копіювання</div>
-      <div class="settings-row" onclick="manualBackup()"><span>💾 Зробити резервну копію</span><span class="settings-val">→</span></div>
+      <div class="settings-row" onclick="testControlCheck()"><span>🔔 Перевірити контроль (тест)</span><span class="settings-val">→</span></div>
       <div class="settings-row" onclick="showToast('Відновлення — в розробці')"><span>🔄 Відновити з резервної копії</span><span class="settings-val">→</span></div>
     </div>
     <div class="settings-section">
@@ -631,30 +719,33 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   </div>
 </div>
 
-<!-- ЕКРАН ПОПЕРЕДНЬОГО ПЕРЕГЛЯДУ ДРУКУ -->
+<!-- ЕКРАН ВІДПРАВИТИ -->
 <div id="screen-print" class="screen">
   <div class="app-header neutral" id="header-print">
     <div class="app-header-left">
-      <button class="back-btn" onclick="leavePrintScreen()">◀ Назад</button>
-      <div class="app-header-title">Попередній перегляд 🖨</div>
+      <button class="back-btn" onclick="leavePrintScreen()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
+    </div>
+    <div class="app-header-right">
+      <div>
+        <div class="app-header-title">Відправити <img src="icon-send.png" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"></div>
+        <div class="app-header-sub" id="print-header-sub"></div>
+      </div>
     </div>
   </div>
-  <div class="scroll-area no-fab" id="print-preview-area">
+  <div id="print-preview-area" class="scroll-area no-fab">
     <div id="protocol-doc"></div>
   </div>
-  <button id="float-print-btn" style="
-    position:fixed; bottom:32px; right:24px;
-    background:#2563eb; color:white; border:none; border-radius:16px;
-    padding:14px 24px; font-size:15px; font-weight:700;
-    font-family:inherit; cursor:pointer;
-    box-shadow:0 4px 20px rgba(37,99,235,0.45);
-    display:flex; align-items:center; gap:8px; z-index:50;
-  ">🖨 Друкувати</button>
+  <div style="position:fixed;bottom:24px;left:0;right:0;display:flex;gap:8px;justify-content:center;padding:0 16px;z-index:50;">
+    <button id="btn-print" style="flex:1;max-width:180px;padding:13px 6px;background:#2563eb;color:white;border:none;border-radius:14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 6px 20px rgba(37,99,235,0.4);">🖨 Друкувати</button>
+    <button id="btn-save"  style="flex:1;max-width:180px;padding:13px 6px;background:white;color:#2563eb;border:2px solid #2563eb;border-radius:14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.1);">💾 Зберегти</button>
+  </div>
 </div>
 <div id="screen-analytics" class="screen">
   <div class="app-header neutral">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-project')">◀ Назад</button>
+      <button class="back-btn" onclick="showScreen('screen-project')"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
+    </div>
+    <div class="app-header-right">
       <div class="app-header-title">Аналітика 📊</div>
     </div>
   </div>
@@ -667,8 +758,13 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-project-settings" class="screen">
   <div class="app-header neutral" id="header-project-settings">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-project')">◀ Назад</button>
-      <div class="app-header-title">Налаштування об'єкту ⚙️</div>
+      <button class="back-btn" onclick="leaveProjectSettings()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
+    </div>
+    <div class="app-header-right">
+      <div>
+        <div class="app-header-title">Налаштування об'єкту <img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"></div>
+        <div class="app-header-sub" id="ps-header-sub"></div>
+      </div>
     </div>
   </div>
   <div class="scroll-area no-fab">
@@ -693,6 +789,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
           <label class="settings-field-label">📱 Посилання WhatsApp групи</label>
           <input class="settings-field-input" id="ps-whatsapp" type="url" placeholder="https://chat.whatsapp.com/...">
         </div>
+        <div class="settings-field">
+          <label class="settings-field-label">Колір об'єкту</label>
+          <div id="color-picker" style="display:flex;gap:8px;flex-wrap:wrap;padding:4px 0;"></div>
+        </div>
       </div>
     </div>
 
@@ -704,11 +804,11 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
         <div class="settings-card" style="margin-top:8px;">
           <div class="executor-new-grid">
             <div class="executor-new-left">
-              <input type="text" id="new-exec-name" placeholder="ПІБ..." style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
-              <input type="tel"  id="new-exec-phone" placeholder="Телефон" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;margin-top:6px;">
+              <input type="text" id="new-exec-name" placeholder="ПІБ..." autocomplete="off" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
+              <input type="tel"  id="new-exec-phone" placeholder="Телефон" autocomplete="off" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;margin-top:6px;">
             </div>
             <div class="executor-new-right">
-              <input type="email" id="new-exec-email" placeholder="Email" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
+              <input type="email" id="new-exec-email" placeholder="Email" autocomplete="off" style="font-size:16px;width:100%;border:none;outline:none;background:transparent;font-family:inherit;color:#1e293b;">
             </div>
           </div>
         </div>
@@ -716,6 +816,42 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
       <button class="center-btn blue" id="add-executor-btn" onclick="toggleAddExecutor()" style="margin-top:8px;">＋</button>
     </div>
 
+  </div>
+</div>
+
+<!-- ОПЕРАЦІЇ З ПРОТОКОЛОМ -->
+<div id="screen-meeting-settings" class="screen">
+  <div class="app-header neutral" id="header-meeting-settings">
+    <div class="app-header-left">
+      <button class="back-btn" onclick="leaveMeetingSettings()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
+    </div>
+    <div class="app-header-right">
+      <div>
+        <div class="app-header-title">Операції з протоколом <img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"></div>
+        <div class="app-header-sub" id="ms-header-sub"></div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-area no-fab">
+    <div class="settings-section">
+      <div class="settings-label">Дані протоколу</div>
+      <div class="settings-card">
+        <div class="settings-field">
+          <label class="settings-field-label">Номер протоколу</label>
+          <input class="settings-field-input" id="ms-number" type="number" placeholder="Номер">
+        </div>
+        <div class="settings-field">
+          <label class="settings-field-label">Місце проведення</label>
+          <input class="settings-field-input" id="ms-location" type="text" placeholder="Місце проведення">
+        </div>
+      </div>
+    </div>
+    <div class="settings-section">
+      <div class="settings-label">Небезпечна зона</div>
+      <div class="settings-row settings-danger" onclick="deleteMeeting()">
+        <span>🗑 Видалити протокол</span>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -728,7 +864,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <div class="modal-title">Додати новий об'єкт</div>
     <input class="modal-input" id="new-project-name" placeholder="Назва об'єкту" type="text">
     <input class="modal-input" id="new-project-address" placeholder="Адреса" type="text">
-    <button class="modal-btn modal-btn-primary" onclick="saveProject()">Зберегти</button>
+    <button id="btn-save-project" class="modal-btn modal-btn-primary" onclick="saveProject()">Зберегти</button>
     <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-project')">Скасувати</button>
   </div>
 </div>
@@ -737,17 +873,20 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div class="modal-overlay" id="modal-meeting" onclick="handleModalClick(event,'modal-meeting')">
   <div class="modal">
     <div class="modal-title">Додати новий протокол</div>
-    <button class="modal-btn modal-btn-primary" onclick="saveMeeting()">Створити протокол</button>
+    <button id="btn-create-meeting" class="modal-btn modal-btn-primary">Створити протокол</button>
     <input class="modal-input" id="new-meeting-location" placeholder="Місце проведення (необов'язково)" type="text">
     <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-meeting')">Скасувати</button>
   </div>
 </div>
 
+<!-- GLOBAL SPINNER -->
+<div id="global-spinner"><div class="spin-box"><img src="icon-wait.png" alt="⏳"></div></div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged }
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, increment }
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, increment, runTransaction, limit, where }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -763,26 +902,43 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
+setPersistence(auth, browserLocalPersistence).catch(console.warn);
+
 let currentUser    = null;
 let currentProject = null;
 let currentMeeting = null;
 
 // Локальні дані для інлайн-редагування
-let localItems     = [];
-let localAttendees = [];
-let activeItemIdx  = null;
-let activeAttIdx   = null;
+let localItems       = [];
+let localAttendees   = [];
+let localAttachments = [];
+let activeItemIdx    = null;
+let activeAttIdx     = null;
 let deletingItemIdx = null;
 let deletingAttIdx  = null;
+let _fixedMeetingProjId = null;
+let _savingMeeting = false;
 let longPressTimer  = null;
 
-const TILE_COLORS = ['#1e3a5f','#166534','#7c2d12','#4c1d95','#0f766e','#9f1239','#854d0e','#1e40af'];
+const TILE_COLORS = [
+  { bg:'#DBEAFE', text:'#1E3A8A', sub:'#3B82F6' },
+  { bg:'#F3E8FF', text:'#581C87', sub:'#A855F7' },
+  { bg:'#DCFCE7', text:'#14532D', sub:'#22C55E' },
+  { bg:'#FEF9C3', text:'#78350F', sub:'#CA8A04' },
+  { bg:'#FFE4E6', text:'#881337', sub:'#F43F5E' },
+  { bg:'#CCFBF1', text:'#134E4A', sub:'#14B8A6' },
+  { bg:'#FEE2E2', text:'#7F1D1D', sub:'#EF4444' },
+  { bg:'#E0E7FF', text:'#312E81', sub:'#6366F1' },
+];
 
 // ── HELPERS ──
 window.showScreen = function(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 };
+
+function showSpinner() { document.getElementById('global-spinner').classList.add('active'); }
+function hideSpinner() { document.getElementById('global-spinner').classList.remove('active'); }
 window.showToast = function(msg, dur = 2500) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -848,34 +1004,29 @@ async function loadProjects() {
   const snap = await getDocs(query(collection(db,'users',uid,'projects'), orderBy('createdAt','asc')));
   const grid = document.getElementById('projects-list');
   if (snap.empty) {
-    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="icon">🏗️</div><p>Немає об'єктів.<br>Натисніть <strong>+</strong></p></div>`;
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><img src="icon-192.png" style="width:48px;height:48px;border-radius:12px;margin-bottom:16px;opacity:0.6;"><p>Немає об'єктів.<br>Натисніть <strong>+</strong></p></div>`;
     return;
   }
   grid.innerHTML = '';
   let idx = 0;
   for (const d of snap.docs) {
     const p = d.data();
-    const color    = TILE_COLORS[idx % TILE_COLORS.length];
-    const gradient = `linear-gradient(135deg, ${color} 0%, ${color}cc 100%)`;
-    // Рахуємо протоколи напряму
+    const colorIdx = p.colorIdx !== undefined ? p.colorIdx : idx;
+    const palette  = TILE_COLORS[colorIdx % TILE_COLORS.length];
     const mSnap = await getDocs(collection(db,'users',uid,'projects',d.id,'meetings'));
     const count = mSnap.size;
     const tile = document.createElement('div');
     tile.className = 'project-tile';
-    tile.style.background = gradient;
+    tile.style.background = palette.bg;
     tile.innerHTML = `
       <div>
-        <div class="project-tile-name">${esc(p.name)}</div>
-        <div class="project-tile-address">${esc(p.address||'')}</div>
+        <div class="project-tile-name" style="color:${palette.text};">${esc(p.name)}</div>
+        <div class="project-tile-address" style="color:${palette.sub};">${esc(p.address||'')}</div>
       </div>
       <div class="project-tile-footer">
-        <div>
-          <div class="project-tile-count">${count}</div>
-          <div class="project-tile-label">протоколів</div>
-        </div>
-        <div style="font-size:28px;opacity:0.4">📋</div>
+        <div class="project-tile-count" style="color:${palette.sub};">${count} протокол${count===1?'':count<5?'и':'ів'}</div>
       </div>`;
-    tile.onclick = () => openProject(d.id, p, gradient, color);
+    tile.onclick = () => openProject(d.id, p, palette);
     grid.appendChild(tile);
     idx++;
   }
@@ -897,94 +1048,232 @@ window.saveProject = async function() {
   } catch(e) { showToast('Помилка збереження'); }
 };
 
-function openProject(id, data, gradient, color) {
-  currentProject = { id, ...data, gradient, color };
-  document.getElementById('project-header-name').textContent    = data.name;
-  document.getElementById('project-header-address').textContent = data.address || '';
-  document.getElementById('header-project').style.background    = gradient;
-  loadMeetings();
+let currentProjectLoadId   = null;
+let currentLoadMeetingsAbort = null;
+
+function openProject(id, data, palette) {
+  currentProject    = { id, ...data, palette };
+  currentProjectLoadId = id;
+  document.getElementById('project-header-name').textContent = data.name;
+  const hdr = document.getElementById('header-project');
+  hdr.style.background = palette.bg;
+  hdr.querySelectorAll('.back-btn, .icon-btn').forEach(btn => {
+    btn.style.background  = 'rgba(0,0,0,0.08)';
+    btn.style.color       = palette.text;
+    btn.style.borderColor = 'rgba(0,0,0,0.1)';
+  });
+  hdr.querySelectorAll('.app-header-title, .app-header-sub').forEach(el => {
+    el.style.color = palette.text;
+  });
   showScreen('screen-project');
+  loadMeetings(id);
 }
 
 // ── MEETINGS ──
-async function loadMeetings() {
-  if (!currentProject) return;
+async function loadMeetings(projId) {
+  if (!projId) return;
+  if (currentProjectLoadId !== projId) return;
+
+  // Скасовуємо попереднє завантаження
+  if (currentLoadMeetingsAbort) currentLoadMeetingsAbort();
+  let aborted = false;
+  currentLoadMeetingsAbort = () => { aborted = true; };
+
   const uid  = currentUser.uid;
-  const snap = await getDocs(query(collection(db,'users',uid,'projects',currentProject.id,'meetings'), orderBy('number','desc')));
   const list = document.getElementById('meetings-list');
-  if (snap.empty) {
-    list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Протоколів ще немає.</p></div>`;
-    return;
-  }
-  list.innerHTML = '';
-  list.innerHTML = '';
-  for (const d of snap.docs) {
-    const m = d.data();
-    // Рахуємо пункти на контролі напряму
-    const uid2 = currentUser.uid;
-    const iSnap = await getDocs(collection(db,'users',uid2,'projects',currentProject.id,'meetings',d.id,'items'));
-    let controlCount = 0;
-    iSnap.forEach(i => { if (i.data().control) controlCount++; });
+  list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Завантаження...</p></div>`;
 
-    const card = document.createElement('div');
-    card.className = 'meeting-card';
-    card.style.borderLeftColor = currentProject.color;
+  try {
+    const snap = await getDocs(query(
+      collection(db,'users',uid,'projects',projId,'meetings'),
+      orderBy('number','desc')
+    ));
 
+    if (aborted || !currentProject || currentProject.id !== projId) return;
+
+    if (snap.empty) {
+      list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Протоколів ще немає.</p></div>`;
+      return;
+    }
+
+    list.innerHTML = '';
     const ctrlSvg = `<svg viewBox="0 0 24 24" fill="none" width="14" height="14" style="vertical-align:middle;margin-right:3px;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg>`;
 
-    card.innerHTML = `
-      <div class="meeting-card-left">
-        <div class="meeting-card-title">
-          <h3>Протокол №${m.number}</h3>
-          <p>${formatDateShort(m.date)}${m.location ? ' · ' + esc(m.location) : ''}</p>
+    for (const d of snap.docs) {
+      if (aborted || !currentProject || currentProject.id !== projId) return;
+      const m    = d.data();
+      // Використовуємо збережений лічильник — без зайвого запиту
+      const ctrl = m.controlCount || 0;
+
+      const card = document.createElement('div');
+      card.className = 'meeting-card';
+      card.style.borderLeftColor = currentProject.palette?.text || '#1e3a5f';
+      card.innerHTML = `
+        <div class="meeting-card-left">
+          <div class="meeting-card-title">
+            <h3>Протокол №${m.number}</h3>
+            <p>${formatDateShort(m.date)}${m.location ? ' · ' + esc(m.location) : ''}</p>
+          </div>
         </div>
-      </div>
-      ${controlCount > 0
-        ? `<span class="open-badge has">${ctrlSvg}${controlCount}</span>`
-        : `<span class="open-badge none">✓</span>`}`;
-    card.onclick = () => openMeeting(d.id, m);
-    list.appendChild(card);
+        ${ctrl > 0
+          ? `<span class="open-badge has">${ctrlSvg}${ctrl}</span>`
+          : `<span class="open-badge none">✓</span>`}`;
+      card.onclick = () => openMeeting(d.id, m);
+      list.appendChild(card);
+    }
+  } catch(e) {
+    if (!aborted) {
+      console.error(e);
+      list.innerHTML = `<div class="empty-state"><p>Помилка завантаження</p></div>`;
+    }
+  } finally {
+    if (!aborted) currentLoadMeetingsAbort = null;
   }
 }
 
-window.openAddMeeting = () => { document.getElementById('new-meeting-location').value = ''; openModal('modal-meeting'); };
-
-window.saveMeeting = async function() {
-  const location = document.getElementById('new-meeting-location').value.trim();
-  try {
-    const uid    = currentUser.uid;
-    const ref    = collection(db,'users',uid,'projects',currentProject.id,'meetings');
-    const snap   = await getDocs(ref);
-    const number = snap.size + 1;
-    await autoBackup('протокол-'+number);
-    await addDoc(ref, { number, location, date: serverTimestamp(), status:'draft', openItemsCount:0, createdAt: serverTimestamp() });
-    // Оновлюємо лічильник протоколів на плитці об'єкту
-    await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { meetingsCount: increment(1) });
-    closeModal('modal-meeting'); showToast(`✅ Протокол №${number} створено`); loadMeetings();
-  } catch(e) { showToast('Помилка збереження'); }
+window.openAddMeeting = () => {
+  if (!currentProject) return;
+  const projId = currentProject.id;
+  document.getElementById('new-meeting-location').value = '';
+  const btn    = document.getElementById('btn-create-meeting');
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.onclick = () => saveMeeting(projId);
+  openModal('modal-meeting');
 };
+
+async function saveMeeting(projId) {
+  if (!projId) return;
+  const btn = document.getElementById('btn-create-meeting');
+  if (btn) btn.disabled = true;
+  try {
+    const uid         = currentUser.uid;
+    const meetingsRef = collection(db,'users',uid,'projects',projId,'meetings');
+    const location    = document.getElementById('new-meeting-location').value.trim();
+    const snap        = await getDocs(query(meetingsRef, orderBy('number','desc'), limit(1)));
+    const maxNum      = snap.empty ? 0 : (snap.docs[0].data().number || 0);
+    const number      = maxNum + 1;
+    await addDoc(meetingsRef, {
+      number, location, date: serverTimestamp(),
+      status: 'draft', openItemsCount: 0, controlCount: 0, createdAt: serverTimestamp()
+    });
+    await updateDoc(doc(db,'users',uid,'projects',projId), { meetingsCount: increment(1) });
+    closeModal('modal-meeting');
+    showToast(`✅ Протокол №${number} створено`);
+    if (currentProject?.id === projId) loadMeetings(projId);
+  } catch(e) {
+    console.error(e);
+    showToast('Помилка створення протоколу');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
 
 // ── MEETING SCREEN ──
 async function openMeeting(id, data) {
+  showSpinner();
   currentMeeting = { id, ...data };
+  const palette = currentProject.palette || { bg:'#2D2D2D', text:'#fff', sub:'#aaa' };
   const h = document.getElementById('meeting-header');
-  h.style.background = currentProject.gradient;
+  h.style.background = palette.bg;
+  h.querySelectorAll('.back-btn, .icon-btn').forEach(btn => {
+    btn.style.background  = `rgba(0,0,0,0.08)`;
+    btn.style.color       = palette.text;
+    btn.style.borderColor = `rgba(0,0,0,0.1)`;
+  });
+  h.querySelectorAll('.protocol-header-num, .protocol-header-date, .protocol-header-loc').forEach(el => {
+    el.style.color = palette.text;
+  });
   document.getElementById('meeting-header-num').textContent  = `Протокол № ${data.number}`;
   document.getElementById('meeting-header-date').textContent = formatDateFull(data.date);
   document.getElementById('meeting-header-loc').textContent  = data.location || '—';
   document.getElementById('attachments-title').textContent   = `📎 Додатки до протоколу №${data.number}`;
-
-  // Завантажуємо в локальні масиви
   await loadItemsLocal();
   await loadAttendeesLocal();
+  await loadAttachmentsLocal();
+  if (!currentMeeting || currentMeeting.id !== id) { hideSpinner(); return; }
+  _deletingAttIdx = null;
   renderItems();
   renderAttendees();
+  renderAttachments();
+  hideSpinner();
   showScreen('screen-meeting');
 }
 
 window.leaveMeeting = async function() {
-  await saveActiveItem();
-  await saveActiveAtt();
+  const savedItemIdx = activeItemIdx;
+  const savedAttIdx  = activeAttIdx;
+
+  // Читаємо дані з DOM поки екран ще видимий
+  let itemData = null;
+  if (savedItemIdx !== null) {
+    const row = document.querySelector('.item-row.active');
+    if (row) {
+      const inputs = row.querySelectorAll('.item-cell input:not(.executor-input)');
+      itemData = {
+        description: row.querySelector('textarea')?.value.trim() || '',
+        executor:    row.querySelector('.executor-input')?.value.trim() || '',
+        decision:    inputs[0]?.value.trim() || '',
+        note:        inputs[1]?.value.trim() || ''
+      };
+    }
+  }
+  let attData = null;
+  if (savedAttIdx !== null) {
+    const row = document.querySelector('.att-row.active');
+    if (row) {
+      const ins = row.querySelectorAll('input');
+      attData = {
+        name: ins[0]?.value.trim() || '',
+        role: ins[1]?.value.trim() || ''
+      };
+    }
+  }
+
+  // Скидаємо щоб mousedown не викликав повторне збереження
+  activeItemIdx = null;
+  activeAttIdx  = null;
+  _savingItem   = false;
+  _savingAtt    = false;
+
+  // Зберігаємо в Firestore
+  if (savedItemIdx !== null && itemData) {
+    const item = localItems[savedItemIdx];
+    if (item) {
+      Object.assign(item, itemData);
+      try {
+        const {uid,pid,mid} = ids();
+        if (item.id) {
+          await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'items',item.id),
+            {description:item.description,executor:item.executor,decision:item.decision,note:item.note});
+        } else {
+          const ref = await addDoc(collection(db,'users',uid,'projects',pid,'meetings',mid,'items'),
+            {number:item.number,description:item.description,executor:item.executor,decision:item.decision,note:item.note,control:false,createdAt:serverTimestamp()});
+          item.id = ref.id;
+        }
+      } catch(e) { console.warn(e); }
+    }
+  }
+  if (savedAttIdx !== null && attData) {
+    const att = localAttendees[savedAttIdx];
+    if (att) {
+      att.name = attData.name || att.name || '';
+      att.role = attData.role || '';
+      try {
+        const {uid,pid,mid} = ids();
+        if (att.id) {
+          await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,'attendees',att.id),
+            {name:att.name,role:att.role});
+        } else {
+          const ref = await addDoc(collection(db,'users',uid,'projects',pid,'meetings',mid,'attendees'),
+            {name:att.name,role:att.role,createdAt:serverTimestamp()});
+          att.id = ref.id;
+        }
+      } catch(e) { console.warn(e); }
+    }
+  }
+
+  loadMeetings(currentProject?.id);
   showScreen('screen-project');
 };
 
@@ -998,8 +1287,13 @@ async function loadItemsLocal() {
   deletingItemIdx = null;
 }
 
+let _savingItem = false;
+let _savingAtt  = false;
+
 async function saveActiveItem() {
-  if (activeItemIdx === null) return;
+  if (_savingItem) return;
+  _savingItem = true;
+  if (activeItemIdx === null) { _savingItem = false; return; }
   const row = document.querySelector('.item-row.active');
   if (!row) return;
   const textarea = row.querySelector('textarea');
@@ -1028,6 +1322,7 @@ async function saveActiveItem() {
       await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid), { openItemsCount: increment(1) });
     }
   } catch(e) { console.warn('Save item error:', e); }
+  _savingItem = false;
   activeItemIdx = null;
 }
 
@@ -1134,7 +1429,6 @@ function renderItems() {
       row.innerHTML = `
         <div class="item-cell item-num-cell">
           <span class="num-text">${item.number}</span>
-          <button class="item-del-btn" title="Видалити"></button>
         </div>
         <div class="item-cell">${esc(item.description)||'—'}</div>
         <div class="item-cell">${esc(item.executor)||'—'}</div>
@@ -1142,17 +1436,33 @@ function renderItems() {
         <div class="item-cell">${esc(item.note)||''}</div>
         <div class="item-cell" style="padding:0;justify-content:center;">
           <button class="ctrl-btn ${item.control?'on':''}" title="На контроль"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="#1e3a5f" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="#1e3a5f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg></button>
-        </div>
-        `;
+        </div>`;
 
-      // Клік — редагування
+      // Клік на num-cell — двокрокове видалення (як в присутніх)
+      const numCell = row.querySelector('.item-num-cell');
+      numCell.addEventListener('click', e => {
+        e.stopPropagation();
+        if (deletingItemIdx === idx) {
+          deleteItem(idx);
+        } else {
+          deletingItemIdx = idx; activeItemIdx = null; renderItems();
+        }
+      });
+      numCell.addEventListener('touchend', e => {
+        e.stopPropagation(); e.preventDefault();
+        if (deletingItemIdx === idx) {
+          deleteItem(idx);
+        } else {
+          deletingItemIdx = idx; activeItemIdx = null; renderItems();
+        }
+      });
+
+      // Клік на рядок — редагування
       row.addEventListener('click', e => {
-        if (e.target.closest('.item-del-btn')) return;
+        if (e.target.closest('.item-num-cell')) return;
         if (deletingItemIdx === idx) { deletingItemIdx = null; renderItems(); return; }
         saveActiveItem().then(() => {
-          activeItemIdx   = idx;
-          deletingItemIdx = null;
-          renderItems();
+          activeItemIdx = idx; deletingItemIdx = null; renderItems();
         });
       });
 
@@ -1172,21 +1482,6 @@ function renderItems() {
         });
         ctrlBtn.addEventListener('touchend', e => { e.stopPropagation(); });
       }
-      const delBtn = row.querySelector('.item-del-btn');
-      if (delBtn) {
-        delBtn.addEventListener('click', e => { e.stopPropagation(); deleteItem(idx); });
-        delBtn.addEventListener('touchend', e => { e.stopPropagation(); e.preventDefault(); deleteItem(idx); });
-      }
-
-      // Довге натискання
-      row.addEventListener('touchstart', e => {
-        if (e.target.closest('.item-del-btn')) return;
-        longPressTimer = setTimeout(() => {
-          deletingItemIdx = idx; activeItemIdx = null; renderItems();
-        }, 600);
-      }, {passive:true});
-      row.addEventListener('touchend',  () => clearTimeout(longPressTimer), {passive:true});
-      row.addEventListener('touchmove', () => clearTimeout(longPressTimer), {passive:true});
     }
     body.appendChild(row);
   });
@@ -1220,6 +1515,7 @@ async function deleteItem(idx) {
 }
 
 document.getElementById('add-item-btn').addEventListener('click', () => {
+  _savingItem = false; // скидаємо guard перед збереженням
   saveActiveItem().then(() => {
     const num = localItems.length + 1;
     localItems.push({ id: null, number: num, description:'', executor:'', decision:'', note:'', control: false });
@@ -1257,6 +1553,7 @@ async function saveActiveAtt() {
       att.id = ref.id;
     }
   } catch(e) { console.warn('Save att error:', e); }
+  _savingAtt = false;
   activeAttIdx = null;
 }
 
@@ -1278,10 +1575,12 @@ function renderAttendees() {
 
     if (idx === activeAttIdx) {
       row.innerHTML = `
-        <div class="att-num-cell"><span class="num-text">${idx+1}</span><button class="att-del-trigger"></button></div>
+        <div class="att-num-cell"><span class="num-text">${idx+1}</span></div>
         <input type="text" value="${esc(att.name||'')}" placeholder="ПІБ...">
         <input type="text" value="${esc(att.role||'')}" placeholder="Посада...">`;
-      setTimeout(() => row.querySelector('input')?.focus(), 30);
+      const inputs = row.querySelectorAll('input');
+      inputs[0].addEventListener('keydown', e => { if(e.key==='Enter') inputs[1].focus(); });
+      setTimeout(() => inputs[0]?.focus(), 30);
     } else {
       row.innerHTML = `
         <div class="att-num-cell"><span class="num-text">${idx+1}</span><button class="att-del-trigger"></button></div>
@@ -1340,6 +1639,7 @@ async function deleteAtt(idx) {
 }
 
 document.getElementById('add-att-btn').addEventListener('click', () => {
+  _savingAtt = false; // скидаємо guard перед збереженням
   saveActiveAtt().then(() => {
     localAttendees.push({ id: null, name:'', role:'' });
     activeAttIdx   = localAttendees.length - 1;
@@ -1347,6 +1647,10 @@ document.getElementById('add-att-btn').addEventListener('click', () => {
     renderAttendees();
     setTimeout(() => document.querySelector('.att-row.active input')?.focus(), 30);
   });
+});
+
+document.getElementById('add-file-btn').addEventListener('click', () => {
+  openAddAttachment();
 });
 
 // Клік поза — зберегти
@@ -1358,7 +1662,7 @@ document.addEventListener('mousedown', e => {
 
   if (activeItemIdx !== null) {
     const active = itemsWrap?.querySelector('.item-row.active');
-    if (active && !active.contains(e.target) && e.target !== addItemBtn) {
+    if (active && !active.contains(e.target) && e.target !== addItemBtn && !e.target.closest('.item-row')) {
       saveActiveItem().then(() => renderItems());
     }
   }
@@ -1367,7 +1671,7 @@ document.addEventListener('mousedown', e => {
   }
   if (activeAttIdx !== null) {
     const active = attBody?.querySelector('.att-row.active');
-    if (active && !active.contains(e.target) && e.target !== addAttBtn) {
+    if (active && !active.contains(e.target) && e.target !== addAttBtn && !e.target.closest('.att-row')) {
       saveActiveAtt().then(() => renderAttendees());
     }
   }
@@ -1386,6 +1690,27 @@ document.addEventListener('touchstart', e => {
   }
 }, {passive:true});
 
+window.leaveProjectSettings = function() {
+  const palette = currentProject.palette || TILE_COLORS[currentProject.colorIdx||0];
+  applyPaletteToHeader(document.getElementById('header-project'), palette);
+  // Оновлюємо список протоколів і плитки
+  loadMeetings(currentProject?.id);
+  loadProjects();
+  showScreen('screen-project');
+};
+function applyPaletteToHeader(hdr, palette) {
+  if (!hdr || !palette) return;
+  hdr.style.background = palette.bg;
+  hdr.querySelectorAll('.back-btn, .icon-btn').forEach(btn => {
+    btn.style.background  = 'rgba(0,0,0,0.08)';
+    btn.style.color       = palette.text;
+    btn.style.borderColor = 'rgba(0,0,0,0.1)';
+  });
+  hdr.querySelectorAll('.app-header-title, .app-header-sub, .protocol-header-num, .protocol-header-date, .protocol-header-loc').forEach(el => {
+    el.style.color = palette.text;
+  });
+}
+
 // ── НАЛАШТУВАННЯ ОБ'ЄКТУ ──
 let localExecutors = [];
 let deletingExecutorIdx = null;
@@ -1395,11 +1720,33 @@ window.openProjectSettings = async function() {
   document.getElementById('ps-address').value  = currentProject.address      || '';
   document.getElementById('ps-official').value = currentProject.officialName || '';
   document.getElementById('ps-whatsapp').value = currentProject.whatsappGroup || '';
-  document.getElementById('header-project-settings').style.background = currentProject.gradient;
+  document.getElementById('ps-header-sub').textContent = currentProject.name || '';
+  const hdrSettings = document.getElementById('header-project-settings');
+  applyPaletteToHeader(hdrSettings, currentProject.palette || TILE_COLORS[currentProject.colorIdx||0]);
+  // Color picker
+  const picker = document.getElementById('color-picker');
+  picker.innerHTML = '';
+  const currentIdx = currentProject.colorIdx || 0;
+  TILE_COLORS.forEach((p, i) => {
+    const dot = document.createElement('div');
+    dot.style.cssText = `width:30px;height:30px;border-radius:50%;background:${p.bg};cursor:pointer;border:3px solid ${i===currentIdx?p.text:'transparent'};box-shadow:0 1px 4px rgba(0,0,0,0.1);transition:border 0.2s;`;
+    dot.addEventListener('click', async () => {
+      picker.querySelectorAll('div').forEach((d,j) => {
+        d.style.border = `3px solid ${j===i?TILE_COLORS[j].text:'transparent'}`;
+      });
+      currentProject.colorIdx = i;
+      currentProject.palette  = TILE_COLORS[i];
+      const uid = currentUser.uid;
+      await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { colorIdx: i });
+      // Оновлюємо хедер налаштувань
+      applyPaletteToHeader(document.getElementById('header-project-settings'), TILE_COLORS[i]);
+    });
+    picker.appendChild(dot);
+  });
+  showScreen('screen-project-settings');
   await loadExecutorsLocal();
   deletingExecutorIdx = null;
   renderExecutors();
-  showScreen('screen-project-settings');
   attachExecutorBlur();
 
   // Автозбереження основних даних при виході з поля
@@ -1422,10 +1769,10 @@ async function saveBasicData() {
     currentProject.address       = address;
     currentProject.officialName  = officialName;
     currentProject.whatsappGroup = whatsappGroup;
-    document.getElementById('project-header-name').textContent    = name;
-    document.getElementById('project-header-address').textContent = address;
+    document.getElementById('project-header-name').textContent = name;
+    document.getElementById('ps-header-sub').textContent = name;
     showToast('✓ Збережено');
-    loadProjects();
+    // Не викликаємо loadProjects() — оновимо при поверненні
   } catch(e) { console.warn('Save basic data error:', e); }
 }
 
@@ -1537,42 +1884,56 @@ window.toggleAddExecutor = function() {
   const wrap = document.getElementById('executor-new-wrap');
   const isOpen = wrap.style.display !== 'none';
   if (isOpen) {
+    // Закриваємо тільки якщо поля порожні
+    const name = document.getElementById('new-exec-name')?.value.trim();
+    if (name) {
+      // Є дані — зберігаємо
+      saveNewExecutorForProject(_fixedProjectId);
+      return;
+    }
     wrap.style.display = 'none';
-  } else {
-    wrap.style.display = 'block';
-    document.getElementById('new-exec-name').value  = '';
-    document.getElementById('new-exec-phone').value = '';
-    setTimeout(() => document.getElementById('new-exec-name').focus(), 50);
+    return;
   }
+  wrap.style.display = 'block';
+  document.getElementById('new-exec-name').value  = '';
+  document.getElementById('new-exec-phone').value = '';
+  document.getElementById('new-exec-email').value = '';
+  _fixedProjectId = currentProject.id;
+  const nameInput  = document.getElementById('new-exec-name');
+  const phoneInput = document.getElementById('new-exec-phone');
+  const emailInput = document.getElementById('new-exec-email');
+  nameInput.onkeydown  = e => { if (e.key === 'Enter') phoneInput.focus(); };
+  phoneInput.onkeydown = e => { if (e.key === 'Enter') emailInput.focus(); };
+  emailInput.onblur = () => setTimeout(() => saveNewExecutorForProject(_fixedProjectId), 150);
+  setTimeout(() => nameInput.focus(), 50);
 };
 
-// Автозбереження при виході з поля телефону
-function attachExecutorBlur() {
-  const phoneInput = document.getElementById('new-exec-phone');
-  const nameInput  = document.getElementById('new-exec-name');
-  const emailInput = document.getElementById('new-exec-email');
-  if (emailInput) emailInput.addEventListener('blur', () => setTimeout(saveNewExecutor, 150));
-  if (nameInput)  nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') phoneInput?.focus(); });
-  if (phoneInput) phoneInput.addEventListener('keydown', e => { if (e.key === 'Enter') emailInput?.focus(); });
-}
 
-window.saveNewExecutor = async function() {
+let _savingExecutor = false;
+let _fixedProjectId = null;
+async function saveNewExecutorForProject(projectId) {
+  if (_savingExecutor) return;
   const name  = document.getElementById('new-exec-name')?.value.trim();
   const phone = document.getElementById('new-exec-phone')?.value.trim();
   const email = document.getElementById('new-exec-email')?.value.trim();
   if (!name) return;
+  _savingExecutor = true;
   try {
     const uid = currentUser.uid;
     const ref = await addDoc(
-      collection(db,'users',uid,'projects',currentProject.id,'executors'),
+      collection(db,'users',uid,'projects',projectId,'executors'),
       { name, phone: phone||'', email: email||'', memberStatus: 'none', createdAt: serverTimestamp() }
     );
-    localExecutors.push({ id: ref.id, name, phone: phone||'', email: email||'', memberStatus: 'none' });
-    renderExecutors();
+    if (currentProject.id === projectId) {
+      localExecutors.push({ id: ref.id, name, phone: phone||'', email: email||'', memberStatus: 'none' });
+      renderExecutors();
+    }
     document.getElementById('executor-new-wrap').style.display = 'none';
     showToast(`✅ ${name} додано`);
-  } catch(e) { console.warn(e); }
-};
+  } catch(e) { console.warn(e); showToast('Помилка збереження'); }
+  _savingExecutor = false;
+}
+window.saveNewExecutor = () => saveNewExecutorForProject(currentProject.id);
 
 window.deleteExecutor = async function(idx) {
   const ex = localExecutors[idx];
@@ -1588,8 +1949,13 @@ window.deleteExecutor = async function(idx) {
 // ── ДРУК ──
 let _printHTML = '';
 
-window.printMeeting = function() {
-  autoBackup('друк-' + currentMeeting.number);
+window.openSendScreen = async function() {
+  showSpinner();
+  await printMeeting();
+  hideSpinner();
+};
+
+window.printMeeting = async function() {
 
   const displayName = esc(currentProject.officialName || currentProject.name || '');
   const address     = esc(currentProject.address || '');
@@ -1619,6 +1985,30 @@ window.printMeeting = function() {
           <div class="sig-line">дата</div>
         </div>`).join('');
 
+  // Використовуємо вже завантажені localAttachments — без зайвого запиту до Firestore
+  let attachmentsHTML = '';
+  let photoPages = '';
+  if (localAttachments.length) {
+    const attList = localAttachments.map((a,i) => ({ num: i+1, ...a }));
+    const attRows = attList.map(a =>
+      `<div style="font-size:9.5pt;padding:2px 0;"><strong>Додаток ${a.num}</strong> — ${esc(a.description||a.name||'')}</div>`
+    ).join('');
+    attachmentsHTML = `
+    <div class="att-section">
+      <div class="att-title">Додатки:</div>
+      <div style="margin-top:5px;">${attRows}</div>
+    </div>`;
+    for (const a of attList) {
+      if (a.type?.startsWith('image') && a.dataUrl) {
+        photoPages += `<div class="photo-page-item">
+  <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
+  ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
+  <img src="${a.dataUrl}" style="width:100%;max-height:180mm;object-fit:contain;display:block;">
+</div>`;
+      }
+    }
+  }
+
   const docHTML = `
     <div class="doc-title">Протокол наради №${meetingNum}</div>
     <div class="doc-sub">
@@ -1643,27 +2033,198 @@ window.printMeeting = function() {
     <div class="sig-section">
       <div class="sig-title">Погоджено та затверджено присутніми:</div>
       ${sigs}
-    </div>`;
+    </div>
+    ${attachmentsHTML}`;
 
   // Вставляємо в #protocol-doc
-  const doc = document.getElementById('protocol-doc');
-  if (doc) doc.innerHTML = docHTML;
+  const docEl = document.getElementById('protocol-doc');
+  if (docEl) docEl.innerHTML = docHTML;
 
-  document.getElementById('header-print').style.background = currentProject.gradient;
+  // Фото аркуші — після #protocol-doc поза його межами
+  const area = document.getElementById('print-preview-area');
+  area.querySelectorAll('.photo-page').forEach(el => el.remove());
+  if (photoPages) {
+    const photoWrap = document.createElement('div');
+    photoWrap.className = 'photo-page';
+    photoWrap.innerHTML = photoPages;
+    area.appendChild(photoWrap);
+  }
+
+  applyPaletteToHeader(document.getElementById('header-print'), currentProject.palette || TILE_COLORS[currentProject.colorIdx||0]);
+  document.getElementById('print-header-sub').textContent = `Протокол № ${meetingNum}`;
   showScreen('screen-print');
 
-  // Підключаємо кнопку друку напряму — важливо для iOS
-  const printBtn = document.getElementById('float-print-btn');
-  function attachPrintBtn() {
-    printBtn.onclick = null;
-    printBtn.addEventListener('click', function handler() {
-      printBtn.removeEventListener('click', handler);
-      window.print();
-      // Переприєднуємо після закриття діалогу
-      setTimeout(attachPrintBtn, 100);
-    });
-  }
-  attachPrintBtn();
+  setTimeout(applyPreviewScale, 50);
+  setTimeout(applyPreviewScale, 300);
+  window.addEventListener('resize', applyPreviewScale);
+
+  // ── Кнопка ДРУКУВАТИ — скидаємо всі listeners через clone ──
+  const printBtnOld = document.getElementById('btn-print');
+  const printBtn = printBtnOld.cloneNode(true);
+  printBtnOld.parentNode.replaceChild(printBtn, printBtnOld);
+  printBtn.addEventListener('click', () => window.print());
+
+  // ── Кнопка ЗБЕРЕГТИ — скидаємо стан і listeners через clone ──
+  const saveBtnOld = document.getElementById('btn-save');
+  const saveBtn = saveBtnOld.cloneNode(true);
+  saveBtnOld.parentNode.replaceChild(saveBtn, saveBtnOld);
+  saveBtn.disabled = false;
+  saveBtn.textContent = '💾 Зберегти';
+  saveBtn.addEventListener('click', async () => {
+    saveBtn.disabled = true;
+    saveBtn.textContent = '⏳...';
+    try {
+      if (!window.jspdf) {
+        await new Promise((res,rej) => {
+          const s = document.createElement('script');
+          s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+          s.onload = res; s.onerror = rej;
+          document.head.appendChild(s);
+        });
+      }
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit:'mm', format:'a4', orientation:'portrait' });
+
+      // Шрифт Arsenal з кирилицею
+      const FONT_REG = "AAEAAAAOAIAAAwBgR0RFRgeLB58AAEVEAAAAvkdQT1Ozi78NAABGBAAAA6pHU1VCgSpkAAAASbAAAAHqT1MvMllzgJEAAEHgAAAAYGNtYXBwoyXcAABCQAAAAVRnYXNwAAAAEAAARTwAAAAIZ2x5Zj3Y/p0AAADsAAA7vGhlYWQE5cVfAAA+YAAAADZoaGVhCVEGfwAAQbwAAAAkaG10eJgJJkwAAD6YAAADJGxvY2Fmd1f8AAA8yAAAAZZtYXhwAOABzwAAPKgAAAAgbmFtZR/sOC4AAEOUAAABiHBvc3T/6gAyAABFHAAAACAAAgAXAAACIgKKAAcACgAAMxMzEyMnIQc3MwMX21nXT0T/AURS5HECiv12yMjxAV8AAwBeAAAB7gKKAA4AGAAgAAATMzIWFRQGBxYWFRQGIyMTMjY2NTQmIyMVEzI1NCYjIxFepGJrNig6Q3V2pcIVLyJKPVVWo0Y5egKKWUk2SBUQUD1YYAFkGDkuPT76/siPQED+8QAAAQAw//YCJgKTAB4AABYmNTQ2NjMyFhYVBzQmJiMiBhUUFjMyNjY1FxQGBiPGlkV/VC5VPAk6TSdhbnBlNVAvHDRhRAqvmmeaUxgeATABHBiTjYuOLDIEIAU7NAACAF4AAAJLAooACAAPAAATMzIWFRQGIyM3MhEQIyMRXsaMm5mOxsfU1XoCiqmenaYwARMBF/3WAAEAXgAAAdICigALAAAzESEVIRUzFSMRIRVeAV7+7vv7ASgCijD6Lv7+MAAAAQBeAAABwwKKAAkAADMRIRUhETMVIxFeAWX+5/LyAoow/v0u/tcAAAEAMP/2Ah8CkwAhAAAWJjU0NjMyFhYVBzQmJiMiBhUUFjMyNjc1IzUzESMnBgYjvIyYiy5VPAk6TSdva2hdS0QKhcUlExhUQAqwnZ+xGB4BMAEcGI+PjI9IJJMr/q5HIy4AAQBeAAACHwKKAAsAADMRMxEhETMRIxEhEV5MASlMTP7XAor+3AEk/XYBOP7IAAEAXgAAAKoCigADAAAzETMRXkwCiv12AAEABv/2ARMCigARAAAWJiY1NxQWFjMyNjURMxEUBiNTNBkUEyQaKjNLUEcKExUCJwERD0FYAcv+NXBZAAEAXgAAAjACigAMAAAzETMRNxMzAwEjAwcVXkxP2z3kAQNf3EsCiv6eRgEc/t7+mAEuP+8AAAEAXgAAAcsCigAFAAAzETMRIRVeTAEhAor9pjAAAAEAXgAAAuUCigAQAAAzExcnMxMzEzMTIwMjAyMDA14DAgFd5QHlWANKAwHhPeICAooDA/3TAi39dgIt/dMCLf3TAAEAXgAAAi0CigAMAAAzETMBJxEzESMBIxcRXk8BTAM3Qv6mAQUCiv3oGAIA/XYCKh/99QACADD/9gJeApMADwAbAAAWJiY1NDY2MzIWFhUUBgYjNjY1NCYjIgYVFBYz731CQn1XV35DQ35XYGdnYF9mZWAKUJdnZ5dRUZdnZ5dQMJKMi5SUi4ySAAIAXgAAAc0CigALABMAABMzMhYVFAYGIyMVIxMyNTQmIyMRXpxkbzxfNlJMk4xIQ0gCimhmTGEr5AEOq1RR/rAAAAIAMP9hAl4CkwAYACQAAAQmJyYmNTQ2NjMyFhYVFAYHFhYzMjcXBiMmNjU0JiMiBhUUFjMBw3MjeIVCfVdXfkN4bCFLJxARBRgdWGdoX19mZl+fVEIIsZRnl1FQlWeLsRExPgYmCsWTi4qVlYqLkwACAF4AAAH5AooADQAVAAATMzIWFRQGBxcjJyMVIxMyNjU0IyMRXp1jcEI2o1eVY0ydQUKMSAKKZ2BNYhX/8fEBHkpYnv7AAAABACz/9gG7ApMALgAAFiYmNTcUFhYzMjY1NCYmJy4CNTQ2MzIWFhUHNCYmIyIGFRQWFhceAhUUBgYjq1YpGSZJNT9IJDUtNEAsaFcrRSoKKD4mOEAjNSw1QC0zXj4KJisEJwMnIUk2JTIeExUmQzRSYRkdAiwCHBg+NSUxHhIWJ0Y3N1UwAAEABwAAAcYCigAHAAAzESM1IRUjEcC5Ab+6AlowMP2mAAABAFb/9gIWAooAEQAAFiY1ETMRFBYzMjY1ETMRFAYjyXNLUE1QUTdwcAp4ZgG2/ltbYWNZAaX+SmZ4AAABAA8AAAITAooABgAAMwMzExMzA+PUT73AONgCiv2uAlL9dgABAA8AAAM/AooADAAAMwMzExMzExMzAyMDA8KzUJSfQ6KQOK9GoqACiv3NAjP9zgIy/XYCKv3WAAEAEgAAAgsCigAMAAAzEwMzExMzAxMjAyMDEtDIXKGoP8fUXasBrQFDAUf+8AEQ/sX+sQEX/ukAAQACAAAB+QKKAAgAADMRAzMTEzMDEdnXVbOyPdQBDQF9/sABQP6I/u4AAQAoAAAB5QKKAAkAADM1ASE1IRUBIRUoAWD+qQG0/p8BYSgCMjAp/c8wAAACACD/9gHIAf4AJwAyAAAWJjU0JTU0JiMiBgYHJz4CMzIWFRUUFjMyNjcXBgYjIiYnIxQGBiM+AjU1BgYVFBYzcFABGy46GjYlBQgFKT8gVlAPCwkaBAMINBIaHAMBID8vOjQbW3UyKwpBOpMeNUc0ExUDKQQWFEhb9SgcBwIiAxAhKgQmISwgJgOSCjo/Ky0AAAIAS//1Ad8C8AASAB8AABYmJwcjETcRMzQ2NjMyFhUUBiM2NjU0JiMiBgcRFhYz3UAQDjRJAR07LVlsamQ6R0hFMjYJBzYtCyERJwLsBP7LAyMeg3R+lTBxcGhhNBT+yw0gAAABACX/9gGfAf4AHQAAFiY1NDYzMhYWFQcuAiMiBhUUFjMyNjY1FxQGBiOVcG9rIz4rCQQjNx1NSExFJzceICRINgqAf4CJExcBKQMTEmZ2cmIcHwMVBCsmAAACACX/9gG5AvAAEgAhAAAWJjU0NjMyFhYVMxE3ESMnBgYjPgI1ETQmJiMiBhUUFjOTbmthKTgeAUg+CAtAOjQ0GxsvIE1IR0UKgnR9lRUZAgEeBP0QOxYvMR8kAwEzAhgUcW9pXgACACX/9gGlAf4AFwAeAAAWJjU0NjMyFhUUBgchFDMyNjY1FxQGBiMTNzQjIgYHl3JuX1ZdBAH+0ZIoOSAdJko2ZgFwO0AFCn19fpB3bRMYA8odIQMYBCsmASATql1gAAABACsAAAFBAvcAGgAAEyM1NzU0NjMyFhYXBy4CIyIGBhUVMxUjESNfNDQ8RxgqGgMKAxQgERseD5GRSAHDKgZIYVsNDgInAgsKGkI7PzH+PQAAAwAU/vwBvgH+ACUAMAA9AAASJjU0NjcmNTQ3JiY1NDYzMhcXFQcWFRQGIyInBhUUFjMyFRQGIxI1NCYjIgYVFBYzEjY1NCMiJwYGFRQWM4JuLyQSLigsZ1EnHoFAKF1SIhsjLDHbbWViODMzOzo1TkyjLxweJVNM/vxTUDRADxUmMSMVTzhbVgoBJwItUFZcBxcdGxWaUlYBx4tIPTxKREb+Zjk2aQgMNSg8OwAAAQBKAAABuwLwABUAABM3ETMwNjYzMhYVESMRNCMiBgYVESNKSQEZSixJT0hoJDYeSQLsBP7XGxxRUP6jAVR1FhoC/mkAAAIARQAAAJkCrwAPABMAABInJjU0NzYzMhcWFRQHBiMDETMRXQsNDQsSEwsMDA4QJUkCWQsNExMNCwoNFBIOC/2nAfT+DAABAEoAAACTAfQAAwAAMxEzEUpJAfT+DAAC/8/+/ACrAq8ADwAgAAASJyY1NDc2MzIXFhUUBwYjAiYmJzceAjMyNjURMxEUI28LDQ0LEhMLDAwOEIEgDwIOAQ0WDicmSY0CWQsNExMNCwoNFBIOC/yjCgoCKQEIB1BcAh3949sAAAEASgAAAbEC8AAMAAAzETcRNzczBxMjJwcVSkk9lTelulOfLALsBP4fKrvN/tn8G+EAAQBLAAAAkwLwAAMAADMRNxFLSALsBP0QAAABAEsAAAKRAf4AJAAAEzMXNjYzMhYXNjYzMhYVESMRNCYjIgYHFhURIxE0JiMiBgcRI0s8CRFGNikzDRBKOD86SSQnKTcNAkkjJio5CkgB9DUUKx0gEypCTf6RAWc6KSUSFg3+kAFnOSomEP5sAAEASwAAAbwB/gAUAAATMxc2NjMyFhURIxE0JiMiBgYVESNLPAkQREBIUEk0MyQ2H0gB9DATJ1FQ/qMBTkA7FhoC/mkAAgAl//YBzwH+AAsAFwAAFiY1NDYzMhYVFAYjNjY1NCYjIgYVFBYzkm1taGhtb2ZGQkJGRkJCRgqIfHyIiHx7iSxrbWxsa21tawACAEv/BAHfAf4AEgAgAAATMxc2NjMyFhUUBiMiJiY1IxEHADY1NCYjIgYGFREWFjNLPAkORDxYaWphKTkeAUgA/0hIRCQ0GwszKwH0PBYwgnR+lBUZAv7gAgEib3FpXh4jA/7JDh4AAAIAJv8EAbkB/gASACAAACUjFAYGIyImNTQ2MzIWFzczEQcCNjY1ESYmIyIGFRQWMwFwARw7LVlsbWIxPhARNElKMRkNMihNSkpFPAMkH4J0fZUeECT9EgIBIx4jAwE4DxxucmpdAAEASgAAAUIB/gATAAATMxc0NjYzMhYXByYmIyIGBgcRI0o2CxcwJhMwBwcHMRMdKRQDSQH0ZwY5Mg0DNwMMJywL/pgAAQAk//YBeAH+AC0AABYmJjU3FBYWMzI2NTQmJicuAjU0NjMyFhYXBy4CIyIGFRQWFhceAhUUBiOSSSUZIDgmODkdKyYsNCVdSSA7JAUMBCAzGy45Hi0mLDcmWlcKISYDIwIiHTgoHSYVDRAbNitASxETAysDExIuIx0nFg4PHTYrQVcAAQAo//YBJQKSABgAABYmNREjNTc3MxUzFSMRFBYzMjY1Fw4CI5A0NDQbLoCAGR8ZKAUCFSkdCkNNAT0qBp+eMf7VQTEKASgCCQgAAAEARP/2AbUB9AATAAAWJjURMxEUMzI2NjURMxEjJwYGI5RQSWgkNB9JPQoNRj4KUVABXf6yexcaAgGW/gwwEigAAAEADQAAAaYB9AAGAAAzAzMTEzMDuKtWgoo3rAH0/lsBpf4MAAEADgAAAoQB9AAMAAAzAzMTEzMTEzMDIwMDkYNRXnc5fWI4h0B1dgH0/mgBmP5oAZj+DAGT/m0AAQAMAAABrgH0AAsAADM3JzMXNzMHEyMnBwymnlZ7gTubqFWGi/n70dHv/vvY2AAAAQAP/vwBtAH0ABMAABImJic3FhYzMjY3AzMTEzMDBgYjOhoOAggDGA4uPibEVpSGNa0rUz3+/AYGAS4CB2NpAfr+XgGi/gR7gQABACMAAAF3AfQACQAAMzUBIychFQMzFyMBAOoDAUH+/AIoAZ8tKP5hLQACACsAAAJSAvcAIgAtAAATIzU3NTQ2MzIXNjMyFhYXBy4CIyIGBhUVMxUjESMRIxEjATU0NyYjIgYGFRVfNDRHXDhZIEAYKhoDCgMUIBEbHg+RkUjJSAEREEUqKy0SAcMqBkhiWiYmDQ4CJwILChpCOz8x/j0Bw/49AfRHSCwbHD88PwACACsAAAHIAvcAJgAqAAATIzU3NTQ2MzIWFzYzMhcWFRQHBiMiJyY1NDcmIyIGBhUVMxUjESMhETMRXzQ0SlgvRhcHChMLDAwOEBILDQMsPCctFJGRSAEaSQHDKgZIYVstHgMKDRQSDgsLDRMKBzQbQTo/Mf49AfT+DAAAAQArAAABvwL3ABgAABMjNTc1NDMyFzU3ESMRJiMiBhUVMxUjESNfNDSCQVVISE41KiORkUgBwyoGSLwoHQT9EAKjJ0JVPzH+PQACABcAAAIiAooABwAKAAAzEzMTIychBzczAxfbWddPRP8BRFLkcQKK/XbIyPEBXwACAF4AAAHmAooADAAVAAATIRUjFTMyFhUUBiMjNzI2NTQmIyMRXgFI/Etzfnh0nJlSUFNRSwKKMNZeXWBpLEtQTUb+0gD//wBeAAAB7gKKAAIAAwAAAAEAXgAAAZcCigAFAAAzESEVIxFeATntAoow/aYAAAIAIf9XAkICigANABMAADczNhI1IREzByMnIQcjJREjBgYHITYqKgFLTAwxC/5rEi0BhcsCKicwVAER9f2m2amp2QIq2f5TAAEAXgAAAdICigALAAAzESEVIRUzFSMRIRVeAV7+7vv7ASgCijD6Lv7+MAD//wBeAAAB0gNCACIAPwAAAAcAxwH6AJYAAQAqAAADNAKKABUAADMTAzMTMxEzETMTMwMTIwMjESMRIwMqw7E/oGFLXbM/wd9ZwFRLVKYBYgEo/uwBFP7tARP+5f6RAUf+uQFH/rkAAQAU//YBtAKTACwAABYmJjU3FBYWMzI2NTQjBzUXPgI1NCMiBgYVJzQ2NjMyFhUUBgcWFhUUBgYjklgmHCNIN0RLfl1iGDAgeiI+KwkwSChcYD0sPEM1Y0IKLTMGIwQtJ0pFgQQwBAEgPit7FRkBKwEbF1hMOVAWDUxDOFYwAAABAF4AAAIuAooADwAAMxEzEQczATczESMRNyMBB15MBQEBPAVHSwQB/sUFAor99SECIQv9dgIGJf3gC///AF4AAAIuAzAAIgBDAAAAAwDJAgUAAAABAF4AAAIwAooADAAAMxEzETcTMwMBIwMHFV5MT9s95AEDX9xLAor+nkYBHP7e/pgBLj/vAAABABX/+QH7AooAEAAAFiYnNxYWMzIRIREjESMCAiMsFQIDAg4JjQE9S74BXlUHBQE2AQMCWf12Alr+1v7J//8AXgAAAuUCigACAA4AAP//AF4AAAIfAooAAgAJAAAAAgAw//YCXgKTAA8AGwAAFiYmNTQ2NjMyFhYVFAYGIzY2NTQmIyIGFRQWM+99QkJ9V1d+Q0N+V2BnZ2BfZmVgClCXZ2eXUVGXZ2eXUDCSjIuUlIuMkgABAF4AAAIQAooABwAAMxEhESMRIRFeAbJM/uYCiv12Alr9pv//AF4AAAHNAooAAgARAAD//wAw//YCJgKTAAIABAAA//8ABwAAAcYCigACABUAAAABAB7/9wIdAooAFAAAFiYmJzceAjMyNjcBMxMTMwMGBiOLJRQCCwISIBQmPB3+/FjSmTy6KFw8CQkJAjUCCQgrPQH1/lsBpf4kZVIAAwAjAAACowKKABEAGAAfAAAlJiY1NDY3NTMVFhYVFAYHFSMRBgYVFBYXNjY1NCYnEQE9hpSVhUuGlZWGS2dkZGeyZWVnUAJ4ent7Ak5OAnh7fHkCUAITAmNqaGACAmJpaGIC/mf//wASAAACCwKKAAIAGQAAAAEARQAAAdYCigATAAABFAYGIyI1NTMVFBYzMjY3ETMRIwGLLEkwoUs2OzFKD0tLARMCFxSz8eZLPxsLAUr9dgABAF7/VwJbAooACwAABSchETMRIREzETMHAh0L/kxMARpMSw2pqQKK/aYCWv2m2QABAF4AAAL1AooACwAAMxEzETMRMxEzETMRXkzaTNpLAor9pgJa/aYCWv12AAEAXv9XAzsCigAPAAAFJyERMxEzETMRMxEzETMHAv4L/WtM2kzaS0YMqakCiv2mAlr9pgJa/abZAAACAF4AAAHmAooACgATAAATMxEzMhYVFAYjIzcyNjU0JiMjEV5MTXJ9d3Sdm1FPU09NAor++l5dYGksTU5MR/7SAAABADD/9gIoApMAIgAAFiYmNTQ2NjMyFhYVBzQmJiMiBgchFSEWFjMyNjY1FxQGBiP3gkVEflUuVDsKOEwnXmoFAUf+uQRwYjVRLxs0YUQKTZNmZpxVGB4BMAEcGIeEL4F+LDIEIAU7NAD//wBeAAAAqgKKAAIACgAA//8AEgAAAPcDQgAiAAoAAAAHAMcBYwCWAAIAXv/2A1QCkwAUACAAAAQmJyMRIxEzETM2NjMyFhYVFAYGIzY2NTQmIyIGFRQWMwG9kwZ6TEx6BZN/V39DQ39XYGdoX19oaF8KpJH+1QKK/s+SqFGXZ2eWUS6Vi4qXl4qLlQACADEAAAHDAooADgAZAAATJiY1NDY2MzMRIxEjAyMBESMiBgYVFBYWM7c3STVWMdBLgXlNAUeCHDYiIDYeAQ8RXUg/WS39dgEG/voBNQEpI0QvLkMiAAIAIv9XAlgCigALAA4AADcTMxMzByMnIQcjJzMhA1i2WbI/DDEL/lcTLQVsATydMAJa/abZqanZAiAAAAEAFwAAAiICigAGAAAzIxMzEyMDTDXbWddPwgKK/XYCUAADACP/qAKjAp0AFQAeACcAACUuAjU0NjY3NTMVHgIVFAYGBxUjAgYGFRQWFhcREjY2NTQmJicRAT1QgUlJgVBLUIFKSoFQSz5cMTFcPohdMjJdPQwBS4NSU4NJAVBQAUqCU1SCSgFkAntAb0dGcEABAe7+E0BvR0ZwQAH+EgACACD/9gHIAf4AJwAyAAAWJjU0JTU0JiMiBgYHJz4CMzIWFRUUFjMyNjcXBgYjIiYnIxQGBiM+AjU1BgYVFBYzcFABGy46GjYlBQgFKT8gVlAPCwkaBAMINBIaHAMBID8vOjQbW3UyKwpBOpMeNUc0ExUDKQQWFEhb9SgcBwIiAxAhKgQmISwgJgOSCjo/Ky0AAAIAKv/2AdQC8gAYACQAABYmNTQ2Njc3FwcOAgczPgIzMhYVFAYjNjY1NCYjIgYVFBYzlGohaWeHA3ZRXSgCBQcoSjZhaHBlRkJCRkNFQkYKkoGRvHoPE0gOCUiBZSFGMod7e4ssbW1tanFadXEAAwBLAAABrQH0AA4AFwAgAAATMzIWFRQGBxYWFRQGIyMTFDY2NTQjIxUXMjY1NCYjIxVLqFdQMSQtO1VopbMvJWBfXEEzNjVlAfRGPCw0Dgs8LENOARECDiknX7vpPDEpM8kAAAEASwAAAU4B9AAFAAAzESEVIxFLAQO7AfQv/jsAAAIABf9qAeYB9AANABMAADczNjY1IREzByMnIQcjJREjBgYHBT8jGQEgRgcpDP6XDSoBTacBFh4uVNGh/jrElpbEAZiKv08AAAIAJf/2AaUB/gAXAB4AABYmNTQ2MzIWFRQGByEUMzI2NjUXFAYGIxM3NCMiBgeXcm5fVl0EAf7Rkig5IB0mSjZmAXA7QAUKfX1+kHdtExgDyh0hAxgEKyYBIBOqXWAA//8AJf/2AaUCrAAiAGMAAAADAMcB1QAAAAEAGQAAAoMB9AAVAAAzEyczFxc1MxU3NzMHEyMnBxUjNScHGZuLOn1JSUeJOZScUYY6STiIAQ3n1QHW1gHV6f718gHx8gHzAAEAC//2AXsB/gAsAAAWJiY1NxQWFjMyNjU0JiMHNRczNjY1NCYjIgYGFSc0NjYzMhYVFAcWFhUUBiN3TCAZHTwwPUY4K1dbAxgzODcfNyYJLT8iV1dPLDdpWwojJwUgBCEeQDAsMQIrAgMqMiszFBkBKgEZFUY8UiIMPTBEVQAAAQBLAAAByAH0AAkAADMRMxETMxEjEQNLSPRBSfwB9P5xAY/+DAGa/mb//wBLAAAByAKpACIAZwAAAAMAyAHLAAAAAQBLAAABsgH0AAwAADMRMxU3NzMHEyMnBxVLSD6QM5SyVJQ3AfTlIsPN/tn7GuEAAQAH//cBlAH0AA4AABYnNzMyNjUhESMRIwYGIwwFAwU9PwEJSY0DVVEJATHn5P4MAcXf7wAAAQBIAAACQAH0AA4AADMTMxMTMxMjAycDIwMHA0gOWZWdWAdDBAGiOJ4BCAH0/lYBqv4MAY0d/lYBqgv+YQABAEsAAAG7AfQACwAAMxEzFTM1MxEjNSMVS0jfSUnfAfTc3P4M6+sAAgAl//YBzwH+AAsAFwAAFiY1NDYzMhYVFAYjNjY1NCYjIgYVFBYzkm1taGhtb2ZGQkJGRkJCRgqIfHyIiHx7iSxrbWxsa21tawABAEsAAAGzAfQABwAAMxEhESMRIxFLAWhI2AH0/gwBxf47AP//AEv/BAHfAf4AAgAsAAD//wAl//YBnwH+AAIAHgAAAAEAEQAAAYkB9AAHAAAzESM1IQcjEamYAXgBlwHFLy/+OwABAA/+/AG0AfQAEwAAEiYmJzcWFjMyNjcDMxMTMwMGBiM6Gg4CCAMYDi4+JsRWlIY1rStTPf78BgYBLgIHY2kB+v5eAaL+BHuBAAMAJf8EAlEC8AAVABwAIwAABSMiJjU0NjMXNTcVMzIWFRQGIycVBxI2NTQmJxEDBgYVFBYzARYEcXx8cQRJBHF9fXEESZ1UVFRJVVJSVQqIfHyIAe8E8oh8fIgB8QIBHmhwb2kB/k8BsAFncHBoAP//AAwAAAGuAfQAAgA0AAAAAQAvAAABhAH0ABQAACUiBgYjIjU1MxUUFjMyNjY3NTMRIwE7AR5GJoFJJyofMh0ESUncDw6IrasyMAwMAvP+DAAAAQBL/2oB8gH0AAsAAAUnIREzETMRMxEzBwG9B/6VSNhIPweWlgH0/jsBxf47xQAAAQBLAAAChAH0AAsAADMRMxEzETMRMxEzEUtIsEmvSQH0/jsBxf47AcX+DAABAEv/agLDAfQADwAABSchETMRMxEzETMRMxEzBwKPCP3ESLBJr0k/BpaWAfT+OwHF/jsBxf47xQAAAgBLAAABpgH0AAkAEgAAEzMVMzIWFRQjIzcyNjU0JiMjFUtITltqw5iWOz5FNkwB9L1HT6EoOEE9MugAAQAl//YBnAH+ACAAABYmNTQ2MzIWFhUHLgIjIgYHNxUjFhYzMjY2NRcUBgYjlXBtZyQ/KwkEIjcdS0UD19cFTUImOCAZJkg1CoN/fYkTFwEpAxMSWmsCMWVXGx8CHAMnIv//AEUAAACZAq8AAgAkAAD////8AAAA4QKsACIAJQAAAAMAxwFNAAAAAgBL//YCfwH+ABIAHgAABCYnIxUjETMVMzY2MzIWFRQGIzY2NTQmIyIGFRQWMwFQZQNVSEhVBmRdaGhnaUg+PkdGPDxGCn536wH03HB2h31+hittbG5ra25sbQACACkAAAGBAfQADQAVAAA3JiY1NDYzMxEjNSMHIyU1IyIVFBYzlzA+YFycSGRgSgEOTntDNtsQRDBKS/4Mzs721m0zNgAAAwA2//YBqQL3ABQAHwApAAAWJjURNDY2MzIWFRQGBxYWFRQGBiMTMjY1NCYjIgYVFRAWMzI2NTQjIxWUXjJPLFtZMyYtPi5ZPgsnNzQ1Lzc3MD85fGMKWVcBk0JWJmVeRVMNDF5PQGY6AaZEVE9IQUSq/sZAYVOm3AABAC3/9gGBAf4ALAAAJAYGIyImNTQ2Njc+AjU0IyIGBhUnNDY2MzIWFRQGBgcOAhUUFjMyNjY1FwF4Lk0wTFQoOS8pMSBZKkInCTBML0hMKDowKS8gMjEoPCMgPyghQD4pOiQXEx4sHUYYHAIpAh4ZPTcqOiUXFB0pHSonHCECFQD//wAm/vwBugH+AAIAkAAAAAEAGQAAAoIC8AAVAAABNzczBxMjJwcVIzUnByMTJzMXFxE3AXFHiTmUnFGGOkg4iFCbizp9SUgBHgHV6f718gHx8gHzAQ3n1QEBzgQAAAH/5/78AWcB/gArAAASJic3FBYWMzI2NTQmJwc1Fz4CNTQmIyIGBgcnNjYzMhYVFAcWFhUUBgYjTVEVGCJALkRIOS5haA4lHD04HzsmBQkWWDFTWmE9ODZkQ/78LRgmAx8bZU9KVwICKwIBHUI2SEwUFQQqDyBhWHwvFVlRQWU5AAABAET/9gG1AfQAEwAAFiY1ETMRFDMyNjY1ETMRIycGBiOUUEloJDQfST0KDUY+ClFQAV3+snsXGgIBlv4MMBIoAP//AET/9gG1AqkAIgCEAAAAAwDIAb8AAP//AEoAAAGxAvAAAgAnAAAAAQANAAABpgH0AAYAABMTIwMDIxP7q1aCijesAfT+DAGg/mAB9P//AEsAAAG8Af4AAgAqAAD//wBLAAACkQH+AAIAKQAAAAEARP90AhwB9AAbAAAhIiYnBgYjIiY1ETMRFDMyNjY1ETMRFBYWMwcjAeAvLg8YRDtJUEloJDQfSQwnNAcuFSEbJVFQAV3+snsXGgIBlv5/IxoHuwAAAQBE//YCigH0ACQAACEjJwYGIyImJwYGIyImNREzERQWMzI2NyY1ETMRFBYzMjY3ETMCijwJEUY2KTMNEEo4PzpJJCcpNw0CSSMmKjkKSDUUKx0gEypCTQFv/pk6KSUSFg0BcP6ZOSomEAGUAAABAEv/dAL4AfQALAAAISImJwYGIyImJwYGIyImNREzERQWMzI2NyY1ETMRFBYzMjY3ETMRFBYWMwcjArwvLQ8SXiIpMw0QSjg/OkkkJyk3DQJJIyYVRBRIDCc0By4VIRomHSATKkJNAW/+mTopJRIWDQFw/pk5KhwYAZb+fyMaB7sAAgBL//YBqgH0AA8AHAAAFiY1ETMVNjYzMhYVFAYGIyYWMzI2NTQmIyIGBxWiV0gSRCJFWjJTMWEwMi86PCocNxIKVlYBUt0SGlFPNk4pcUVBQDwwFRJSAAIAS//2An8C8AASAB4AABM2NjMyFhUUBiMiJicjFSMRNxEENjU0JiMiBhUUFjPoBmRdaGhnaV9lA1VISAFkPj5HRjw8RgEYcHaHfX6GfnfrAuwE/ij3bWxua2tubG0A//8AJf/2Ac8C+gACAJEAAAACACb+/AG6Af4AIQAuAAASJiY1NxQWFjMyNjU1IxQGBiMiJjU0NjYzMhYXNzMRFAYjEjY3ESYmIyIGFRQWM6hFKBgiOiZNTwEeNyhkaTJbOzo/DQ05f2RcMwsLNTFESklO/vwfIwMmAiAbXG4wAhgUi31NdD8rFzj99n1xASoeDQE5Fi9oZ3BqAAACACX/9gHPAvoAKQA1AAAWJjU0NjcmJjU0NjMyFxYzMjY2NxcUBgYjIicmIyIGFRQWFzMyFhUUBiM2NjU0JiMiBhUUFjOSbTw7Jy5XQR8qIhgSGQ0BHxIoIBsqKBgnPEczCGhtb2ZGQkJGRkJCRgqIfFx8GhFCMj5ICgkKCgIKBCciCgolKzM0Aoh8e4ksa21sbGttbWsAAAIAOP/2AfoCkwALABcAABYmNTQ2MzIWFRQGIzY2NTQmIyIGFRQWM6lxcXBwcXFwSkdISUpHR0oKr5+fsLCfn68ui5WVjIyVlooAAQAyAAABAwKKAAYAADMRByc3MxG7eBGVPAJQQydW/XYAAAEAKwAAAa0CkwAZAAA3PgI1NCYjIgYGFSc0NjYzMhYVFAYHIRUhKxeReDlFIT8uCDFIKGRftG0BM/5+PAmKtVRHQxgeAS0CHxphVGzZVUQAAQAn//YBqgKKACIAABYmJjU3FBYWMzI2NTQmIyIGBgcnNyE3IRUHNjMyFhUUBgYjoE4rGCdAKEdJPTsPGg8CGrj++wQBR7QMD1BjN2A9CiAkAycCIBxOSkJICgoCHvVFL+sDY1I+WjAAAAEAHgAAAcwCkwASAAAlISc2NjcXBgYHMxMzETMVBxUjATv+6AUpWx9FHl8z5RE5R0dKpCZR/XsJc+ZgAVr+pigFpAAAAQAa//YBpAKKACEAABYmJjU3FBYWMzI2NTQmIyIGBwcnEyEHIwc2MzIWFRQGBiOMSSkaIzwoSVRMPx8vCAEeHgEQA+cRIyVecz5oPwofJAMlAh8aV09GUhMJAwQBQUbDDWhZQmIzAAACADj/9gHVApMAGwAqAAAWJjU0NzY2MzIWFhcHLgIjIgM2MzIWFRQGBiM2NjU0JiMiBgcXBgYVFDOmbgMKcl4fOSMFCgQgMhqSCTxVW2ktW0FBPEBBLz4TAQIDiAqGfighqacPEAMsAw8O/vc+blw9YzosYU5IWC0cAQsmE8EAAAEAKQAAAZICigAJAAA2EyE1IRUGAgcjnrb+1QFpQnkbT+IBYEg8e/62iQAAAwAw//YBxwKTABcAIQAtAAAWJjU0NjcmJjU0NjMyFhUUBgcWFhUUBiMSNjU0IyIVFBYXEjY1NCYnBgYVFBYzm2tNNzFGZlhYZ0czN1BsYClIcXFIKjpAUS0rTUA7ClhcQk4SD0xGTlhZUEJKEQ9MSltXAWw7S4KASzwF/sFFR0w9BQU9S0hFAAIAMP/2Ac0CkwAdACsAABYmJjU3FBYWMzI2NwYjIiY1NDY2MzIWFRQHDgIjEjY3NjU0JiMiBhUUFjO8PSATHjMhRlYENFxaajBeQWVpAgQ9ZD9MQQkDPURBQkFAChUZAisCFxSBgkRwXD1oP4Z+MBZvmEwBFjceGyphYGhNSV0AAwBG/wYC0QLuAAYACgAkAAA3EQcnNzMRFycBFwM+AjU0JiMiBgYHJz4CMzIWFRQGBzMVIbBZEXY2DCMBLyN/E2lVKjMTKx8ECQUkNxxKSYFR3P7d5gHMOipM/fjmFAIyFf0MB22NPjk1EhQDJwQWFFJDU6ZDPwAAAwBG/v0CyQLuAAYACgAqAAA3EQcnNzMRFycBFwImJjU3HgIzMjY1NCYjIgcHJzcjNzMVBzcyFhUUBiOwWRF2NgwjAS8jMjgdEwIXLB0yOSgmGREBGIe+BPeEEDpKXkfmAcw6Kkz9+OYUAjIV/MwVGAIkAxQRPjg0NxECG74/K7UBUENLVAADACn+/QL8AvYAGQAdAD0AABM+AjU0JiMiBgYHJz4CMzIWFRQGBzMVIQUnARcCJiY1Nx4CMzI2NTQmIyIHByc3IzczFQc3MhYVFAYjKRNpVSoyEywfBAgFIzccSkmBUt7+3AEJIwEvIzM4HRMCFywdMjkoJhkRARiHvgT3hBA6Sl5HAR0HbY0+OTYTFAMnBBYUUURSpkQ/5hQCMhX8zBUYAiQDFBE+ODQ3EQIbvj8rtQFQQ0tUAAMARv8GAqIC7gAGAAoAHgAANxEHJzczERcnARcRIyc2NjcXBgYHMzU3MxEzFQcVI7BZEXY2DCMBLyPDBRw7FT8UQiOWEDQxMUTmAcw6Kkz9+OYUAjIV/VgjPsdlCFy4R6Ns/vEkBoMAAwAp/wYC0gLuAB8AIwA3AAA2JiY1Nx4CMzI2NTQmIyIHByc3IzczFQc3MhYVFAYjFycBFxMjJzY2NxcGBgczNTczETMVBxUjfjgdEwIXLB0yOSgmGBIBGIe+BPeEEDpKXkeGIwEvIwHDBRw7FT8UQiOWEDQxMUTdFRgCIwMTET44NDcSARu+Pyu1AVBDS1TdFAIyFf1YIz7HZQhcuEejbP7xJAaDAAMARv79AsoC7gAGAAoALAAANxEHJzczERcnARcCJiY1NxQWFjMyNjU0JiMiBgcVBycTMwcjBzYzMhYVFAYjsFkRdjYMIwEvIzI2HBMaLBwyODYrFiEHAhoY0ASqDBcYSVdgSOYBzDoqTP345hQCMhX8zBQWAiQBFBBGPTY/DggBAwQBBECRCVVJUVoAAwAp/v0C/QL2ABkAHQA/AAATPgI1NCYjIgYGByc+AjMyFhUUBgczFSEFJwEXAiYmNTcUFhYzMjY1NCYjIgYHFQcnEzMHIwc2MzIWFRQGIykTaVUqMhMsHwQIBSM3HEpJgVLe/twBCSMBLyMzNhwTGiwcMjg2KxYhBwIaGNAEqgwXGElXYEgBHQdtjT45NhMUAycEFhRRRFKmRD/mFAIyFfzMFBYCJAEUEEY9Nj8OCAEDBAEEQJEJVUlRWgADACn+/QL9Au4AHwAjAEUAADYmJjU3HgIzMjY1NCYjIgcHJzcjNzMVBzcyFhUUBiMXJwEXAiYmNTcUFhYzMjY1NCYjIgYHFQcnEzMHIwc2MzIWFRQGI344HRMCFywdMjkoJhgSARiHvgT3hBA6Sl5HiyMBLyMzNhwTGiwcMjg2KxYhBwIaGNAEqgwXGElXYEjdFRgCIwMTET44NDcSARu+Pyu1AVBDS1TdFAIyFfzMFBYCJAEUEEY9Nj8OCAEDBAEEQJEJVUlRWgAAAwAd/v0C/QL2ABMAFwA5AAATIyc2NjcXBgYHMzU3MxEzFQcVIxcnARcCJiY1NxQWFjMyNjU0JiMiBgcVBycTMwcjBzYzMhYVFAYj5cMFHDsVPxRCI5YQNDExRE0jAS8jMzYcExosHDI4NisWIQcCGhjQBKoMFxhJV2BIAWkjPsdlCFy4R6Ns/vEkBoPmFAIyFfzMFBYCJAEUEEY9Nj8OCAEDBAEEQJEJVUlRWgAABQBG/v4C0QLuAAYACgAfACwANgAANxEHJzczERcnARcCNTQ2NyYmNTQ2MzIWFRQHFhYVFCMTNjY1NCYjIgYVFBYXFjU0JicGBhUUM7BZEXY2DCMBLyOKNygkMk1BQU1bKDyXBRsrJyQjJy8cTy8eHTZQ5gHMOipM/fjmFAIyFfzNjzQ+EAw9OT9GR0BcIws+PI0BIQYwNzMzMzM3MgX9bTUzCQQvPW4ABQAp/v4DBALuAB8AIwA4AEUATwAANiYmNTceAjMyNjU0JiMiBwcnNyM3MxUHNzIWFRQGIxcnARcCNTQ2NyYmNTQ2MzIWFRQHFhYVFCMTNjY1NCYjIgYVFBYXFjU0JicGBhUUM344HRMCFywdMjkoJhgSARiHvgT3hBA6Sl5HiyMBLyOLNygkMk1BQU1bKDyXBRsrJyQjJy8cTy8eHTZQ3RUYAiMDExE+ODQ3EgEbvj8rtQFQQ0tU3RQCMhX8zY80PhAMPTk/RkdAXCMLPjyNASEGMDczMzMzNzIF/W01MwkELz1uAAAFACv+/gL7Au4AIQAlADoARwBRAAA2JiY1NxQWFjMyNjU0JiMiBgcVBycTMwcjBzYzMhYVFAYjFycBFwI1NDY3JiY1NDYzMhYVFAcWFhUUIxM2NjU0JiMiBhUUFhcWNTQmJwYGFRQzfTYcExosHDI4NisWIQcCGhjQBKoMFxhJV2BIhSMBLyOLNygkMk1BQU1bKDyXBRsrJyQjJy8cTy8eHTZQ3RQWAiQBFBBGPTY/DggBAwQBBECRCVVJUVrdFAIyFfzNjzQ+EAw9OT9GR0BcIws+PI0BIQYwNzMzMzM3MgX9bTUzCQQvPW4AAAUAM/7+ArcC7gAJAA0AIgAvADkAABITIzUhFQYCByMXJwEXAjU0NjcmJjU0NjMyFhUUBxYWFRQjEzY2NTQmIyIGFRQWFxY1NCYnBgYVFDOOjukBJDJdFkp9IwEvI4s3KCQyTUFBTVsoPJcFGysnJCMnLxxPLx4dNlABlQEXQjdd/vxw5hQCMhX8zY80PhAMPTk/RkdAXCMLPjyNASEGMDczMzMzNzIF/W01MwkELz1uAAABABMBNgF1AsAADgAAEyc3JzcXJzMHNxcHFwcneDZunRWPFEMWkRSdbzdMATYsiCVGT7q6T0YkiSyiAAACAEv/9wClAc4ADwAfAAASJyY1NDc2MzIXFhUUBwYjAicmNTQ3NjMyFxYVFAcGI2YNDg4NEhIODQ0OEhEODg4OERMNDQ0OEgFyDA0VFQ0MDA0VFQ0M/oUMDRUVDQwMDRUVDQwAAQAt/18AmgBjABQAABc2NicjIicmNTQ3NjMyFxcWFRQGBy0fJgEDEA0MDAsREgsFCzImix1ZJQsMExINCgoHECAwdB8AAAIAXv/3ALgC7gAFABUAADcDNTMVAwYnJjU0NzYzMhcWFRQHBiN1ElETJw4ODg4REw0NDQ0T1AHHU1P+Od0MDRUVDQwMDRUVDQwAAgAxAFABrgI4ABsAHwAAJSc3IwcnNyM1MzcjNTM3FwczNxcHMxUjBzMVIyczNyMBFSIaaRoiGE9YG3N8HSIbaBsiGFBZG3R9hGkbaVAKgH8KdSmCKokKf34KdCqCKSmCAAABAEv/9wClAFMADwAAFicmNTQ3NjMyFxYVFAcGI2cODg4OERMNDQ0OEgkMDRUVDQwMDRUVDQwAAAIAKP/3AXAC9wAkADQAADY1NDY2Nz4CNTQmIyIGBhUnNDY2MzIWFhUUBgYHDgIVFBcHFicmNTQ3NjMyFxYVFAcGI3oWIRwcHxY2OSQ4IwgpRCw7TyUdKiMjKR0BHwIODg4OERIODQ0OEusgKjklGBgjOCg7SBcaAisCHBgvTCwvQikbGilBLw4IA9gMDRUVDQwMDRUVDQwAAgAiAgYA8gLuAAMABwAAEycXBzMnFwcmBEMWZARDFgIG6ALm6ALmAAEAIgIGAGUC7gADAAATJxcHJgRDFgIG6ALmAAACADf/XwClAc4ADwAkAAASJyY1NDc2MzIXFhUUBwYjAzY2JyMiJyY1NDc2MzIXFxYVFAYHZg0ODg0SEg4NDQ4SQR8mAQMQDQwMCxESCwULMiYBcgwNFRUNDAwNFRUNDP4DHVklCwwTEg0KCgcQIDB0HwABAAH/BgGvAu4AAwAAFwEzAQEBdzf+ivoD6PwYAAABACL/bgJO/50AAwAAFzUhFSICLJIvLwABAGL/XAFUAuwALgAAFiY1NDc2NTQmJiM1MjY2NTQnJjU0NjMVIgYVFBYXFhUUBgcWFhUUBwYGFRQWMxXyTg4NHiwTEyweDQ5OYj40DAEOKiQkKg4BDDQ+pEdGJUY9IhkpFzAXKRkiPUYlRkcrNDMcQwdGISQ2Dw82JCFGB0McMzQrAAABADz/XAEuAuwAMAAAFzI2NTQmJyY1NDY3JiY1NDc2NjU0JiM1MhYVFAcGBhUUFhYzFSIGBhUUFhcWFRQGIzw9NAwBDiojIyoOAQw0PWJODwEMHywTEywfDAEPTmJ5NDMcQwdGISQ2Dw82JCFGB0McMzQrR0YpQgg+GRkpFzAXKRkZPghCKUZHAAABAFj/tAFDAr0ABwAAFxEzFSMRMxVY66urTAMJLP1QLQAAAQAL/7QA9wK9AAcAABc1MxEjNTMRC6ur7EwtArAs/PcAAAEAVf9EAQoC4QARAAAWJiY1NDY2FRc0BgYVFBYWNQfmUUBATyY+MTE+JLx6yYmJy30JFQh4woGCv3UIFQAAAQAo/0QA3QLhABEAABcUNjY1NCYmFTc0FhYVFAYGNSg+MTE+JVBAQFCeCHnCgIDAdggVCXrJiYnLfQkAAQAiAP4BBwEtAAMAADc1MxUi5f4vLwAAAQAk/84BeAK8ADMAADcuAjU3FBYWMzI2NTQmJicuAjU0Njc3MxceAhcHLgIjIgYVFBYWFx4CFRQGBwcjtjBAIhkgOCY4OR0rJiw0JUM5BSoGHjYhBAwEIDMbLjkeLSYsNyZIRgQqOAMhIwMjAiIdOCgdJhUNEBs2KzZHCoB9ARERAysDExIuIx0nFg4PHTYrOlMJbAAAAQAiAFABdQHbAAsAADc1IzUzNTMVMxUjFbeVlSySklCuL66uL64AAAIAIgCfAbQBjAADAAcAABM1IRUFNSEVIgGS/m4BkgFdLy++Ly8AAQAqAHYBNAIFAAUAADcnNyc3F0MZwsIZ8XYdq6odxwABAD0AdgFHAgUABQAAJSc3FwcXAS3w8BnExXbIxx2qqwAAAQAfAP4CHwGtAB0AACQmJyYmIyIGBhUnNDY2MzIWFxYWMzI2NjUXFAYGIwF3OiYjNiMgKRUeHD4zLT8oITIgHSMQHBk5Lv4bGxkZGRwDFQY1LxwcGBgWGAMTBjItAAUAMP/yAvMClwALAA8AGwAnADMAABImNTQ2MzIWFRQGIxMnARcANjU0JiMiBhUUFjMAJjU0NjMyFhUUBiM2NjU0JiMiBhUUFjOCUlRJSFVUSUorARkr/sszMy4vMjIuAT9SVElIVVRJLjMzLi8yMi4BHmZWVmdoVVZm/uQKAnUK/tFNRkdLS0dHTP6qZlZWZ2hVVmYqTUZHS0tHR0wAAgA4/xoDDQJ6ADQAQAAAFiY1NDYzMhYVFAYjIiYnBiMiJjU0NjYzMhc3MxEUFjMyNjU0JiMiBhUUFjMyNjY1FxQGBiM2Njc1JiYjIgYVFDP6wsm9oq1iSyUsByNLS1osUDQ8KA4gGBcuP4yJm6qmk0dlNxM5bVAbLQoIKSc8PXXm2cnS7LimmJEYHjdmZUBkNyga/tAmHXaNmp3Ky7i9KzEEJAU1L/0qGeYTIWBXpgACADD/9gJAApMAMwA/AAAWJjU0NjcmJjU0NjMyFhYXBy4CIyIGFRQWMzM3MxUzFSMVFBYzMjY2NxcOAiMiJicGIzY2NyY1NSMGBhUUM5JiSjYpNl9SHzgjBAgEGy4aOT07JnshIYGBHiMSHhICAgIUKR0nMAwvWjs2DQGGLkWHCmZTP1ERFEw5TV0ODwIrAg4NRT0/QZCQK688KgYGASgCCQgbIDsuKRoJFrMCSD+MAAQAXgAAA+UCqAALABgAIQAlAAAAJjU0NjMyFhUUBiMBETMBJxEzESMBIxcRADU0JiMiFRQzBzUzFQLkV1dVVVdZU/0lTwFMAzdC/qYBBQMMMzVoaHTlATZhWFhhYVhXYv7KAor96BgCAP12Aiof/fUBV5hLS5aY2S8vAAABACIB7gEuAq8ABQAAEyc3FwcnOReFhxltAe4ap6cagQAAAv6vAl3/lAKsAA8AHwAAACcmNTQ3NjMyFxYVFAcGIzInJjU0NzYzMhcWFRQHBiP+xw0LCw0ODQ0LCw0NjA0LCw0NDQ0MDA0NAl0KCxITCwoKDREQDQoKCxITCwoKDBIRDAoAAAH+swJA/84CqQAVAAACJiY1NxUUFhcWMzI3NjY1NRcUBgYj+j8UPAMEFTU7EQQCPBQ/OwJALC8IBgUCDwgkJwgMAgUGCC8sAAH+swLH/84DMAAVAAACJiY1NxUUFhcWMzI3NjY1NRcUBgYj+j8UPAIEETo7EgMCPBQ/OwLHLC8IBgUCDAgnKAgLAgUGCC8sAAEAAADKAWgADQBlAAUAAQAAAAAAAAAAAAAAAAADAAEAAAAAAAAAGABLAHkAlQCrAL8A8AEHARMBMQFMAVsBfAGWAcEB4gIaAj4CgQKSArACwgLeAvoDDwMlA24DoAPNBAAEMARZBLAE0wT2BQIFNgVPBVwFkwW1BdoGDgZBBmMGpQbLBuwG/gcaBzIHVwdsB64H7AgRCCkITAhUCGMIhwidCKkI0AkQCS4JOglVCXQJfAmECa8JwQnJCdEJ2Qn/CjIKOgpaCnIKiAqlCsYK+wsDCw8LQQtsC4oLmwvaDCMMWgyMDJsMvwzvDPsNHw1fDXQNgA2YDbMN0g3mDgsOHQ4lDi0OPg5jDpsOow7EDtwO8g8PDy0PXg9mD3IPoA/DEAAQQRBJEHAQsRDSEN4Q5hD5EQERCRE0EWsRrBHYEggSEBJVEqESxhLXEv8TNBNWE4oTyhPgFCQUZBSgFOMVPhVyFcUWCxZpFs4XJRd5F+wYYhi7GNkZCxkuGVMZhBmgGewaABoOGkcaVhpiGqQa6Rr6GwsbKhtIG1QbnxuzG8Yb1hvnHBYcZRy9HRUdUx1kHZYduh3eAAAAAQAAAAIAAIUK/LBfDzz1AAMD6AAAAADL+1E6AAAAANRsMG3+Wv7gBwwD9AAAAAcAAgAAAAAAAAJ4AGAA6QAAAjgAFwIeAF4COgAwAnoAXgH7AF4B0ABeAmwAMAJ+AF4BCQBeAWoABgJEAF4B1wBeA0MAXgKLAF4CjgAwAfAAXgKOADACGwBeAeoALAHNAAcCbABWAiQADwNQAA8CHQASAfsAAgIPACgB3QAgAgQASwGnACUCBAAlAcUAJQE5ACsBwwAUAgAASgDeAEUA3gBKAPD/zwHIAEoA3wBLAtUASwIAAEsB9QAlAgQASwIEACYBSQBKAZgAJAFGACgCAABEAbMADQKRAA4BuwAMAcEADwGfACMCSwArAg0AKwILACsCOAAXAhUAXgIeAF4BmQBeAmMAIQH7AF4B+wBeA14AKgHjABQCjABeAowAXgJYAF4CWgAVA0MAXgJ+AF4CjgAwAm8AXgHwAF4COgAwAc0ABwI5AB4CxgAjAh0AEgI1AEUCfQBeA1QAXgNiAF4CFQBeAj8AMAEJAF4BCQASA4MAXgIjADECegAiAjgAFwLGACMB3QAgAfkAKgHSAEsBYABLAfcABQHFACUBxQAlApwAGQGgAAsCEwBLAhMASwHIAEsB3wAHAogASAIFAEsB9QAlAf4ASwIEAEsBpwAlAZoAEQHBAA8CdgAlAbsADAHPAC8CCgBLAs8ASwLaAEsBxgBLAa4AJQDeAEUA3v/8AqQASwHMACkBzwA2Aa4ALQIEACYCnAAZAY3/5wIAAEQCAABEAcgASgGzAA0CAABLAtUASwI0AEQC1QBEAxAASwHKAEsCpQBLAfUAJQIEACYB9QAlAjIAOAFxADIB2wArAdsAJwHsAB4B0QAaAgUAOAGlACkB9gAwAgUAMAMSAEYDDQBGAz8AKQLXAEYDBwApAwQARgM2ACkDNgApAzYAHQMqAEYDXQApA1QAKwMRADMBiQATAPUASwDiAC0BFABeAeAAMQDzAEsBmwAoASsAIgCeACIA8wA3AaEAAQJwACIBdwBiAXcAPAFOAFgBTgALATMAVQEzACgBKQAiAZgAJAGYACIB1gAiAXAAKgFwAD0CPQAfAyIAMAM/ADgCWwAwBBUAXgFQACIAAP6v/rP+swABAAAD6P8CAAAHO/5a/3kHDAABAAAAAAAAAAAAAAAAAAAAyAAEAgoBkAAFAAACigJYAAAASwKKAlgAAAFeADIBLAAAAAAFAAAAAAAAAAAAAgEAAAAAAAAAAAAAAABNWUZPAMAAICEWA+j/AgAABBQBUwAAAAQAAAAAAfQCigAAACAAAwAAAAIAAAADAAAAFAADAAEAAAAUAAQBQAAAADYAIAAEABYALwA5AEAAWgBbAF8AaQB6AHsAfgQBBAQEBwQVBCUEKQQsBDUERQRJBEwETwRRBFQEVyEW//8AAAAgADAAOgBBAFsAXQBhAGoAewB9BAEEBAQGBBAEFgQmBCwELgQ2BEYETAROBFEEVARWIRb//wAAAGIAAP/BAFwAAP+7/7wAOgAA/D/8UvxR/Cr8KwAA/CkAAPwvAAD8Lfwv/BP8Jvwl368AAQA2AAAAUgAAAAAAWgAAAAAAAABYAAAAAAAAAAAAAABQAAAAVAAAAGAAAAAAAAAAAAAAAAAAAAABAKwAsACtALwAwgDEALEAuQC6AKkAvQCrALsArgCzAKoAsgDAAL4AvwCvAMMAuADGALQAtgDBAFIAUQBTAFQAWQBaAF4AXwBgAGEAYgBjAHYAdQB3AHgAAAAHAFoAAwABBAkAAACIAAAAAwABBAkAAQAOAIgAAwABBAkAAgAOAJYAAwABBAkAAwA0AKQAAwABBAkABAAeANgAAwABBAkABQAaAPYAAwABBAkABgAeARAAQwBvAHAAeQByAGkAZwBoAHQAIAAyADAAMQAyACAAVABoAGUAIABBAHIAcwBlAG4AYQBsACAAUAByAG8AagBlAGMAdAAgAEEAdQB0AGgAbwByAHMAIAAoAGEAbgBkAHIAaQBqAC4AZABlAHMAaQBnAG4AQABnAG0AYQBpAGwALgBjAG8AbQApAEEAcgBzAGUAbgBhAGwAUgBlAGcAdQBsAGEAcgAyAC4AMAAwADAAOwBNAFkARgBPADsAQQByAHMAZQBuAGEAbAAtAFIAZQBnAHUAbABhAHIAQQByAHMAZQBuAGEAbAAgAFIAZQBnAHUAbABhAHIAVgBlAHIAcwBpAG8AbgAgADIALgAwADAAMABBAHIAcwBlAG4AYQBsAC0AUgBlAGcAdQBsAGEAcgADAAAAAAAA/+cAMgAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAf//AA8AAQAAAAwAAAAAAAAAAgAdAAIAAgABAAYABgABAAoACgABABAAEAABABYAFgABABoAGgABABwAHAABACAAIAABACQAJAABACsAKwABADEAMQABADUANQABADoAOgABAD0APQABAD8ARQABAEgASgABAEwATAABAE4ATgABAFEAUQABAFcAWAABAF4AXgABAGEAYQABAGMAaQABAGwAbgABAHAAcAABAHIAcgABAHUAdQABAHsAfAABAIQAhQABAAAAAQAAAAoAKgA6AANERkxUABRjeXJsABRsYXRuABQABAAAAAD//wABAAAAAWtlcm4ACAAAAAIAAAABAAIABgBAAAIAAAABAAgAAQAQAAQAAAADABoAKAAoAAEAAwCvALAAsQADAKv/agCwACgAsQAUAAIAq/+IAK7/iAACAAgAAQAIAAEAPAAEAAAAGQByAOwAuAHuAMYA7AD+AQwBHgGEAYQB7gIgAooCpgL4ApgCpgK0At4C3gLeAvgDDgMOAAEAGQACAAUABwAMAA0AEAARABIAFQAXABgAGQAaABwAHQAhACIALAAuADIAMwA1ADcAsACxABEABP/iAAj/4gAQ/+IAEv/iABX/xAAX/8QAGP/EABr/xAAe/+wAH//sACD/7AAt/+wAMv/YADP/2AA1/9gAsP/OALH/zgADAAL/2ACr/8QArv/EAAkAFf+6ABf/sAAY/7AAGv+cADL/xAAz/8QANf/EALD/ugCx/7oABAAC//EAF//xABj/8QAa//EAAwAC/9gAq//OAK7/zgAEAAL/+wAX//EAGP/xABr/8QAZAAL/xAAXABQAGAAUABoAFAAc/84AHv/OACD/zgAi/84AKf/OACr/zgAs/84ALf/OAC7/zgAv/84AMf/OADL/zgAz/84ANP/OADX/zgA2/84Aqv/OAKv/ugCu/7oAsv/OALv/5wAaAAL/xAAE//EACP/xABD/8QAS//EAFQAUABz/4gAe/8kAH//nACD/yQAi/+IAKf/iACr/4gAs/+IALf/JAC7/4gAv/+IAMf/iADL/4gAz/+IANP/iADX/4gA2/+IAq/+rAK7/qwC7//EADAAE/+wACP/sABD/7AAS/+wAHv/sAB//7AAg/+wALf/sADL/2AAz/9gANf/YALv/4gAaAAL/xAAE//EACP/xABD/8QAS//EAFQAUABz/yQAe/7oAH//nACD/ugAi/78AKf/TACr/0wAs/9MALf+6AC7/0wAv/9MAMf/TADL/0wAz/9MANP/TADX/0wA2/9MAq/+1AK7/tQC7//EAAwAy//EAM//xADX/8QADACIADwCrAA8ArgAPAAMAMv/2ADP/9gA1//YACgAc/+wAHv/xAB//8QAg//EALf/xADIAGQAzABkANQAZAKv/5wCu/+cABgAe//YAH//2ACD/9gAt//YAq//YAK7/2AAFABz/8QCr/+cArv/nALAAHgCxAB4ABgAC/8QAHP/iAB7/2AAf/9gAIP/YAC3/2AAAAAEAAAAKAFQAhgADREZMVAA8Y3lybAAUbGF0bgA8ACwAAkJHUiAAEFNSQiAAHAAA//8AAwAAAAEAAgAA//8AAwAAAAEAAwAEAAAAAP//AAIAAAABAARmcmFjABpsaWdhACBsb2NsACZsb2NsACwAAAABAAIAAAABAAMAAAABAAEAAAABAAAABAAKAB4AfAE0AAEAAAABAAgAAQAGADAAAQABAF8AAQAAAAEACAACACwAEwBbAFwAXQB/AIAAgQCCAIMAhACFAIYAhwCIAIkAigCLAIwAjQCOAAEAEwA+AEYATwBgAGEAYgBlAGYAZwBoAGkAagBuAHEAdgB3AHgAeQB9AAQAAAABAAgAAQCgAAYAEgBGAFwAfACIAJQABQAMABQAHAAkACwAnAADALMAlACdAAMAswCVAJ8AAwCzAJYAoQADALMAlwClAAMAswCaAAIABgAOAJ4AAwCzAJUAogADALMAlwADAAgAEAAYAKAAAwCzAJYAowADALMAlwCmAAMAswCaAAEABACkAAMAswCXAAEABACnAAMAswCaAAEABACoAAMAswCaAAEABgCTAJQAlQCWAJcAmQAEAAAAAQAIAAEAIgABAAgAAwAIAA4AFAA3AAIAIQA4AAIAJAA5AAIAKAABAAEAIQAA";
+      const FONT_BOLD = "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";
+      pdf.addFileToVFS('Arsenal-Regular.ttf', FONT_REG);
+      pdf.addFont('Arsenal-Regular.ttf', 'Arsenal', 'normal');
+      pdf.addFileToVFS('Arsenal-Bold.ttf', FONT_BOLD);
+      pdf.addFont('Arsenal-Bold.ttf', 'Arsenal', 'bold');
+      pdf.setFont('Arsenal', 'normal');
+
+      const lM=25, rM=10, tM=20, pageW=210, pageH=297, w=pageW-lM-rM;
+      let y = tM;
+
+      function addLine(txt, sz=10, bold=false, align='left') {
+        pdf.setFontSize(sz); pdf.setFont('Arsenal', bold?'bold':'normal');
+        const lines = pdf.splitTextToSize(String(txt||''), w);
+        lines.forEach(l => {
+          if (y > pageH-15) { pdf.addPage(); y = tM; }
+          pdf.text(l, align==='center' ? pageW/2 : lM, y, align==='center' ? {align:'center'} : {});
+          y += sz * 0.42;
+        });
+        y += 2;
+      }
+
+      const displayName = currentProject.officialName || currentProject.name || '';
+      const address     = currentProject.address || '';
+      const num         = currentMeeting.number || '—';
+      const date        = formatDateFull(currentMeeting.date);
+      const loc         = currentMeeting.location || '';
+
+      // Заголовок
+      addLine('ПРОТОКОЛ НАРАДИ №' + num, 14, true, 'center');
+      addLine('Щодо ходу робіт на об\'єкті:', 10, false, 'center');
+      addLine(displayName, 11, true, 'center');
+      if (address) addLine(address, 9, false, 'center');
+      y += 3;
+
+      pdf.setFontSize(9); pdf.setFont('Arsenal','normal');
+      pdf.text(date, lM, y);
+      if (loc) pdf.text(loc, pageW-rM, y, {align:'right'});
+      y += 8;
+
+      // Таблиця
+      const cols = [8, 65, 30, 52, 20];
+      const colX = [lM];
+      cols.forEach((c,i) => { if(i>0) colX.push(colX[i-1]+cols[i-1]); });
+      const rowH = 8;
+
+      pdf.setFillColor(30,58,95);
+      pdf.rect(lM, y, w, rowH, 'F');
+      pdf.setTextColor(255,255,255);
+      pdf.setFontSize(8); pdf.setFont('Arsenal','bold');
+      ['№','Опис / питання','Виконавець','Прийняте рішення','Прим.'].forEach((h,i) => {
+        pdf.text(h, colX[i]+2, y+5.5);
+      });
+      pdf.setTextColor(0,0,0);
+      y += rowH;
+
+      localItems.forEach((it, ri) => {
+        if (ri%2===1) { pdf.setFillColor(248,248,248); pdf.rect(lM,y,w,rowH,'F'); }
+        pdf.setFontSize(9); pdf.setFont('Arsenal','normal');
+        const cells = [String(it.number||''), it.description||'', it.executor||'', it.decision||'', it.note||''];
+        cells.forEach((cell,i) => {
+          const txt = pdf.splitTextToSize(cell, cols[i]-3);
+          pdf.text(txt[0]||'', colX[i]+2, y+5.5);
+        });
+        pdf.setDrawColor(200,200,200);
+        pdf.rect(lM, y, w, rowH);
+        y += rowH;
+      });
+      y += 6;
+
+      // Присутні
+      addLine('Погоджено та затверджено присутніми:', 10, true);
+      y += 2;
+      localAttendees.forEach(a => {
+        pdf.setFontSize(10); pdf.setFont('Arsenal','bold');
+        pdf.text(a.name||'', lM, y);
+        if (a.role) { pdf.setFontSize(8); pdf.setFont('Arsenal','normal'); pdf.setTextColor(100,100,100); pdf.text(a.role, lM, y+4); pdf.setTextColor(0,0,0); }
+        pdf.setDrawColor(0,0,0);
+        pdf.line(lM+65, y+1, lM+120, y+1);
+        pdf.setFontSize(7); pdf.setFont('Arsenal','normal'); pdf.setTextColor(150,150,150);
+        pdf.text('підпис', lM+75, y-1);
+        pdf.line(lM+125, y+1, lM+155, y+1);
+        pdf.text('дата', lM+130, y-1);
+        pdf.setTextColor(0,0,0);
+        pdf.setDrawColor(200,200,200);
+        pdf.line(lM, y+6, pageW-rM, y+6);
+        y += 14;
+      });
+
+      // Список додатків
+      if (localAttachments.length) {
+        y += 4;
+        pdf.setDrawColor(200,200,200); pdf.line(lM, y, pageW-rM, y); y += 5;
+        addLine('Додатки:', 10, true);
+        localAttachments.forEach((a,i) => addLine('Додаток '+(i+1)+' — '+(a.description||a.name||''), 9));
+      }
+
+      // Фото додатків — кожне на окремій сторінці
+      for (const [i,a] of localAttachments.entries()) {
+        if (a.type?.startsWith('image') && a.dataUrl) {
+          pdf.addPage(); y = tM;
+          pdf.setFontSize(13); pdf.setFont('Arsenal','bold');
+          pdf.text('Додаток '+(i+1), lM, y); y += 8;
+          if (a.description && a.description !== '—') {
+            pdf.setFontSize(10); pdf.setFont('Arsenal','normal');
+            pdf.text(a.description, lM, y); y += 8;
+          }
+          try { pdf.addImage(a.dataUrl,'JPEG',lM,y,w,170,'','FAST'); } catch(e){}
+        }
+      }
+
+      const blob = pdf.output('blob');
+      const filename = 'Протокол_№'+num+'.pdf';
+      const file = new File([blob], filename, {type:'application/pdf'});
+      const url = URL.createObjectURL(blob);
+      const isTouch = navigator.maxTouchPoints > 0;
+
+      if (isTouch && navigator.share) {
+        try {
+          await navigator.share({files:[file]});
+          setTimeout(()=>URL.revokeObjectURL(url), 5000);
+        } catch(e) {
+          if (e.name!=='AbortError') {
+            const a2 = document.createElement('a');
+            a2.href = url; a2.download = filename; a2.click();
+            setTimeout(()=>URL.revokeObjectURL(url), 10000);
+          }
+        }
+      } else {
+        // Комп'ютер — завантаження
+        const a2 = document.createElement('a');
+        a2.href = url; a2.download = filename; a2.click();
+        setTimeout(()=>URL.revokeObjectURL(url), 10000);
+      }
+
+    } catch(e) { showToast('Помилка: '+(e.message||'невідома')); console.error(e); }
+    saveBtn.disabled = false;
+    saveBtn.textContent = '💾 Зберегти';
+  });
 
   // Дозволяємо pinch-zoom на екрані перегляду
   document.querySelector('meta[name=viewport]').content =
@@ -1676,8 +2237,9 @@ window.printMeeting = function() {
     if (!el || !area) return;
     const availW = area.clientWidth - 40;
     const elW    = 794;
+    let scale = 1;
     if (availW > 0 && availW < elW) {
-      const scale   = availW / elW;
+      scale = availW / elW;
       const origH   = el.scrollHeight;
       const scaledH = origH * scale;
       el.style.transform       = `scale(${scale})`;
@@ -1691,166 +2253,459 @@ window.printMeeting = function() {
       el.style.marginRight  = 'auto';
       el.style.marginBottom = '20px';
     }
+    // Масштабуємо фото аркуші так само
+    area.querySelectorAll('.photo-page-item').forEach(pi => {
+      if (scale < 1) {
+        const origH   = pi.scrollHeight;
+        const scaledH = origH * scale;
+        pi.style.transform       = `scale(${scale})`;
+        pi.style.transformOrigin = 'top center';
+        pi.style.marginLeft      = `${(elW * (1 - scale)) / -2}px`;
+        pi.style.marginRight     = `${(elW * (1 - scale)) / -2}px`;
+        pi.style.marginTop       = '0';
+        pi.style.marginBottom    = `${scaledH - origH + 20}px`;
+      } else {
+        pi.style.transform    = 'none';
+        pi.style.marginLeft   = 'auto';
+        pi.style.marginRight  = 'auto';
+        pi.style.marginTop    = '20px';
+        pi.style.marginBottom = '20px';
+      }
+    });
   }
   setTimeout(applyScale, 50);
   setTimeout(applyScale, 300);
   window.addEventListener('resize', applyScale);
 };
 
-// ── КОНТРОЛЬ ПРОТОКОЛУ ──
-window.showControlScreen = function() {
-  const controlled = localItems.filter(it => it.control);
-  if (controlled.length === 0) {
-    showToast('Немає пунктів на контролі');
+// Контроль — всі протоколи об'єкту
+// ══ ДОДАТКИ ══
+let _deletingAttIdx = null;
+
+async function loadAttachmentsLocal() {
+  const uid = currentUser.uid;
+  try {
+    const snap = await getDocs(query(
+      collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
+      orderBy('createdAt')
+    ));
+    localAttachments = [];
+    snap.forEach(d => localAttachments.push({ id: d.id, ...d.data() }));
+  } catch(e) { localAttachments = []; }
+}
+
+function renderAttachments() {
+  const list = document.getElementById('attachments-list');
+  if (!list) return;
+  if (localAttachments.length === 0) {
+    list.innerHTML = `<div style="text-align:center;color:rgba(255,255,255,0.5);font-size:13px;padding:10px 0;">Додатків ще немає</div>`;
     return;
   }
-
-  // Показуємо модалку зі списком пунктів на контролі
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
-
-  const box = document.createElement('div');
-  box.style.cssText = 'background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto;';
-
-  const title = document.createElement('div');
-  title.textContent = `🔔 На контролі (${controlled.length})`;
-  title.style.cssText = 'font-size:17px;font-weight:700;color:#1e3a5f;margin-bottom:16px;';
-  box.appendChild(title);
-
-  controlled.forEach(it => {
+  list.innerHTML = '';
+  localAttachments.forEach((att, idx) => {
+    const isDeleting = _deletingAttIdx === idx;
+    const typeIcon = att.type?.startsWith('image') ? '🖼' : att.type === 'application/pdf' ? '📄' : '📎';
     const row = document.createElement('div');
-    row.style.cssText = 'padding:10px 0;border-bottom:1px solid #f1f5f9;';
+    row.className = 'att-row' + (isDeleting ? ' att-deleting' : '');
     row.innerHTML = `
-      <div style="font-size:13px;font-weight:700;color:#1e293b;">${it.number}. ${esc(it.description||'—')}</div>
-      ${it.executor ? `<div style="font-size:11px;color:#64748b;margin-top:2px;">Виконавець: ${esc(it.executor)}</div>` : ''}
-      ${it.decision ? `<div style="font-size:11px;color:#64748b;">Рішення: ${esc(it.decision)}</div>` : ''}`;
-    box.appendChild(row);
+      <div class="att-num-cell"><span class="num-text">${idx+1}</span></div>
+      <div class="att-info">
+        <div class="att-desc-edit" style="font-size:13px;font-weight:700;color:#1e293b;min-height:20px;">${esc(att.description||'—')}</div>
+        <div style="font-size:10px;color:#94a3b8;margin-top:1px;">${esc(att.name||'')}</div>
+      </div>
+      <div class="att-type-icon">${typeIcon}</div>`;
+
+    // Редагування опису по кліку
+    const descEl = row.querySelector('.att-desc-edit');
+    descEl.addEventListener('click', e => {
+      e.stopPropagation();
+      if (_deletingAttIdx !== null) { _deletingAttIdx = null; renderAttachments(); return; }
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.value = att.description || '';
+      input.placeholder = 'Опис додатку...';
+      input.style.cssText = 'font-size:13px;font-weight:700;color:#1e293b;border:none;outline:none;background:transparent;width:100%;font-family:inherit;border-bottom:1px solid #2563eb;';
+      descEl.replaceWith(input);
+      input.focus();
+      async function saveDesc() {
+        const newDesc = input.value.trim();
+        att.description = newDesc;
+        try {
+          const uid = currentUser.uid;
+          if (att.id) await updateDoc(doc(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments',att.id), { description: newDesc });
+        } catch(e) { console.warn(e); }
+        renderAttachments();
+      }
+      input.addEventListener('blur', () => setTimeout(saveDesc, 150));
+      input.addEventListener('keydown', e => { if (e.key === 'Enter') input.blur(); });
+    });
+
+    const numCell = row.querySelector('.att-num-cell');
+    numCell.addEventListener('click', e => {
+      e.stopPropagation();
+      if (_deletingAttIdx === idx) { deleteAttachment(idx); }
+      else { _deletingAttIdx = idx; renderAttachments(); }
+    });
+
+    // Перегляд по кліку на іконку типу
+    row.querySelector('.att-type-icon').addEventListener('click', e => {
+      e.stopPropagation();
+      if (att.dataUrl) {
+        const w = window.open('', '_blank');
+        if (w) {
+          w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">
+            ${att.type?.startsWith('image')
+              ? `<img src="${att.dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;">`
+              : `<p style="color:white;font-family:sans-serif;">Файл: ${esc(att.name)}</p>`}
+          </body></html>`);
+          w.document.close();
+        }
+      }
+    });
+
+    row.addEventListener('click', e => {
+      if (!e.target.closest('.att-num-cell') && _deletingAttIdx === idx) {
+        _deletingAttIdx = null; renderAttachments();
+      }
+    });
+
+    list.appendChild(row);
   });
+}
 
-  const closeBtn = document.createElement('button');
-  closeBtn.textContent = 'Закрити';
-  closeBtn.style.cssText = 'width:100%;padding:13px;margin-top:16px;border-radius:12px;border:none;background:#f1f5f9;color:#64748b;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;';
-  closeBtn.addEventListener('click', () => overlay.remove());
-  box.appendChild(closeBtn);
+async function deleteAttachment(idx) {
+  const att = localAttachments[idx];
+  try {
+    const uid = currentUser.uid;
+    await deleteDoc(doc(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments',att.id));
+    localAttachments.splice(idx, 1);
+    _deletingAttIdx = null;
+    renderAttachments();
+    showToast('Додаток видалено');
+  } catch(e) { showToast('Помилка видалення'); }
+}
 
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-  overlay.appendChild(box);
-  document.documentElement.appendChild(overlay);
+window.openAddAttachment = function() {
+  const input = document.getElementById('att-file-input');
+  input.value = '';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    await uploadAttachment(file);
+  };
+  input.click();
 };
 
-window.leavePrintScreen = function() {
-  // Відновлюємо заборону zoom при виході
-  document.querySelector('meta[name=viewport]').content =
-    'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
+async function uploadAttachment(file) {
+  const uid = currentUser.uid;
+  const list = document.getElementById('attachments-list');
+
+  // Показуємо прогрес
+  const progressDiv = document.createElement('div');
+  progressDiv.style.cssText = 'background:white;border-radius:8px;padding:10px 12px;margin-bottom:4px;';
+  progressDiv.innerHTML = `
+    <div style="font-size:12px;color:#1e293b;margin-bottom:6px;">⏳ ${esc(file.name)}</div>
+    <div class="att-upload-progress"><div class="att-upload-progress-bar" id="att-progress-bar" style="width:30%"></div></div>`;
+  list.appendChild(progressDiv);
+
+  try {
+    let dataUrl;
+    const isImage = file.type.startsWith('image');
+
+    if (isImage) {
+      // Стискаємо фото через Canvas
+      dataUrl = await compressImage(file, 1200, 0.75);
+    } else {
+      // Інші файли — конвертуємо в Base64 напряму
+      dataUrl = await fileToBase64(file);
+    }
+
+    const bar = document.getElementById('att-progress-bar');
+    if (bar) bar.style.width = '70%';
+
+    // Запитуємо опис через модалку
+    const description = await askDescription(file.name);
+
+    if (bar) bar.style.width = '90%';
+
+    // Зберігаємо в Firestore
+    const ref = await addDoc(
+      collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
+      { name: file.name, description, dataUrl, type: file.type, createdAt: serverTimestamp() }
+    );
+
+    localAttachments.push({ id: ref.id, name: file.name, description, dataUrl, type: file.type });
+    progressDiv.remove();
+    renderAttachments();
+    showToast(`✅ ${file.name} додано`);
+  } catch(e) {
+    console.error('Upload error:', e);
+    progressDiv.remove();
+    showToast('Помилка: ' + (e.message || 'невідома'));
+  }
+}
+
+// Стискання зображення через Canvas
+function compressImage(file, maxWidth, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = e.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// Конвертація файлу в Base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(e.target.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function askDescription(fileName) {
+  return new Promise(resolve => {
+    const { box, addCloseBtn, close } = createModal('Опис додатку', '📎 ');
+
+    const fileLabel = document.createElement('div');
+    fileLabel.style.cssText = 'font-size:12px;color:#6B6B6B;margin-bottom:10px;';
+    fileLabel.textContent = fileName;
+    box.appendChild(fileLabel);
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Введіть опис (необов\'язково)...';
+    input.style.cssText = `width:100%;padding:11px 12px;border:1px solid #EBEBEB;border-radius:10px;font-size:14px;font-family:'Arsenal',Arial,sans-serif;outline:none;color:#2D2D2D;margin-bottom:10px;`;
+    box.appendChild(input);
+
+    const saveBtn = document.createElement('button');
+    saveBtn.textContent = 'Зберегти';
+    saveBtn.style.cssText = `width:100%;padding:12px;border-radius:10px;border:none;background:#2D2D2D;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;margin-bottom:8px;`;
+    saveBtn.addEventListener('click', () => { close(); resolve(input.value.trim()); });
+    box.appendChild(saveBtn);
+
+    const skipBtn = addCloseBtn('Пропустити');
+    skipBtn.addEventListener('click', () => resolve(''));
+
+    setTimeout(() => input.focus(), 100);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') { close(); resolve(input.value.trim()); } });
+  });
+}
+
+// ══ КІНЕЦЬ ДОДАТКІВ ══
+// ── НАЛАШТУВАННЯ ПРОТОКОЛУ ──
+window.openMeetingSettings = function() {
+  const palette = currentProject.palette || TILE_COLORS[currentProject.colorIdx||0];
+  const hdr = document.getElementById('header-meeting-settings');
+  hdr.style.background = palette.bg;
+  hdr.querySelectorAll('.back-btn,.icon-btn').forEach(b => {
+    b.style.background  = 'rgba(0,0,0,0.08)';
+    b.style.color       = palette.text;
+    b.style.borderColor = 'rgba(0,0,0,0.1)';
+  });
+  hdr.querySelectorAll('.app-header-title,.app-header-sub').forEach(e => e.style.color = palette.text);
+  document.getElementById('ms-header-sub').textContent = `Протокол № ${currentMeeting.number}`;
+  document.getElementById('ms-number').value   = currentMeeting.number || '';
+  document.getElementById('ms-location').value = currentMeeting.location || '';
+  document.getElementById('ms-number').onblur  = () => saveMeetingSettings();
+  document.getElementById('ms-location').onblur = () => saveMeetingSettings();
+  showScreen('screen-meeting-settings');
+};
+
+async function saveMeetingSettings() {
+  const number   = parseInt(document.getElementById('ms-number').value) || currentMeeting.number;
+  const location = document.getElementById('ms-location').value.trim();
+  try {
+    const uid = currentUser.uid;
+    const pid = currentProject.id;
+    const mid = currentMeeting.id;
+    await updateDoc(doc(db,'users',uid,'projects',pid,'meetings',mid), { number, location });
+    currentMeeting.number   = number;
+    currentMeeting.location = location;
+    document.getElementById('ms-header-sub').textContent      = `Протокол № ${number}`;
+    document.getElementById('meeting-header-num').textContent = `Протокол № ${number}`;
+    document.getElementById('meeting-header-loc').textContent = location || '—';
+    document.getElementById('attachments-title').textContent  = `📎 Додатки до протоколу №${number}`;
+    showToast('✓ Збережено');
+  } catch(e) { console.warn(e); }
+}
+
+window.leaveMeetingSettings = function() {
   showScreen('screen-meeting');
 };
-window.executePrint = function() { window.print(); };
 
-// ── ПОДІЛИТИСЬ ──
-window.shareMeeting = function() {
-  const displayName = currentProject.officialName || currentProject.name || '';
-  const meetingNum  = currentMeeting.number;
-  const meetingDate = formatDateFull(currentMeeting.date);
-  const meetingLoc  = currentMeeting.location || '';
-  const whatsapp    = currentProject.whatsappGroup || '';
+window.deleteMeeting = async function() {
+  if (!confirm(`Видалити Протокол №${currentMeeting.number}? Це незворотньо.`)) return;
+  showSpinner();
+  try {
+    const uid = currentUser.uid;
+    const pid = currentProject.id;
+    const mid = currentMeeting.id;
+    for (const sub of ['items','attendees','attachments']) {
+      const snap = await getDocs(collection(db,'users',uid,'projects',pid,'meetings',mid,sub));
+      for (const d of snap.docs) await deleteDoc(doc(db,'users',uid,'projects',pid,'meetings',mid,sub,d.id));
+    }
+    await deleteDoc(doc(db,'users',uid,'projects',pid,'meetings',mid));
+    await updateDoc(doc(db,'users',uid,'projects',pid), { meetingsCount: increment(-1) });
+    hideSpinner();
+    showToast('✅ Протокол видалено');
+    currentMeeting = null;
+    loadMeetings(pid);
+    showScreen('screen-project');
+  } catch(e) {
+    hideSpinner();
+    showToast('Помилка видалення');
+    console.error(e);
+  }
+};
 
-  let text = `📋 ПРОТОКОЛ НАРАДИ №${meetingNum}\n`;
-  text += `📅 ${meetingDate}${meetingLoc ? ' · ' + meetingLoc : ''}\n`;
-  text += `🏗 ${displayName}\n\n`;
-  if (localItems.length > 0) {
-    text += `ПУНКТИ:\n`;
-    localItems.forEach(it => {
-      text += `${it.number}. ${it.description || '—'}`;
-      if (it.executor) text += ` | ${it.executor}`;
-      if (it.decision) text += ` → ${it.decision}`;
-      text += '\n';
+// ── КОНТРОЛЬ ──
+window.showAllControlScreen = async function() {
+  const uid = currentUser.uid;
+  const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
+  const controlled = [];
+  for (const m of mSnap.docs) {
+    const iSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',m.id,'items'));
+    iSnap.forEach(i => {
+      const d = i.data();
+      if (d.control) controlled.push({ ...d, meetingNum: m.data().number, meetingId: m.id });
     });
   }
-  if (localAttendees.length > 0) {
-    text += `\nПРИСУТНІ: ${localAttendees.map(a => a.name).join(', ')}`;
-  }
-  window._shareText    = text;
-  window._shareWhatsapp = whatsapp;
+  showControlModal(controlled, `Контроль — всі протоколи (${controlled.length})`);
+};
 
-  // Показуємо модалку
+// Контроль — поточний протокол
+window.showControlScreen = function() {
+  const controlled = localItems.filter(it => it.control);
+  showControlModal(controlled, `Контроль — Протокол № ${currentMeeting.number} (${controlled.length})`);
+};
+
+// ── ЄДИНА ФУНКЦІЯ МОДАЛКИ ──
+function createModal(title, iconHTML = '') {
   const overlay = document.createElement('div');
-  overlay.className = 'share-overlay';
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
-
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
   const box = document.createElement('div');
-  box.style.cssText = 'background:white;border-radius:20px;padding:24px 20px;width:100%;max-width:480px;';
-
-  const makeBtn = (id, bg, color, label) => {
-    const b = document.createElement('button');
-    b.id = id;
-    b.textContent = label;
-    b.style.cssText = `width:100%;padding:13px;margin-bottom:8px;border-radius:12px;border:none;background:${bg};color:${color};font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;`;
-    return b;
-  };
-
-  const title = document.createElement('div');
-  title.textContent = '📤 Поділитись протоколом';
-  title.style.cssText = 'font-size:17px;font-weight:700;color:#1e3a5f;text-align:center;margin-bottom:16px;';
-  box.appendChild(title);
-
-  if (whatsapp) {
-    box.appendChild(makeBtn('sh-whatsapp', '#25D366', 'white', '📱 WhatsApp група'));
-  }
-  box.appendChild(makeBtn('sh-viber',  '#7360f2', 'white',   '📱 Viber'));
-  box.appendChild(makeBtn('sh-sms',    '#16a34a', 'white',   '💬 SMS'));
-  box.appendChild(makeBtn('sh-other',  '#f1f5f9', '#475569', '📤 Інший месенджер'));
-  box.appendChild(makeBtn('sh-cancel', '#f1f5f9', '#94a3b8', 'Скасувати'));
-
-  const hint = document.createElement('div');
-  hint.textContent = 'Натискання відкриє відповідний додаток';
-  hint.style.cssText = 'font-size:11px;color:#94a3b8;text-align:center;margin-top:8px;';
-  box.appendChild(hint);
-
+  box.style.cssText = `background:white;border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:78vh;overflow-y:auto;font-family:'Arsenal',Arial,sans-serif;`;
+  const hdr = document.createElement('div');
+  hdr.style.cssText = 'font-size:16px;font-weight:700;color:#2D2D2D;margin-bottom:14px;display:flex;align-items:center;gap:8px;';
+  hdr.innerHTML = iconHTML + esc(title);
+  box.appendChild(hdr);
   overlay.appendChild(box);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.documentElement.appendChild(overlay);
 
-  const enc = encodeURIComponent(text);
-
-  const close = () => overlay.remove();
-
-  overlay.addEventListener('click', e => { if (e.target === overlay) close(); });
-  box.querySelector('#sh-cancel').addEventListener('click', close);
-
-  if (whatsapp) {
-    box.querySelector('#sh-whatsapp').addEventListener('click', () => {
-      window.open(whatsapp.includes('chat.whatsapp.com') ? whatsapp : `https://wa.me/?text=${enc}`, '_blank');
-      close();
-    });
+  function addCloseBtn(label = 'Закрити') {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = `width:100%;padding:11px;margin-top:12px;border-radius:10px;border:1px solid #EBEBEB;background:#F9FAFB;color:#6B6B6B;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
+    btn.addEventListener('click', () => overlay.remove());
+    box.appendChild(btn);
+    return btn;
   }
-  box.querySelector('#sh-viber').addEventListener('click', () => {
-    window.open(`viber://forward?text=${enc}`, '_blank');
-    close();
+
+  function addActionBtn(label, bg, color) {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:${bg};color:${color};font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
+    box.appendChild(btn);
+    return btn;
+  }
+
+  function addRow(html) {
+    const row = document.createElement('div');
+    row.style.cssText = 'padding:8px 0;border-bottom:1px solid #EBEBEB;';
+    row.innerHTML = html;
+    box.appendChild(row);
+    return row;
+  }
+
+  return { overlay, box, addCloseBtn, addActionBtn, addRow, close: () => overlay.remove() };
+}
+
+function showControlModal(items, title) {
+  if (items.length === 0) { showToast('Немає пунктів на контролі'); return; }
+  const ctrlSVG = `<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="#C17058" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#C17058" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#C17058" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#C17058"/></svg>`;
+  const { addRow, addCloseBtn } = createModal(title, ctrlSVG);
+  items.forEach(it => {
+    const prefix = it.meetingNum ? 'Протокол №' + it.meetingNum + ' · ' : '';
+    const execLine = it.executor ? '<div style="font-size:11px;color:#6B6B6B;margin-top:1px;">' + esc(it.executor) + '</div>' : '';
+    addRow(
+      '<div style="font-size:9px;color:#C17058;font-weight:700;">' + prefix + 'Пункт ' + it.number + '</div>' +
+      '<div style="font-size:12px;font-weight:700;color:#2D2D2D;margin-top:2px;">' + esc(it.description||'—') + '</div>' +
+      execLine
+    );
   });
-  box.querySelector('#sh-sms').addEventListener('click', () => {
-    window.open(`sms:?body=${enc}`, '_blank');
-    close();
-  });
-  box.querySelector('#sh-other').addEventListener('click', () => {
-    if (navigator.share) {
-      navigator.share({ title: `Протокол №${meetingNum}`, text }).catch(() => {});
+  addCloseBtn();
+}
+
+// ── ГЕНЕРАЦІЯ PDF ──
+function applyPreviewScale() {
+  const el   = document.getElementById('protocol-doc');
+  const area = document.getElementById('print-preview-area');
+  if (!el || !area) return;
+  const avW = area.clientWidth - 40;
+  const elW = 794;
+  const scale = (avW > 0 && avW < elW) ? avW / elW : 1;
+
+  function applyScale(elem) {
+    if (scale < 1) {
+      elem.style.transform       = `scale(${scale})`;
+      elem.style.transformOrigin = 'top center';
+      elem.style.marginLeft      = `${elW*(1-scale)/-2}px`;
+      elem.style.marginRight     = `${elW*(1-scale)/-2}px`;
+      elem.style.marginBottom    = `${elem.scrollHeight*scale - elem.scrollHeight + 20}px`;
+      elem.style.marginTop       = '0';
     } else {
-      navigator.clipboard?.writeText(text);
-      showToast('📋 Текст скопійовано');
+      elem.style.transform    = 'none';
+      elem.style.marginLeft   = 'auto';
+      elem.style.marginRight  = 'auto';
+      elem.style.marginBottom = '20px';
+      elem.style.marginTop    = '20px';
     }
-    close();
-  });
+  }
+
+  applyScale(el);
+  area.querySelectorAll('.photo-page-item').forEach(pi => applyScale(pi));
+}
+
+window.leavePrintScreen = function() {
+  document.querySelector('meta[name=viewport]').content =
+    'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover';
+  window.removeEventListener('resize', applyPreviewScale);
+  showScreen('screen-meeting');
 };
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
+window.testControlCheck = async function() {
+  localStorage.removeItem('cp_control_check');
+  await checkDailyControl();
+  showToast('Перевірку виконано');
+};
+
 async function checkDailyControl() {
   const today = new Date().toISOString().slice(0, 10);
   const lastCheck = localStorage.getItem('cp_control_check');
-  if (lastCheck === today) return; // вже перевіряли сьогодні
+  if (lastCheck === today) return;
 
   try {
     const uid = currentUser.uid;
     const projSnap = await getDocs(collection(db,'users',uid,'projects'));
     const controlled = [];
+    showToast('Проектів: ' + projSnap.size, 3000);
 
     for (const p of projSnap.docs) {
       const mSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings'));
@@ -1873,12 +2728,11 @@ async function checkDailyControl() {
     }
 
     localStorage.setItem('cp_control_check', today);
+    showToast('На контролі: ' + controlled.length, 3000);
 
     if (controlled.length === 0) return;
-
-    // Показуємо банер
     showControlBanner(controlled);
-  } catch(e) { console.warn('Control check error:', e); }
+  } catch(e) { showToast('Помилка: ' + e.message, 5000); }
 }
 
 function showControlBanner(items) {
