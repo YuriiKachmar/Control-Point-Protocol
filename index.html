@@ -878,6 +878,7 @@ let activeItemIdx    = null;
 let activeAttIdx     = null;
 let deletingItemIdx = null;
 let deletingAttIdx  = null;
+let _fixedMeetingProjId = null;
 let longPressTimer  = null;
 
 const TILE_COLORS = [
@@ -1067,13 +1068,13 @@ async function loadMeetings() {
 
 window.openAddMeeting = () => {
   document.getElementById('new-meeting-location').value = '';
-  _fixedProjId = currentProject.id; // фіксуємо ID в момент відкриття
+  _fixedMeetingProjId = currentProject.id;
   openModal('modal-meeting');
 };
 
 window.saveMeeting = async function() {
   const location = document.getElementById('new-meeting-location').value.trim();
-  const projId   = _fixedProjId || currentProject.id; // використовуємо зафіксований ID
+  const projId   = _fixedMeetingProjId || currentProject.id;
   try {
     const uid    = currentUser.uid;
     const ref    = collection(db,'users',uid,'projects',projId,'meetings');
