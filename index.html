@@ -1028,13 +1028,19 @@ function openProject(id, data, palette) {
 }
 
 // ── MEETINGS ──
+let _loadMeetingsReq = 0; // лічильник запитів — скасовує застарілі
+
 async function loadMeetings() {
   if (!currentProject) return;
   const uid = currentUser.uid;
-  const pid = currentProject.id; // фіксуємо ID одразу
+  const pid = currentProject.id;
+  const reqId = ++_loadMeetingsReq; // унікальний ID цього запиту
+
   const snap = await getDocs(query(collection(db,'users',uid,'projects',pid,'meetings'), orderBy('number','desc')));
-  // Перевіряємо що поточний проект не змінився поки завантажувались дані
-  if (!currentProject || currentProject.id !== pid) return;
+
+  // Якщо за час запиту відкрили інший об'єкт або запустили новий запит — ігноруємо результат
+  if (reqId !== _loadMeetingsReq || !currentProject || currentProject.id !== pid) return;
+
   const list = document.getElementById('meetings-list');
   if (snap.empty) {
     list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Протоколів ще немає.</p></div>`;
