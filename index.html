@@ -2070,19 +2070,7 @@ window.printMeeting = async function() {
   const printBtnOld = document.getElementById('btn-print');
   const printBtn = printBtnOld.cloneNode(true);
   printBtnOld.parentNode.replaceChild(printBtn, printBtnOld);
-  printBtn.addEventListener('click', () => {
-    // Скидаємо transform перед друком щоб браузер не рендерив двічі
-    const el = document.getElementById('protocol-doc');
-    if (el) {
-      el.style.transform = 'none';
-      el.style.marginLeft = 'auto';
-      el.style.marginRight = 'auto';
-      el.style.marginBottom = '20px';
-    }
-    window.print();
-    // Відновлюємо масштаб після друку
-    setTimeout(applyPreviewScale, 500);
-  });
+  printBtn.addEventListener('click', () => window.print());
 
   // ── Кнопка ЗБЕРЕГТИ — скидаємо стан і listeners через clone ──
   const saveBtnOld = document.getElementById('btn-save');
