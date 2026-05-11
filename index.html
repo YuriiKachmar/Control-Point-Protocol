@@ -848,7 +848,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, increment }
+import { getFirestore, collection, addDoc, getDocs, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, increment, runTransaction, limit, where }
   from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -1007,83 +1007,105 @@ window.saveProject = async function() {
   } catch(e) { showToast('Помилка збереження'); }
 };
 
+let currentProjectLoadId   = null;
+let currentLoadMeetingsAbort = null;
+
 function openProject(id, data, palette) {
-  currentProject = { id, ...data, palette };
+  currentProject    = { id, ...data, palette };
+  currentProjectLoadId = id;
   document.getElementById('project-header-name').textContent = data.name;
   const hdr = document.getElementById('header-project');
   hdr.style.background = palette.bg;
   hdr.querySelectorAll('.back-btn, .icon-btn').forEach(btn => {
-    btn.style.background   = 'rgba(0,0,0,0.08)';
-    btn.style.color        = palette.text;
-    btn.style.borderColor  = 'rgba(0,0,0,0.1)';
+    btn.style.background  = 'rgba(0,0,0,0.08)';
+    btn.style.color       = palette.text;
+    btn.style.borderColor = 'rgba(0,0,0,0.1)';
   });
   hdr.querySelectorAll('.app-header-title, .app-header-sub').forEach(el => {
     el.style.color = palette.text;
   });
   showScreen('screen-project');
-  loadMeetings(id); // передаємо id явно
+  loadMeetings(id);
 }
 
 // ── MEETINGS ──
 async function loadMeetings(projId) {
-  // projId завжди передається явно — не беремо з глобального стану
-  if (!projId) projId = currentProject?.id;
   if (!projId) return;
+  if (currentProjectLoadId !== projId) return;
+
+  // Скасовуємо попереднє завантаження
+  if (currentLoadMeetingsAbort) currentLoadMeetingsAbort();
+  let aborted = false;
+  currentLoadMeetingsAbort = () => { aborted = true; };
 
   const uid  = currentUser.uid;
   const list = document.getElementById('meetings-list');
   list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Завантаження...</p></div>`;
 
-  const snap = await getDocs(query(
-    collection(db,'users',uid,'projects',projId,'meetings'),
-    orderBy('number','desc')
-  ));
+  try {
+    const snap = await getDocs(query(
+      collection(db,'users',uid,'projects',projId,'meetings'),
+      orderBy('number','desc')
+    ));
 
-  // Перевіряємо що користувач ще дивиться на той самий об'єкт
-  if (!currentProject || currentProject.id !== projId) return;
+    if (aborted || !currentProject || currentProject.id !== projId) return;
 
-  if (snap.empty) {
-    list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Протоколів ще немає.</p></div>`;
-    return;
-  }
+    if (snap.empty) {
+      list.innerHTML = `<div class="empty-state"><div class="icon">📄</div><p>Протоколів ще немає.</p></div>`;
+      return;
+    }
 
-  list.innerHTML = '';
-  const ctrlSvg = `<svg viewBox="0 0 24 24" fill="none" width="14" height="14" style="vertical-align:middle;margin-right:3px;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg>`;
+    list.innerHTML = '';
+    const ctrlSvg = `<svg viewBox="0 0 24 24" fill="none" width="14" height="14" style="vertical-align:middle;margin-right:3px;"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg>`;
 
-  for (const d of snap.docs) {
-    if (!currentProject || currentProject.id !== projId) return; // перевірка в циклі
-    const m      = d.data();
-    const iSnap  = await getDocs(collection(db,'users',uid,'projects',projId,'meetings',d.id,'items'));
-    if (!currentProject || currentProject.id !== projId) return;
-    let ctrl = 0;
-    iSnap.forEach(i => { if (i.data().control) ctrl++; });
+    for (const d of snap.docs) {
+      if (aborted || !currentProject || currentProject.id !== projId) return;
+      const m = d.data();
+      // Використовуємо збережений лічильник або запитуємо через where
+      let ctrl = m.controlCount || 0;
+      if (!ctrl) {
+        const iSnap = await getDocs(query(
+          collection(db,'users',uid,'projects',projId,'meetings',d.id,'items'),
+          where('control','==',true)
+        ));
+        if (aborted) return;
+        ctrl = iSnap.size;
+      }
 
-    const card = document.createElement('div');
-    card.className = 'meeting-card';
-    card.style.borderLeftColor = currentProject.palette?.text || '#1e3a5f';
-    card.innerHTML = `
-      <div class="meeting-card-left">
-        <div class="meeting-card-title">
-          <h3>Протокол №${m.number}</h3>
-          <p>${formatDateShort(m.date)}${m.location ? ' · ' + esc(m.location) : ''}</p>
+      const card = document.createElement('div');
+      card.className = 'meeting-card';
+      card.style.borderLeftColor = currentProject.palette?.text || '#1e3a5f';
+      card.innerHTML = `
+        <div class="meeting-card-left">
+          <div class="meeting-card-title">
+            <h3>Протокол №${m.number}</h3>
+            <p>${formatDateShort(m.date)}${m.location ? ' · ' + esc(m.location) : ''}</p>
+          </div>
         </div>
-      </div>
-      ${ctrl > 0
-        ? `<span class="open-badge has">${ctrlSvg}${ctrl}</span>`
-        : `<span class="open-badge none">✓</span>`}`;
-    card.onclick = () => openMeeting(d.id, m);
-    list.appendChild(card);
+        ${ctrl > 0
+          ? `<span class="open-badge has">${ctrlSvg}${ctrl}</span>`
+          : `<span class="open-badge none">✓</span>`}`;
+      card.onclick = () => openMeeting(d.id, m);
+      list.appendChild(card);
+    }
+  } catch(e) {
+    if (!aborted) {
+      console.error(e);
+      list.innerHTML = `<div class="empty-state"><p>Помилка завантаження</p></div>`;
+    }
+  } finally {
+    if (!aborted) currentLoadMeetingsAbort = null;
   }
 }
 
 window.openAddMeeting = () => {
   if (!currentProject) return;
-  const projId = currentProject.id; // зберігаємо ID в момент натискання
+  const projId = currentProject.id;
   document.getElementById('new-meeting-location').value = '';
   const btn    = document.getElementById('btn-create-meeting');
   const newBtn = btn.cloneNode(true);
   btn.parentNode.replaceChild(newBtn, btn);
-  newBtn.onclick = () => saveMeeting(projId); // передаємо projId явно
+  newBtn.onclick = () => saveMeeting(projId);
   openModal('modal-meeting');
 };
 
@@ -1091,21 +1113,33 @@ async function saveMeeting(projId) {
   if (!projId) return;
   const btn = document.getElementById('btn-create-meeting');
   if (btn) btn.disabled = true;
-  const location = document.getElementById('new-meeting-location').value.trim();
+  let newNumber = 0;
   try {
-    const uid   = currentUser.uid;
-    const ref   = collection(db,'users',uid,'projects',projId,'meetings');
-    const snap  = await getDocs(ref);
-    let maxNum  = 0;
-    snap.forEach(d => { const n = d.data().number || 0; if (n > maxNum) maxNum = n; });
-    const number = maxNum + 1;
-    await addDoc(ref, { number, location, date: serverTimestamp(), status:'draft', openItemsCount:0, createdAt: serverTimestamp() });
-    await updateDoc(doc(db,'users',uid,'projects',projId), { meetingsCount: increment(1) });
+    const uid         = currentUser.uid;
+    const meetingsRef = collection(db,'users',uid,'projects',projId,'meetings');
+    const location    = document.getElementById('new-meeting-location').value.trim();
+
+    await runTransaction(db, async (transaction) => {
+      const snap = await getDocs(query(meetingsRef, orderBy('number','desc'), limit(1)));
+      const maxNum = snap.empty ? 0 : (snap.docs[0].data().number || 0);
+      newNumber = maxNum + 1;
+      const newRef = doc(meetingsRef);
+      transaction.set(newRef, {
+        number: newNumber, location, date: serverTimestamp(),
+        status: 'draft', openItemsCount: 0, controlCount: 0, createdAt: serverTimestamp()
+      });
+      transaction.update(doc(db,'users',uid,'projects',projId), { meetingsCount: increment(1) });
+    });
+
     closeModal('modal-meeting');
-    showToast(`✅ Протокол №${number} створено`);
-    if (currentProject && currentProject.id === projId) loadMeetings(projId);
-  } catch(e) { showToast('Помилка збереження'); console.error(e); }
-  if (btn) btn.disabled = false;
+    showToast(`✅ Протокол №${newNumber} створено`);
+    if (currentProject?.id === projId) loadMeetings(projId);
+  } catch(e) {
+    console.error(e);
+    showToast('Помилка створення протоколу');
+  } finally {
+    if (btn) btn.disabled = false;
+  }
 }
 
 // ── MEETING SCREEN ──
@@ -1114,10 +1148,9 @@ async function openMeeting(id, data) {
   const palette = currentProject.palette || { bg:'#2D2D2D', text:'#fff', sub:'#aaa' };
   const h = document.getElementById('meeting-header');
   h.style.background = palette.bg;
-  // Кнопки і текст хедера
   h.querySelectorAll('.back-btn, .icon-btn').forEach(btn => {
-    btn.style.background = `rgba(0,0,0,0.08)`;
-    btn.style.color = palette.text;
+    btn.style.background  = `rgba(0,0,0,0.08)`;
+    btn.style.color       = palette.text;
     btn.style.borderColor = `rgba(0,0,0,0.1)`;
   });
   h.querySelectorAll('.protocol-header-num, .protocol-header-date, .protocol-header-loc').forEach(el => {
@@ -1130,6 +1163,8 @@ async function openMeeting(id, data) {
   await loadItemsLocal();
   await loadAttendeesLocal();
   await loadAttachmentsLocal();
+  // Перевіряємо що поточний протокол не змінився під час завантаження
+  if (!currentMeeting || currentMeeting.id !== id) return;
   _deletingAttIdx = null;
   renderItems();
   renderAttendees();
