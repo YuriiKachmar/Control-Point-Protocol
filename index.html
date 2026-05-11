@@ -1065,18 +1065,22 @@ async function loadMeetings() {
   }
 }
 
-window.openAddMeeting = () => { document.getElementById('new-meeting-location').value = ''; openModal('modal-meeting'); };
+window.openAddMeeting = () => {
+  document.getElementById('new-meeting-location').value = '';
+  _fixedProjId = currentProject.id; // фіксуємо ID в момент відкриття
+  openModal('modal-meeting');
+};
 
 window.saveMeeting = async function() {
   const location = document.getElementById('new-meeting-location').value.trim();
+  const projId   = _fixedProjId || currentProject.id; // використовуємо зафіксований ID
   try {
     const uid    = currentUser.uid;
-    const ref    = collection(db,'users',uid,'projects',currentProject.id,'meetings');
+    const ref    = collection(db,'users',uid,'projects',projId,'meetings');
     const snap   = await getDocs(ref);
     const number = snap.size + 1;
     await addDoc(ref, { number, location, date: serverTimestamp(), status:'draft', openItemsCount:0, createdAt: serverTimestamp() });
-    // Оновлюємо лічильник протоколів на плитці об'єкту
-    await updateDoc(doc(db,'users',uid,'projects',currentProject.id), { meetingsCount: increment(1) });
+    await updateDoc(doc(db,'users',uid,'projects',projId), { meetingsCount: increment(1) });
     closeModal('modal-meeting'); showToast(`✅ Протокол №${number} створено`); loadMeetings();
   } catch(e) { showToast('Помилка збереження'); }
 };
@@ -2546,12 +2550,13 @@ window.testControlCheck = async function() {
 async function checkDailyControl() {
   const today = new Date().toISOString().slice(0, 10);
   const lastCheck = localStorage.getItem('cp_control_check');
-  if (lastCheck === today) return; // вже перевіряли сьогодні
+  if (lastCheck === today) return;
 
   try {
     const uid = currentUser.uid;
     const projSnap = await getDocs(collection(db,'users',uid,'projects'));
     const controlled = [];
+    showToast('Проектів: ' + projSnap.size, 3000);
 
     for (const p of projSnap.docs) {
       const mSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings'));
@@ -2574,12 +2579,11 @@ async function checkDailyControl() {
     }
 
     localStorage.setItem('cp_control_check', today);
+    showToast('На контролі: ' + controlled.length, 3000);
 
     if (controlled.length === 0) return;
-
-    // Показуємо банер
     showControlBanner(controlled);
-  } catch(e) { console.warn('Control check error:', e); }
+  } catch(e) { showToast('Помилка: ' + e.message, 5000); }
 }
 
 function showControlBanner(items) {
