@@ -22,7 +22,7 @@ background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px;
 box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 .tile {
-border-radius: 12px; padding: 20px; color: white; min-height: 140px;
+border-radius: 12px; padding: 20px; min-height: 140px;
 display: flex; flex-direction: column; justify-content: space-between;
 cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
@@ -38,11 +38,9 @@ width: 100%; padding: 10px; margin: 6px 0; border: 1px solid #ccc; border-radius
 table { width: 100%; border-collapse: collapse; margin: 12px 0; }
 th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
 th { background: #f8fafc; }
-.control-btn { background: none; border: none; font-size: 20px; cursor: pointer; }
-.delete-btn { color: #dc2626; }
 </style>
 
-<!-- Firebase -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
@@ -52,8 +50,6 @@ th { background: #f8fafc; }
 </head>
 <body>
 <div class="page">
-
-<!-- ==================== SCREENS ==================== -->
 
 <!-- Loader -->
 <div id="screen-loader">
@@ -68,7 +64,7 @@ th { background: #f8fafc; }
 <!-- Auth -->
 <div id="screen-auth" class="hidden">
 <div class="card" style="max-width:420px;margin:80px auto 0;">
-<h2 style="text-align:center;margin-bottom:20px;">Вхід</h2>
+<h2 style="text-align:center;margin-bottom:20px;">Вхід в систему</h2>
 <input type="email" id="auth-email" placeholder="Email" autocomplete="email"><br>
 <input type="password" id="auth-pass" placeholder="Пароль"><br><br>
 <button onclick="login()" style="width:100%;padding:14px;background:#1e3a5f;color:white;border:none;border-radius:8px;font-size:16px;">Увійти</button>
@@ -76,7 +72,7 @@ th { background: #f8fafc; }
 </div>
 </div>
 
-<!-- Home (Projects) -->
+<!-- Home -->
 <div id="screen-home" class="hidden">
 <header>
 <h1>Об'єкти</h1>
@@ -86,11 +82,11 @@ th { background: #f8fafc; }
 <button class="fab" onclick="createProject()">+</button>
 </div>
 
-<!-- Project Screen -->
+<!-- Project -->
 <div id="screen-project" class="hidden">
 <header id="project-header">
 <button class="back-btn" onclick="goBack()">←</button>
-<div>
+<div style="flex:1">
 <h2 id="project-name"></h2>
 <small id="project-address"></small>
 </div>
@@ -100,7 +96,7 @@ th { background: #f8fafc; }
 <button class="fab" onclick="createMeeting()">+</button>
 </div>
 
-<!-- Meeting Screen -->
+<!-- Meeting -->
 <div id="screen-meeting" class="hidden">
 <header id="meeting-header">
 <button class="back-btn" onclick="goBack()">←</button>
@@ -110,43 +106,21 @@ th { background: #f8fafc; }
 <button onclick="openMeetingSettings()" style="background:none;border:none;color:white;font-size:24px;">⚙️</button>
 </header>
 
+<button onclick="goToPrint()" style="width:100%;padding:12px;background:#1e3a5f;color:white;border:none;border-radius:8px;margin:8px 0;">📄 Друк / PDF</button>
+
+<!-- Пункти, учасники, додатки — будуть розширені пізніше -->
 <div class="card">
-<button onclick="showControl()" style="background:#eab308;color:black;padding:8px 16px;border:none;border-radius:6px;">Контроль</button>
+<p><strong>Функціонал протоколу</strong> — в процесі реалізації</p>
+</div>
 </div>
 
-<!-- Items -->
-<h3>Пункти</h3>
-<table id="items-table">
-<thead><tr><th>#</th><th>Питання</th><th>Виконавець</th><th>Рішення</th><th></th></tr></thead>
-<tbody id="items-body"></tbody>
-</table>
-
-<button onclick="addItem()" style="width:100%;padding:12px;background:#2563eb;color:white;border:none;border-radius:8px;margin:12px 0;">+ Додати пункт</button>
-
-<!-- Attendees -->
-<h3>Учасники</h3>
-<table id="attendees-table">
-<thead><tr><th>#</th><th>ПІБ</th><th>Посада</th><th></th></tr></thead>
-<tbody id="attendees-body"></tbody>
-</table>
-<button onclick="addAttendee()" style="width:100%;padding:12px;background:#64748b;color:white;border:none;border-radius:8px;margin:8px 0;">+ Учасник</button>
-
-<!-- Attachments -->
-<h3>Додатки</h3>
-<input type="file" id="file-input" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt" style="display:none" onchange="uploadAttachment(event)">
-<button onclick="document.getElementById('file-input').click()" style="width:100%;padding:12px;background:#16a34a;color:white;border:none;border-radius:8px;">+ Додати файл</button>
-<div id="attachments-list" style="margin-top:12px;"></div>
-
-<button onclick="goToPrint()" style="margin-top:20px;width:100%;padding:14px;background:#1e3a5f;color:white;border:none;border-radius:8px;font-size:16px;">📄 Перейти до друку / PDF</button>
-</div>
-
-<!-- Print Screen -->
+<!-- Print -->
 <div id="screen-print" class="hidden">
 <header>
 <button class="back-btn" onclick="goBack()">←</button>
-<h2>Друк протоколу</h2>
+<h2>Попередній перегляд</h2>
 </header>
-<div id="print-preview" style="background:white;padding:20px;border:1px solid #ddd;min-height:600px;"></div>
+<div id="print-preview" style="background:white; padding:30px; border:1px solid #ddd; min-height:70vh;"></div>
 <button onclick="printDocument()" style="margin-top:12px;width:100%;padding:14px;background:#1e3a5f;color:white;">🖨 Друкувати</button>
 <button onclick="savePDF()" style="margin-top:8px;width:100%;padding:14px;background:#16a34a;color:white;">💾 Зберегти PDF</button>
 </div>
@@ -154,9 +128,9 @@ th { background: #f8fafc; }
 </div>
 
 <script>
-// ==================== CONFIG ====================
+// ==================== FIREBASE CONFIG ====================
 const firebaseConfig = {
-apiKey: 1:756000624671:web:55a70d705b332dcc4f452a, // ← Заміни на свій
+apiKey: "ТУТ_ВСТАВТЕ_ВАШ_API_KEY", // ←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←←
 authDomain: "control-point-app.firebaseapp.com",
 projectId: "control-point-app",
 storageBucket: "control-point-app.firebasestorage.app",
@@ -164,6 +138,7 @@ messagingSenderId: "756000624671",
 appId: "1:756000624671:web:55a70d705b332dcc4f452a"
 };
 
+// Ініціалізація
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
@@ -172,19 +147,6 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 let currentUser = null;
 let currentProjectId = null;
 let currentMeetingId = null;
-let currentColorIdx = 0;
-
-// Colors
-const colors = [
-{bg:"#DBEAFE", text:"#1E3A8A", accent:"#3B82F6"},
-{bg:"#F3E8FF", text:"#581C87", accent:"#A855F7"},
-{bg:"#DCFCE7", text:"#14532D", accent:"#22C55E"},
-{bg:"#FEF9C3", text:"#78350F", accent:"#CA8A04"},
-{bg:"#FFE4E6", text:"#881337", accent:"#F43F5E"},
-{bg:"#CCFBF1", text:"#134E4A", accent:"#14B8A6"},
-{bg:"#FEE2E2", text:"#7F1D1D", accent:"#EF4444"},
-{bg:"#E0E7FF", text:"#312E81", accent:"#6366F1"}
-];
 
 // ==================== AUTH ====================
 auth.onAuthStateChanged(user => {
@@ -201,29 +163,39 @@ async function login() {
 const email = document.getElementById('auth-email').value.trim();
 const pass = document.getElementById('auth-pass').value;
 try { await auth.signInWithEmailAndPassword(email, pass); }
-catch(e) { alert(e.message); }
+catch(e) { alert("Помилка: " + e.message); }
 }
 
 async function register() {
 const email = document.getElementById('auth-email').value.trim();
 const pass = document.getElementById('auth-pass').value;
 try { await auth.createUserWithEmailAndPassword(email, pass); }
-catch(e) { alert(e.message); }
+catch(e) { alert("Помилка: " + e.message); }
 }
 
 function logout() { auth.signOut(); }
 
 // ==================== SCREENS ====================
 function showScreen(id) {
-document.querySelectorAll('.hidden').forEach(el => el.classList.add('hidden'));
+document.querySelectorAll('div[id^="screen-"]').forEach(screen => {
+screen.classList.add('hidden');
+});
 document.getElementById(id).classList.remove('hidden');
 }
 
 // ==================== PROJECTS ====================
 async function loadProjects() {
 const container = document.getElementById('projects-list');
-container.innerHTML = '';
+container.innerHTML = '<p>Завантаження об’єктів...</p>';
+
+try {
 const snap = await db.collection(`users/${currentUser.uid}/projects`).orderBy('createdAt').get();
+container.innerHTML = '';
+
+if (snap.empty) {
+container.innerHTML = '<p style="text-align:center; padding:40px; color:#64748b;">Поки немає об’єктів.<br>Натисніть "+" щоб створити перший.</p>';
+return;
+}
 
 snap.forEach(doc => {
 const p = doc.data();
@@ -232,99 +204,79 @@ const div = document.createElement('div');
 div.className = 'tile';
 div.style.background = color.bg;
 div.style.color = color.text;
-div.innerHTML = `<strong>${p.name}</strong><small>${p.address||''}</small>`;
+div.innerHTML = `<strong>${p.name}</strong><small>${p.address || ''}</small>`;
 div.onclick = () => openProject(doc.id, p);
 container.appendChild(div);
 });
+} catch(e) {
+console.error(e);
+container.innerHTML = '<p style="color:red">Помилка завантаження</p>';
 }
+}
+
+const colors = [
+{bg:"#DBEAFE", text:"#1E3A8A"}, {bg:"#F3E8FF", text:"#581C87"},
+{bg:"#DCFCE7", text:"#14532D"}, {bg:"#FEF9C3", text:"#78350F"},
+{bg:"#FFE4E6", text:"#881337"}, {bg:"#CCFBF1", text:"#134E4A"},
+{bg:"#FEE2E2", text:"#7F1D1D"}, {bg:"#E0E7FF", text:"#312E81"}
+];
 
 async function createProject() {
 const name = prompt("Назва об'єкту:");
 if (!name) return;
-const address = prompt("Адреса:");
+const address = prompt("Адреса об'єкту:") || "";
+
 const projectData = {
-name, address,
+name,
+address,
 officialName: name,
-colorIdx: Math.floor(Math.random()*8),
+colorIdx: Math.floor(Math.random() * 8),
 createdAt: firebase.firestore.FieldValue.serverTimestamp()
 };
+
 const ref = await db.collection(`users/${currentUser.uid}/projects`).add(projectData);
 openProject(ref.id, projectData);
 }
 
-// ==================== PROJECT & MEETING ====================
-let currentProjectData = {};
-
 function openProject(id, data) {
 currentProjectId = id;
-currentProjectData = data;
 document.getElementById('project-name').textContent = data.name;
 document.getElementById('project-address').textContent = data.address || '';
 showScreen('screen-project');
-loadMeetings();
 }
 
-async function loadMeetings() {
-// Реалізація за аналогією з loadProjects (скорочено для прикладу)
-console.log("Завантаження протоколів...");
-// Повна реалізація — за запитом
+// ==================== MEETING & PRINT ====================
+function createMeeting() {
+alert("Створення протоколу — буде реалізовано в наступній ітерації");
 }
 
-async function createMeeting() {
-if (!currentProjectId) return;
-const number = prompt("Номер протоколу:", "1");
-const location = prompt("Місце проведення:", "Конференц-зал");
-const meetingData = {
-number: parseInt(number),
-location,
-date: firebase.firestore.FieldValue.serverTimestamp(),
-status: 'draft',
-createdAt: firebase.firestore.FieldValue.serverTimestamp()
-};
-const ref = await db.collection(`users/${currentUser.uid}/projects/${currentProjectId}/meetings`).add(meetingData);
-openMeeting(ref.id);
-}
-
-function openMeeting(id) {
-currentMeetingId = id;
-showScreen('screen-meeting');
-// loadItems(), loadAttendees() тощо
-console.log("Відкрито протокол", id);
-}
-
-// ==================== PDF ====================
-async function savePDF() {
-const { jsPDF } = window.jspdf;
-const doc = new jsPDF();
-doc.text("Протокол наради", 20, 20);
-doc.save(`Протокол_${currentMeetingId || 'test'}.pdf`);
-}
-
-function printDocument() {
-window.print();
-}
+function openMeetingSettings() { alert("Налаштування протоколу"); }
+function openProjectSettings() { alert("Налаштування об'єкту"); }
 
 function goToPrint() {
 showScreen('screen-print');
+document.getElementById('print-preview').innerHTML = `<h2>Протокол №...</h2><p>Попередній перегляд буде тут</p>`;
 }
 
-// ==================== UTILS ====================
+function printDocument() { window.print(); }
+
+async function savePDF() {
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF();
+doc.setFont("helvetica", "bold");
+doc.text("Control Point Protocol", 20, 20);
+doc.save("Протокол.pdf");
+}
+
 function goBack() {
-if (document.getElementById('screen-meeting').classList.contains('hidden') === false) {
+if (!document.getElementById('screen-meeting').classList.contains('hidden')) {
 showScreen('screen-project');
-} else if (document.getElementById('screen-project').classList.contains('hidden') === false) {
+} else if (!document.getElementById('screen-project').classList.contains('hidden')) {
 showScreen('screen-home');
 }
 }
 
-function addItem() { alert("Додавання пункту — буде реалізовано"); }
-function addAttendee() { alert("Додавання учасника"); }
-function uploadAttachment(e) { alert("Завантаження файлу"); }
-function openProjectSettings() { alert("Налаштування об'єкту"); }
-function openMeetingSettings() { alert("Операції з протоколом"); }
-function showControl() { alert("Перегляд контролю"); }
-
-// PWA Manifest (inline)
+// PWA Manifest
 const manifest = {
 name: "ПРОТОКОЛ",
 short_name: "ПРОТОКОЛ",
@@ -339,7 +291,7 @@ link.rel = 'manifest';
 link.href = 'data:application/json,' + encodeURIComponent(JSON.stringify(manifest));
 document.head.appendChild(link);
 
-console.log("%cControl Point Protocol v17d — запущений", "color:#2563eb;font-weight:bold");
+console.log("%cControl Point Protocol v17d — готовий до роботи", "color:#2563eb; font-weight:bold");
 </script>
 </body>
 </html>
