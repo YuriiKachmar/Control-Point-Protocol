@@ -102,6 +102,12 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.15); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
+/* ══ GLOBAL SPINNER ══ */
+#global-spinner { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.25); z-index:9999; align-items:center; justify-content:center; }
+#global-spinner.active { display:flex; }
+#global-spinner .spin-box { width:56px; height:56px; background:rgba(30,58,95,0.9); border-radius:16px; display:flex; align-items:center; justify-content:center; }
+#global-spinner .spin-box .spin { width:28px; height:28px; border:3px solid rgba(255,255,255,0.2); border-top-color:white; border-radius:50%; animation:spin 0.7s linear infinite; }
+
 /* ══ AUTH ══ */
 #screen-auth { background: linear-gradient(160deg, #1e3a5f 0%, #0f2744 60%, #1a1a2e 100%); align-items: center; justify-content: center; padding: 32px 24px; overflow-y: auto; }
 .auth-logo { text-align: center; margin-bottom: 40px; }
@@ -844,6 +850,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   </div>
 </div>
 
+<!-- GLOBAL SPINNER -->
+<div id="global-spinner"><div class="spin-box"><div class="spin"></div></div></div>
+
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence }
@@ -898,6 +907,9 @@ window.showScreen = function(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 };
+
+function showSpinner() { document.getElementById('global-spinner').classList.add('active'); }
+function hideSpinner() { document.getElementById('global-spinner').classList.remove('active'); }
 window.showToast = function(msg, dur = 2500) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -1060,17 +1072,9 @@ async function loadMeetings(projId) {
 
     for (const d of snap.docs) {
       if (aborted || !currentProject || currentProject.id !== projId) return;
-      const m = d.data();
-      // Використовуємо збережений лічильник або запитуємо через where
-      let ctrl = m.controlCount || 0;
-      if (!ctrl) {
-        const iSnap = await getDocs(query(
-          collection(db,'users',uid,'projects',projId,'meetings',d.id,'items'),
-          where('control','==',true)
-        ));
-        if (aborted) return;
-        ctrl = iSnap.size;
-      }
+      const m    = d.data();
+      // Використовуємо збережений лічильник — без зайвого запиту
+      const ctrl = m.controlCount || 0;
 
       const card = document.createElement('div');
       card.className = 'meeting-card';
@@ -1144,6 +1148,7 @@ async function saveMeeting(projId) {
 
 // ── MEETING SCREEN ──
 async function openMeeting(id, data) {
+  showSpinner();
   currentMeeting = { id, ...data };
   const palette = currentProject.palette || { bg:'#2D2D2D', text:'#fff', sub:'#aaa' };
   const h = document.getElementById('meeting-header');
@@ -1163,12 +1168,12 @@ async function openMeeting(id, data) {
   await loadItemsLocal();
   await loadAttendeesLocal();
   await loadAttachmentsLocal();
-  // Перевіряємо що поточний протокол не змінився під час завантаження
-  if (!currentMeeting || currentMeeting.id !== id) return;
+  if (!currentMeeting || currentMeeting.id !== id) { hideSpinner(); return; }
   _deletingAttIdx = null;
   renderItems();
   renderAttendees();
   renderAttachments();
+  hideSpinner();
   showScreen('screen-meeting');
 }
 
@@ -1922,7 +1927,9 @@ window.deleteExecutor = async function(idx) {
 let _printHTML = '';
 
 window.openSendScreen = async function() {
+  showSpinner();
   await printMeeting();
+  hideSpinner();
 };
 
 window.printMeeting = async function() {
