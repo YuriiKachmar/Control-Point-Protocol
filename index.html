@@ -442,7 +442,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
 /* ══ ВИПАДАЮЧИЙ СПИСОК ВИКОНАВЦІВ ══ */
 .executor-wrap { position: relative; width: 100%; }
-.executor-wrap input { width: 100%; font-size: 16px; }
+.executor-wrap textarea { width: 100%; font-size: 16px; font-family: 'Arsenal', Arial, sans-serif; border: none; background: transparent; outline: none; resize: none; line-height: 1.4; color: #1e293b; min-height: 28px; }
 .executor-dropdown {
   position: fixed;
   background: white; border: 1.5px solid #2563eb;
@@ -1365,7 +1365,7 @@ function renderItems() {
         <div class="item-cell"><textarea placeholder="Опис питання...">${esc(item.description||'')}</textarea></div>
         <div class="item-cell">
           <div class="executor-wrap">
-            <input type="text" class="executor-input" value="${esc(item.executor||'')}" placeholder="Виконавець..." autocomplete="off">
+            <textarea class="executor-input" placeholder="Виконавець..." autocomplete="off" rows="1" style="resize:none;overflow:hidden;">${esc(item.executor||'')}</textarea>
             <div class="executor-dropdown" style="display:none;"></div>
           </div>
         </div>
@@ -1397,6 +1397,10 @@ function renderItems() {
         }
         // Підключаємо dropdown для виконавця
         const execInput = row.querySelector('.executor-input');
+        // Auto-resize textarea
+        const autoResize = (el) => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; };
+        execInput.addEventListener('input', () => autoResize(execInput));
+        setTimeout(() => autoResize(execInput), 10);
         const dropdown  = row.querySelector('.executor-dropdown');
         if (!execInput || !dropdown) return;
 
