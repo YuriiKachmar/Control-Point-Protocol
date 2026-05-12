@@ -2166,18 +2166,36 @@ window.printMeeting = async function() {
       y += rowH;
 
       localItems.forEach((it, ri) => {
-        if (ri%2===1) { pdf.setFillColor(248,248,248); pdf.rect(lM,y,w,rowH,'F'); }
         pdf.setFontSize(9); pdf.setFont('Arsenal','normal');
         const cells = [String(it.number||''), it.description||'', it.executor||'', it.decision||'', it.note||''];
-        cells.forEach((cell,i) => {
-          // Беремо перший рядок (до \n) і wrap по ширині
-          const firstLine = cell.split('\n')[0];
-          const txt = pdf.splitTextToSize(firstLine, cols[i]-3);
-          pdf.text(txt[0]||'', colX[i]+2, y+5.5);
+
+        // Розраховуємо всі рядки для кожної комірки з урахуванням \n
+        const allLines = cells.map((cell, i) => {
+          const lines = [];
+          cell.split('\n').forEach(para => {
+            pdf.splitTextToSize(para||' ', cols[i]-3).forEach(l => lines.push(l));
+          });
+          return lines;
         });
+
+        // Висота рядка = максимальна кількість рядків * лінійний інтервал
+        const lineH = 9 * 0.42;
+        const maxLines = Math.max(...allLines.map(l => l.length));
+        const dynRowH = Math.max(8, maxLines * lineH + 3);
+
+        if (y + dynRowH > pageH - 15) { pdf.addPage(); y = tM; }
+
+        if (ri%2===1) { pdf.setFillColor(248,248,248); pdf.rect(lM,y,w,dynRowH,'F'); }
+
+        allLines.forEach((lines, i) => {
+          lines.forEach((l, li) => {
+            pdf.text(l, colX[i]+2, y + 5 + li * lineH);
+          });
+        });
+
         pdf.setDrawColor(200,200,200);
-        pdf.rect(lM, y, w, rowH);
-        y += rowH;
+        pdf.rect(lM, y, w, dynRowH);
+        y += dynRowH;
       });
       y += 6;
 
