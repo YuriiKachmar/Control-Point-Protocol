@@ -2729,7 +2729,6 @@ function showControlModal(items, title) {
 // ══════════════════════════════════════════
 async function sendWhatsAppReminder(item) {
   try {
-    // Шукаємо виконавця по імені в поточному проекті
     const uid  = currentUser.uid;
     const pid  = currentProject.id;
     const snap = await getDocs(collection(db,'users',uid,'projects',pid,'executors'));
@@ -2737,22 +2736,24 @@ async function sendWhatsAppReminder(item) {
     snap.forEach(d => {
       const ex = d.data();
       if (ex.name && ex.name.trim() === item.executor.trim() && ex.phone) {
-        phone = ex.phone.replace(/\D/g,''); // тільки цифри
+        phone = ex.phone.replace(/\D/g,'');
       }
     });
 
-    if (!phone) {
-      showToast('Номер телефону виконавця не знайдено');
-      return;
-    }
-
-    // Додаємо код країни якщо немає
+    if (!phone) { showToast('Номер телефону виконавця не знайдено'); return; }
     if (!phone.startsWith('38') && phone.length === 10) phone = '38' + phone;
 
     const projectName = currentProject.officialName || currentProject.name || '';
     const text = `Нагадування щодо об'єкту: ${projectName}\nПротокол №${item.meetingNum}\nПункт: ${item.description}${item.decision ? '\nРішення: ' + item.decision : ''}`;
     const url  = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+
+    // На мобільному використовуємо location для обходу блокування popup
+    const isTouch = navigator.maxTouchPoints > 0;
+    if (isTouch) {
+      window.location.href = url;
+    } else {
+      window.open(url, '_blank');
+    }
   } catch(e) {
     showToast('Помилка: ' + e.message);
     console.error(e);
