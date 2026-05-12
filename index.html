@@ -1022,8 +1022,7 @@ async function loadProjects() {
     const p = d.data();
     const colorIdx = p.colorIdx !== undefined ? p.colorIdx : idx;
     const palette  = TILE_COLORS[colorIdx % TILE_COLORS.length];
-    const mSnap = await getDocs(collection(db,'users',uid,'projects',d.id,'meetings'));
-    const count = mSnap.size;
+    const count = p.meetingsCount || 0;
     const tile = document.createElement('div');
     tile.className = 'project-tile';
     tile.style.background = palette.bg;
