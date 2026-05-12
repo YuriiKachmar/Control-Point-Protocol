@@ -2635,7 +2635,7 @@ window.showAllControlScreen = async function() {
     const iSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',m.id,'items'));
     iSnap.forEach(i => {
       const d = i.data();
-      if (d.control) controlled.push({ ...d, meetingNum: m.data().number, meetingId: m.id });
+      if (d.control) controlled.push({ ...d, meetingNum: m.data().number, meetingDate: formatDateFull(m.data().date), meetingId: m.id });
     });
   }
   showControlModal(controlled, `Контроль — всі протоколи (${controlled.length})`);
@@ -2643,7 +2643,12 @@ window.showAllControlScreen = async function() {
 
 // Контроль — поточний протокол
 window.showControlScreen = function() {
-  const controlled = localItems.filter(it => it.control);
+  const meetingDate = formatDateFull(currentMeeting.date);
+  const controlled = localItems.filter(it => it.control).map(it => ({
+    ...it,
+    meetingNum:  currentMeeting.number,
+    meetingDate: meetingDate
+  }));
   showControlModal(controlled, `Контроль — Протокол № ${currentMeeting.number} (${controlled.length})`);
 };
 
@@ -2700,23 +2705,19 @@ function showControlModal(items, title) {
   const { addRow, addCloseBtn } = createModal(title, ctrlSVG);
   items.forEach(it => {
     const prefix   = it.meetingNum ? 'Протокол №' + it.meetingNum + ' · ' : '';
-    const execLine = it.executor ? '<div style="font-size:11px;color:#6B6B6B;margin-top:1px;">' + esc(it.executor) + '</div>' : '';
-    const row = addRow(
-      '<div style="font-size:9px;color:#C17058;font-weight:700;">' + prefix + 'Пункт ' + it.number + '</div>' +
-      '<div style="font-size:12px;font-weight:700;color:#2D2D2D;margin-top:2px;">' + esc(it.description||'—') + '</div>' +
-      execLine +
-      (it.executor ? '<div class="ctrl-wa-btn" style="margin-top:6px;"></div>' : '')
+    const row = addRow(`
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:9px;color:#C17058;font-weight:700;">${prefix}Пункт ${it.number}</div>
+          <div style="font-size:12px;font-weight:700;color:#2D2D2D;margin-top:2px;">${esc(it.description||'—')}</div>
+          ${it.executor ? `<div style="font-size:11px;color:#6B6B6B;margin-top:1px;">${esc(it.executor)}</div>` : ''}
+        </div>
+        ${it.executor ? `<button class="ctrl-wa-btn" style="flex-shrink:0;background:#25d366;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:13px;height:13px;vertical-align:middle;margin-right:3px;">Нагадати</button>` : ''}
+      </div>`
     );
-    // Кнопка WhatsApp
     if (it.executor) {
-      const waWrap = row.querySelector('.ctrl-wa-btn');
-      if (waWrap) {
-        const waBtn = document.createElement('button');
-        waBtn.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;">Нагадати';
-        waBtn.style.cssText = 'background:#25d366;color:white;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;';
-        waBtn.onclick = () => sendWhatsAppReminder(it);
-        waWrap.appendChild(waBtn);
-      }
+      const waBtn = row.querySelector('.ctrl-wa-btn');
+      if (waBtn) waBtn.onclick = () => sendWhatsAppReminder(it);
     }
   });
   addCloseBtn();
@@ -2743,8 +2744,9 @@ async function sendWhatsAppReminder(item) {
     if (!phone) { showToast('Номер телефону виконавця не знайдено'); return; }
     if (!phone.startsWith('38') && phone.length === 10) phone = '38' + phone;
 
-    const projectName = currentProject.officialName || currentProject.name || '';
-    const text = `Нагадування щодо об'єкту: ${projectName}\nПротокол №${item.meetingNum}\nПункт: ${item.description}${item.decision ? '\nРішення: ' + item.decision : ''}`;
+    const projectName = currentProject.name || '';
+    const date = item.meetingDate ? `\nДата протоколу: ${item.meetingDate}` : '';
+    const text = `Нагадування. Об'єкт - "${projectName}".\n${item.description}${item.decision ? '. ' + item.decision : ''}.\nПункт ${item.number}, Протокол №${item.meetingNum}${date}`;
     const url  = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 
     // На мобільному використовуємо location для обходу блокування popup
