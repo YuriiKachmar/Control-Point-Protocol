@@ -101,7 +101,6 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .loader-text { color: rgba(255,255,255,0.6); font-size: 15px; }
 .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.15); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
 
 /* ══ GLOBAL SPINNER ══ */
 #global-spinner { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.25); z-index:9999; align-items:center; justify-content:center; }
@@ -323,8 +322,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 #protocol-doc .att-section { margin-top:16px; padding-top:10px; border-top:1px solid #e5e7eb; }
 #protocol-doc .att-title { font-weight:700; font-size:9.5pt; margin-bottom:4px; }
 #protocol-doc .sig-title { font-weight:700; font-size:9.5pt; margin-bottom:8px; }
-#protocol-doc .sig-row { display:flex; align-items:flex-end; gap:8px; padding:4px 0; }
-#protocol-doc .sig-row:last-child { }
+#protocol-doc .sig-row { display:flex; align-items:flex-end; gap:8px; padding:7px 0; border-bottom:1px solid #eee; }
+#protocol-doc .sig-row:last-child { border-bottom:none; }
 #protocol-doc .sig-name-wrap { flex:1; }
 #protocol-doc .sig-name { font-weight:700; font-size:9.5pt; }
 #protocol-doc .sig-role { color:#555; font-size:8pt; }
@@ -482,9 +481,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 100; align-items: center; justify-content: center; padding: 24px; }
 .modal-overlay.active { display: flex; }
-.modal { background: white; border-radius: 20px; border: 3px solid #1e3a5f; padding: 0; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; overflow-x: hidden; }
-.modal-title { font-size: 17px; font-weight: 700; color: #1e3a5f; margin: 0; padding: 16px 20px; background: #93c5fd; text-align: center; border-radius: 16px 16px 0 0; }
-.modal-body { padding: 20px 22px 16px; }
+.modal { background: white; border-radius: 20px; padding: 28px 22px; width: 100%; max-width: 480px; max-height: 90vh; overflow-y: auto; }
+.modal-title { font-size: 18px; font-weight: 700; color: #1e3a5f; margin-bottom: 20px; text-align: center; }
 .modal-input { width: 100%; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: inherit; color: #1a1a2e; outline: none; margin-bottom: 12px; user-select: text; }
 .modal-input:focus { border-color: #2563eb; }
 .modal-btn { width: 100%; padding: 13px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer; margin-bottom: 8px; }
@@ -873,12 +871,10 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div class="modal-overlay" id="modal-project" onclick="handleModalClick(event,'modal-project')">
   <div class="modal">
     <div class="modal-title">Додати новий об'єкт</div>
-    <div class="modal-body">
-      <input class="modal-input" id="new-project-name" placeholder="Назва об'єкту" type="text">
-      <input class="modal-input" id="new-project-address" placeholder="Адреса" type="text">
-      <button id="btn-save-project" class="modal-btn modal-btn-primary" onclick="saveProject()">Зберегти</button>
-      <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-project')">Скасувати</button>
-    </div>
+    <input class="modal-input" id="new-project-name" placeholder="Назва об'єкту" type="text">
+    <input class="modal-input" id="new-project-address" placeholder="Адреса" type="text">
+    <button id="btn-save-project" class="modal-btn modal-btn-primary" onclick="saveProject()">Зберегти</button>
+    <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-project')">Скасувати</button>
   </div>
 </div>
 
@@ -886,11 +882,9 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div class="modal-overlay" id="modal-meeting" onclick="handleModalClick(event,'modal-meeting')">
   <div class="modal">
     <div class="modal-title">Додати новий протокол</div>
-    <div class="modal-body">
-      <input class="modal-input" id="new-meeting-location" placeholder="Місце проведення (необов'язково)" type="text">
-      <button id="btn-create-meeting" class="modal-btn modal-btn-primary">Створити протокол</button>
-      <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-meeting')">Скасувати</button>
-    </div>
+    <button id="btn-create-meeting" class="modal-btn modal-btn-primary">Створити протокол</button>
+    <input class="modal-input" id="new-meeting-location" placeholder="Місце проведення (необов'язково)" type="text">
+    <button class="modal-btn modal-btn-cancel" onclick="closeModal('modal-meeting')">Скасувати</button>
   </div>
 </div>
 
@@ -2219,7 +2213,9 @@ window.printMeeting = async function() {
         pdf.line(lM+125, y+1, lM+155, y+1);
         pdf.text('дата', lM+130, y-1);
         pdf.setTextColor(0,0,0);
-        y += 10;
+        pdf.setDrawColor(200,200,200);
+        pdf.line(lM, y+6, pageW-rM, y+6);
+        y += 14;
       });
 
       // Список додатків
@@ -2529,19 +2525,19 @@ function askDescription(fileName) {
     const { box, addCloseBtn, close } = createModal('Опис додатку', '📎 ');
 
     const fileLabel = document.createElement('div');
-    fileLabel.style.cssText = 'font-size:12px;color:#64748b;margin-bottom:10px;';
+    fileLabel.style.cssText = 'font-size:12px;color:#6B6B6B;margin-bottom:10px;';
     fileLabel.textContent = fileName;
     box.appendChild(fileLabel);
 
     const input = document.createElement('input');
     input.type = 'text';
     input.placeholder = 'Введіть опис (необов\'язково)...';
-    input.style.cssText = `width:100%;padding:11px 12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;font-family:'Arsenal',Arial,sans-serif;outline:none;color:#1a1a2e;margin-bottom:10px;box-sizing:border-box;`;
+    input.style.cssText = `width:100%;padding:11px 12px;border:1px solid #EBEBEB;border-radius:10px;font-size:14px;font-family:'Arsenal',Arial,sans-serif;outline:none;color:#2D2D2D;margin-bottom:10px;`;
     box.appendChild(input);
 
     const saveBtn = document.createElement('button');
     saveBtn.textContent = 'Зберегти';
-    saveBtn.style.cssText = `width:100%;padding:13px;border-radius:12px;border:none;background:#2563eb;color:white;font-size:15px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;margin-bottom:8px;`;
+    saveBtn.style.cssText = `width:100%;padding:12px;border-radius:10px;border:none;background:#2D2D2D;color:white;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;margin-bottom:8px;`;
     saveBtn.addEventListener('click', () => { close(); resolve(input.value.trim()); });
     box.appendChild(saveBtn);
 
@@ -2644,18 +2640,13 @@ window.showControlScreen = function() {
 // ── ЄДИНА ФУНКЦІЯ МОДАЛКИ ──
 function createModal(title, iconHTML = '') {
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:16px;';
   const box = document.createElement('div');
-  box.style.cssText = `background:white;border-radius:20px;border:3px solid #1e3a5f;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;font-family:'Arsenal',Arial,sans-serif;overflow-x:hidden;`;
-  // Заголовок — блакитний фон
+  box.style.cssText = `background:white;border-radius:20px;padding:20px;width:100%;max-width:480px;max-height:78vh;overflow-y:auto;font-family:'Arsenal',Arial,sans-serif;`;
   const hdr = document.createElement('div');
-  hdr.style.cssText = 'font-size:16px;font-weight:700;color:#1e3a5f;padding:14px 20px;background:#93c5fd;border-radius:16px 16px 0 0;display:flex;align-items:center;gap:8px;';
+  hdr.style.cssText = 'font-size:16px;font-weight:700;color:#2D2D2D;margin-bottom:14px;display:flex;align-items:center;gap:8px;';
   hdr.innerHTML = iconHTML + esc(title);
   box.appendChild(hdr);
-  // Тіло вікна
-  const body = document.createElement('div');
-  body.style.cssText = 'padding:16px 20px;';
-  box.appendChild(body);
   overlay.appendChild(box);
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.documentElement.appendChild(overlay);
@@ -2663,9 +2654,9 @@ function createModal(title, iconHTML = '') {
   function addCloseBtn(label = 'Закрити') {
     const btn = document.createElement('button');
     btn.textContent = label;
-    btn.style.cssText = `width:100%;padding:11px;margin-top:8px;border-radius:10px;border:1px solid #e2e8f0;background:#f1f5f9;color:#64748b;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
+    btn.style.cssText = `width:100%;padding:11px;margin-top:12px;border-radius:10px;border:1px solid #EBEBEB;background:#F9FAFB;color:#6B6B6B;font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
     btn.addEventListener('click', () => overlay.remove());
-    body.appendChild(btn);
+    box.appendChild(btn);
     return btn;
   }
 
@@ -2673,19 +2664,19 @@ function createModal(title, iconHTML = '') {
     const btn = document.createElement('button');
     btn.textContent = label;
     btn.style.cssText = `width:100%;padding:12px;margin-bottom:8px;border-radius:10px;border:none;background:${bg};color:${color};font-size:14px;font-weight:700;font-family:'Arsenal',Arial,sans-serif;cursor:pointer;`;
-    body.appendChild(btn);
+    box.appendChild(btn);
     return btn;
   }
 
   function addRow(html) {
     const row = document.createElement('div');
-    row.style.cssText = 'padding:8px 0;border-bottom:1px solid #f1f5f9;';
+    row.style.cssText = 'padding:8px 0;border-bottom:1px solid #EBEBEB;';
     row.innerHTML = html;
-    body.appendChild(row);
+    box.appendChild(row);
     return row;
   }
 
-  return { overlay, box: body, addCloseBtn, addActionBtn, addRow, close: () => overlay.remove() };
+  return { overlay, box, addCloseBtn, addActionBtn, addRow, close: () => overlay.remove() };
 }
 
 function showControlModal(items, title) {
@@ -2744,54 +2735,8 @@ window.leavePrintScreen = function() {
 // ── КОНТРОЛЬ — перевірка раз на добу ──
 window.testControlCheck = async function() {
   localStorage.removeItem('cp_control_check');
-  // Показуємо вікно одразу з індикатором
-  const { box, addCloseBtn } = createModal('Пункти на контролі', '🔔 ');
-  const loading = document.createElement('div');
-  loading.style.cssText = 'text-align:center;padding:20px;color:#64748b;font-size:14px;';
-  loading.textContent = '⏳ Завантаження...';
-  box.appendChild(loading);
-  addCloseBtn();
-
-  // Завантажуємо дані
-  try {
-    const uid = currentUser.uid;
-    const projSnap = await getDocs(collection(db,'users',uid,'projects'));
-    const controlled = [];
-    for (const p of projSnap.docs) {
-      const mSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings'));
-      for (const m of mSnap.docs) {
-        const iSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings',m.id,'items'));
-        iSnap.forEach(i => {
-          const data = i.data();
-          if (data.control) controlled.push({
-            projectName: p.data().name,
-            meetingNum:  m.data().number,
-            description: data.description,
-            executor:    data.executor,
-          });
-        });
-      }
-    }
-    loading.remove();
-    if (controlled.length === 0) {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'text-align:center;padding:20px;color:#64748b;font-size:14px;';
-      empty.textContent = '✅ Немає пунктів на контролі';
-      box.insertBefore(empty, box.lastChild);
-    } else {
-      controlled.forEach(it => {
-        const row = document.createElement('div');
-        row.style.cssText = 'padding:8px 0;border-bottom:1px solid #f1f5f9;';
-        row.innerHTML = `
-          <div style="font-size:10px;color:#C17058;font-weight:700;">${esc(it.projectName)} · Протокол №${it.meetingNum}</div>
-          <div style="font-size:13px;font-weight:700;color:#1e293b;margin-top:2px;">${esc(it.description||'—')}</div>
-          ${it.executor ? `<div style="font-size:11px;color:#64748b;margin-top:1px;">${esc(it.executor)}</div>` : ''}`;
-        box.insertBefore(row, box.lastChild);
-      });
-    }
-  } catch(e) {
-    loading.textContent = '❌ Помилка: ' + e.message;
-  }
+  await checkDailyControl();
+  showToast('Перевірку виконано');
 };
 
 async function checkDailyControl() {
@@ -2829,19 +2774,29 @@ async function checkDailyControl() {
 }
 
 function showControlBanner(items) {
-  const ctrlSVG = `<svg viewBox="0 0 24 24" fill="none" width="20" height="20"><circle cx="12" cy="13" r="8" stroke="#1e3a5f" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#1e3a5f" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#1e3a5f" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#1e3a5f"/></svg>`;
-  const { box, addCloseBtn } = createModal(`${items.length} пункт${items.length===1?'':items.length<5?'и':'ів'} на контролі`, ctrlSVG);
+  const banner = document.createElement('div');
+  banner.id = 'control-banner';
+  banner.style.cssText = `
+    position:fixed; top:0; left:0; right:0; z-index:300;
+    background:#1e3a5f; color:white; padding:14px 16px;
+    padding-top: max(14px, calc(env(safe-area-inset-top) + 10px));
+    box-shadow:0 4px 16px rgba(0,0,0,0.3);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  `;
+  banner.innerHTML = `
+    <div style="flex:1;">
+      <div style="font-size:14px;font-weight:700;">🔔 ${items.length} пункт${items.length > 1 ? 'и' : ''} на контролі</div>
+      <div style="font-size:11px;opacity:0.75;margin-top:2px;">${items.map(i => i.description).slice(0,2).join(' · ')}${items.length > 2 ? ' ...' : ''}</div>
+    </div>
+    <button onclick="document.getElementById('control-banner').remove()" style="
+      background:rgba(255,255,255,0.15); border:none; border-radius:8px;
+      color:white; padding:6px 12px; font-size:13px; cursor:pointer; font-family:inherit;
+    ">✕</button>
+  `;
+  document.body.appendChild(banner);
 
-  items.forEach(it => {
-    const row = document.createElement('div');
-    row.style.cssText = 'padding:8px 0;border-bottom:1px solid #f1f5f9;';
-    row.innerHTML = `
-      <div style="font-size:10px;color:#C17058;font-weight:700;">${it.projectName} · Протокол №${it.meetingNum}</div>
-      <div style="font-size:13px;font-weight:700;color:#1e293b;margin-top:2px;">${esc(it.description||'—')}</div>
-      ${it.executor ? `<div style="font-size:11px;color:#64748b;margin-top:1px;">${esc(it.executor)}</div>` : ''}`;
-    box.appendChild(row);
-  });
-  addCloseBtn('Закрити');
+  // Автоматично ховаємо через 8 секунд
+  setTimeout(() => banner?.remove(), 8000);
 }
 
 // ── BACKUP ──
