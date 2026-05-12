@@ -2215,7 +2215,7 @@ window.printMeeting = async function() {
         pdf.setTextColor(0,0,0);
         pdf.setDrawColor(200,200,200);
         pdf.line(lM, y+6, pageW-rM, y+6);
-        y += 14;
+        y += 10;
       });
 
       // Список додатків
@@ -2767,6 +2767,7 @@ async function checkDailyControl() {
     }
 
     localStorage.setItem('cp_control_check', today);
+    showToast(`На контролі: ${controlled.length}`, 4000);
     if (controlled.length === 0) return;
     showControlBanner(controlled);
   } catch(e) { console.warn('Control check error:', e); }
