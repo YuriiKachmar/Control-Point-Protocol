@@ -1223,12 +1223,12 @@ window.leaveMeeting = async function() {
   if (savedItemIdx !== null) {
     const row = document.querySelector('.item-row.active');
     if (row) {
-      const inputs = row.querySelectorAll('.item-cell input:not(.executor-input)');
+      const textareas = row.querySelectorAll('.item-cell textarea:not(.executor-input)');
       itemData = {
-        description: row.querySelector('textarea')?.value.trim() || '',
+        description: textareas[0]?.value.trim() || '',
         executor:    row.querySelector('.executor-input')?.value.trim() || '',
-        decision:    inputs[0]?.value.trim() || '',
-        note:        inputs[1]?.value.trim() || ''
+        decision:    textareas[1]?.value.trim() || '',
+        note:        textareas[2]?.value.trim() || ''
       };
     }
   }
@@ -1310,15 +1310,14 @@ async function saveActiveItem() {
   if (activeItemIdx === null) { _savingItem = false; return; }
   const row = document.querySelector('.item-row.active');
   if (!row) return;
-  const textarea = row.querySelector('textarea');
+  const textareas = row.querySelectorAll('.item-cell textarea:not(.executor-input)');
   const execInput = row.querySelector('.executor-input');
-  const inputs = row.querySelectorAll('.item-cell input:not(.executor-input)');
   const item = localItems[activeItemIdx];
   if (!item) return;
-  item.description = textarea?.value.trim() || '';
+  item.description = textareas[0]?.value.trim() || '';
   item.executor    = execInput?.value.trim() || '';
-  item.decision    = inputs[0]?.value.trim() || '';
-  item.note        = inputs[1]?.value.trim() || '';
+  item.decision    = textareas[1]?.value.trim() || '';
+  item.note        = textareas[2]?.value.trim() || '';
   // Зберігаємо в Firestore
   try {
     const uid = currentUser.uid; const pid = currentProject.id; const mid = currentMeeting.id;
@@ -1369,8 +1368,8 @@ function renderItems() {
             <div class="executor-dropdown" style="display:none;"></div>
           </div>
         </div>
-        <div class="item-cell"><input type="text" value="${esc(item.decision||'')}" placeholder="Рішення..."></div>
-        <div class="item-cell"><input type="text" value="${esc(item.note||'')}" placeholder="Примітка..."></div>
+        <div class="item-cell"><textarea placeholder="Рішення..." style="resize:none;overflow:hidden;">${esc(item.decision||'')}</textarea></div>
+        <div class="item-cell"><textarea placeholder="Примітка..." style="resize:none;overflow:hidden;">${esc(item.note||'')}</textarea></div>
         <div class="item-cell" style="padding:0;justify-content:center;">
           <button class="ctrl-btn ${item.control?'on':''}" title="На контроль"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="#1e3a5f" stroke-width="2" stroke-dasharray="3 2" stroke-linecap="round"/><path d="M9 13l2 2 4-4" stroke="#1e3a5f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#2563eb" stroke-width="2" stroke-linecap="round"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#2563eb"/></svg></button>
         </div>`;
@@ -1397,10 +1396,12 @@ function renderItems() {
         }
         // Підключаємо dropdown для виконавця
         const execInput = row.querySelector('.executor-input');
-        // Auto-resize textarea
-        const autoResize = (el) => { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; };
-        execInput.addEventListener('input', () => autoResize(execInput));
-        setTimeout(() => autoResize(execInput), 10);
+        // Auto-resize для всіх textarea в рядку
+        row.querySelectorAll('textarea').forEach(ta => {
+          const resize = () => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; };
+          ta.addEventListener('input', resize);
+          resize();
+        });
         const dropdown  = row.querySelector('.executor-dropdown');
         if (!execInput || !dropdown) return;
 
