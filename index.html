@@ -2214,8 +2214,6 @@ window.printMeeting = async function() {
         pdf.line(lM+125, y+1, lM+155, y+1);
         pdf.text('дата', lM+130, y-1);
         pdf.setTextColor(0,0,0);
-        pdf.setDrawColor(200,200,200);
-        pdf.line(lM, y+6, pageW-rM, y+6);
         y += 10;
       });
 
@@ -2798,7 +2796,7 @@ function showControlBanner(items) {
       color:white; padding:6px 12px; font-size:13px; cursor:pointer; font-family:inherit;
     ">✕</button>
   `;
-  document.body.appendChild(banner);
+  document.documentElement.appendChild(banner);
 
   // Автоматично ховаємо через 8 секунд
   setTimeout(() => banner?.remove(), 30000);
