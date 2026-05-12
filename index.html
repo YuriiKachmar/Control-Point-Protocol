@@ -2744,7 +2744,54 @@ window.leavePrintScreen = function() {
 // ── КОНТРОЛЬ — перевірка раз на добу ──
 window.testControlCheck = async function() {
   localStorage.removeItem('cp_control_check');
-  await checkDailyControl();
+  // Показуємо вікно одразу з індикатором
+  const { box, addCloseBtn } = createModal('Пункти на контролі', '🔔 ');
+  const loading = document.createElement('div');
+  loading.style.cssText = 'text-align:center;padding:20px;color:#64748b;font-size:14px;';
+  loading.textContent = '⏳ Завантаження...';
+  box.appendChild(loading);
+  addCloseBtn();
+
+  // Завантажуємо дані
+  try {
+    const uid = currentUser.uid;
+    const projSnap = await getDocs(collection(db,'users',uid,'projects'));
+    const controlled = [];
+    for (const p of projSnap.docs) {
+      const mSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings'));
+      for (const m of mSnap.docs) {
+        const iSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings',m.id,'items'));
+        iSnap.forEach(i => {
+          const data = i.data();
+          if (data.control) controlled.push({
+            projectName: p.data().name,
+            meetingNum:  m.data().number,
+            description: data.description,
+            executor:    data.executor,
+          });
+        });
+      }
+    }
+    loading.remove();
+    if (controlled.length === 0) {
+      const empty = document.createElement('div');
+      empty.style.cssText = 'text-align:center;padding:20px;color:#64748b;font-size:14px;';
+      empty.textContent = '✅ Немає пунктів на контролі';
+      box.insertBefore(empty, box.lastChild);
+    } else {
+      controlled.forEach(it => {
+        const row = document.createElement('div');
+        row.style.cssText = 'padding:8px 0;border-bottom:1px solid #f1f5f9;';
+        row.innerHTML = `
+          <div style="font-size:10px;color:#C17058;font-weight:700;">${esc(it.projectName)} · Протокол №${it.meetingNum}</div>
+          <div style="font-size:13px;font-weight:700;color:#1e293b;margin-top:2px;">${esc(it.description||'—')}</div>
+          ${it.executor ? `<div style="font-size:11px;color:#64748b;margin-top:1px;">${esc(it.executor)}</div>` : ''}`;
+        box.insertBefore(row, box.lastChild);
+      });
+    }
+  } catch(e) {
+    loading.textContent = '❌ Помилка: ' + e.message;
+  }
 };
 
 async function checkDailyControl() {
