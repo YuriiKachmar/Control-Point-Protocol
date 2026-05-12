@@ -625,7 +625,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-project" class="screen">
   <div class="app-header neutral" id="header-project">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-home')"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
+      <button class="back-btn" onclick="goHome()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     </div>
     <div style="position:absolute;left:0;right:0;text-align:center;pointer-events:none;">
       <div class="app-header-title" id="project-header-title">Усі протоколи</div>
@@ -701,7 +701,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-settings" class="screen">
   <div class="app-header neutral">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-home')"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
+      <button class="back-btn" onclick="goHome()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     </div>
     <div class="app-header-right">
       <div class="app-header-title">Налаштування загальні <img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"></div>
@@ -944,6 +944,11 @@ const TILE_COLORS = [
 window.showScreen = function(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+};
+
+window.goHome = function() {
+  loadProjects();
+  showScreen('screen-home');
 };
 
 function showSpinner() { document.getElementById('global-spinner').classList.add('active'); }
