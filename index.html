@@ -2736,7 +2736,6 @@ window.leavePrintScreen = function() {
 window.testControlCheck = async function() {
   localStorage.removeItem('cp_control_check');
   await checkDailyControl();
-  showToast('Перевірку виконано');
 };
 
 async function checkDailyControl() {
@@ -2796,7 +2795,7 @@ function showControlBanner(items) {
   document.body.appendChild(banner);
 
   // Автоматично ховаємо через 8 секунд
-  setTimeout(() => banner?.remove(), 8000);
+  setTimeout(() => banner?.remove(), 30000);
 }
 
 // ── BACKUP ──
