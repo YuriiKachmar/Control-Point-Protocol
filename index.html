@@ -101,6 +101,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .loader-text { color: rgba(255,255,255,0.6); font-size: 15px; }
 .spinner { width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.15); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto 0; }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
 
 /* ══ GLOBAL SPINNER ══ */
 #global-spinner { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.25); z-index:9999; align-items:center; justify-content:center; }
@@ -322,8 +323,8 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 #protocol-doc .att-section { margin-top:16px; padding-top:10px; border-top:1px solid #e5e7eb; }
 #protocol-doc .att-title { font-weight:700; font-size:9.5pt; margin-bottom:4px; }
 #protocol-doc .sig-title { font-weight:700; font-size:9.5pt; margin-bottom:8px; }
-#protocol-doc .sig-row { display:flex; align-items:flex-end; gap:8px; padding:7px 0; border-bottom:1px solid #eee; }
-#protocol-doc .sig-row:last-child { border-bottom:none; }
+#protocol-doc .sig-row { display:flex; align-items:flex-end; gap:8px; padding:4px 0; }
+#protocol-doc .sig-row:last-child { }
 #protocol-doc .sig-name-wrap { flex:1; }
 #protocol-doc .sig-name { font-weight:700; font-size:9.5pt; }
 #protocol-doc .sig-role { color:#555; font-size:8pt; }
@@ -2774,14 +2775,18 @@ async function checkDailyControl() {
 }
 
 function showControlBanner(items) {
+  // Видаляємо старий банер якщо є
+  document.getElementById('control-banner')?.remove();
+
   const banner = document.createElement('div');
   banner.id = 'control-banner';
   banner.style.cssText = `
-    position:fixed; top:0; left:0; right:0; z-index:300;
+    position:fixed; top:0; left:0; right:0; z-index:99999;
     background:#1e3a5f; color:white; padding:14px 16px;
     padding-top: max(14px, calc(env(safe-area-inset-top) + 10px));
     box-shadow:0 4px 16px rgba(0,0,0,0.3);
     display:flex; align-items:center; justify-content:space-between; gap:12px;
+    animation: slideDown 0.3s ease;
   `;
   banner.innerHTML = `
     <div style="flex:1;">
