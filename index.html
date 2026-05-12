@@ -2119,11 +2119,14 @@ window.printMeeting = async function() {
 
       function addLine(txt, sz=10, bold=false, align='left') {
         pdf.setFontSize(sz); pdf.setFont('Arsenal', bold?'bold':'normal');
-        const lines = pdf.splitTextToSize(String(txt||''), w);
-        lines.forEach(l => {
-          if (y > pageH-15) { pdf.addPage(); y = tM; }
-          pdf.text(l, align==='center' ? pageW/2 : lM, y, align==='center' ? {align:'center'} : {});
-          y += sz * 0.42;
+        const paragraphs = String(txt||'').split('\n');
+        paragraphs.forEach(para => {
+          const lines = pdf.splitTextToSize(para||' ', w);
+          lines.forEach(l => {
+            if (y > pageH-15) { pdf.addPage(); y = tM; }
+            pdf.text(l, align==='center' ? pageW/2 : lM, y, align==='center' ? {align:'center'} : {});
+            y += sz * 0.42;
+          });
         });
         y += 2;
       }
@@ -2167,7 +2170,9 @@ window.printMeeting = async function() {
         pdf.setFontSize(9); pdf.setFont('Arsenal','normal');
         const cells = [String(it.number||''), it.description||'', it.executor||'', it.decision||'', it.note||''];
         cells.forEach((cell,i) => {
-          const txt = pdf.splitTextToSize(cell, cols[i]-3);
+          // Беремо перший рядок (до \n) і wrap по ширині
+          const firstLine = cell.split('\n')[0];
+          const txt = pdf.splitTextToSize(firstLine, cols[i]-3);
           pdf.text(txt[0]||'', colX[i]+2, y+5.5);
         });
         pdf.setDrawColor(200,200,200);
