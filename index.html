@@ -2699,16 +2699,66 @@ function showControlModal(items, title) {
   const ctrlSVG = `<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="#C17058" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#C17058" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#C17058" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#C17058"/></svg>`;
   const { addRow, addCloseBtn } = createModal(title, ctrlSVG);
   items.forEach(it => {
-    const prefix = it.meetingNum ? 'Протокол №' + it.meetingNum + ' · ' : '';
+    const prefix   = it.meetingNum ? 'Протокол №' + it.meetingNum + ' · ' : '';
     const execLine = it.executor ? '<div style="font-size:11px;color:#6B6B6B;margin-top:1px;">' + esc(it.executor) + '</div>' : '';
-    addRow(
+    const row = addRow(
       '<div style="font-size:9px;color:#C17058;font-weight:700;">' + prefix + 'Пункт ' + it.number + '</div>' +
       '<div style="font-size:12px;font-weight:700;color:#2D2D2D;margin-top:2px;">' + esc(it.description||'—') + '</div>' +
-      execLine
+      execLine +
+      (it.executor ? '<div class="ctrl-wa-btn" style="margin-top:6px;"></div>' : '')
     );
+    // Кнопка WhatsApp
+    if (it.executor) {
+      const waWrap = row.querySelector('.ctrl-wa-btn');
+      if (waWrap) {
+        const waBtn = document.createElement('button');
+        waBtn.innerHTML = '<img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;">Нагадати';
+        waBtn.style.cssText = 'background:#25d366;color:white;border:none;border-radius:8px;padding:5px 12px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;';
+        waBtn.onclick = () => sendWhatsAppReminder(it);
+        waWrap.appendChild(waBtn);
+      }
+    }
   });
   addCloseBtn();
 }
+
+// ══════════════════════════════════════════
+// ── WHATSAPP НАГАДУВАННЯ ──
+// Відправляє нагадування виконавцю через WhatsApp
+// Щоб видалити функцію — видалити цей блок і кнопки вище
+// ══════════════════════════════════════════
+async function sendWhatsAppReminder(item) {
+  try {
+    // Шукаємо виконавця по імені в поточному проекті
+    const uid  = currentUser.uid;
+    const pid  = currentProject.id;
+    const snap = await getDocs(collection(db,'users',uid,'projects',pid,'executors'));
+    let phone  = null;
+    snap.forEach(d => {
+      const ex = d.data();
+      if (ex.name && ex.name.trim() === item.executor.trim() && ex.phone) {
+        phone = ex.phone.replace(/\D/g,''); // тільки цифри
+      }
+    });
+
+    if (!phone) {
+      showToast('Номер телефону виконавця не знайдено');
+      return;
+    }
+
+    // Додаємо код країни якщо немає
+    if (!phone.startsWith('38') && phone.length === 10) phone = '38' + phone;
+
+    const projectName = currentProject.officialName || currentProject.name || '';
+    const text = `Нагадування щодо об'єкту: ${projectName}\nПротокол №${item.meetingNum}\nПункт: ${item.description}${item.decision ? '\nРішення: ' + item.decision : ''}`;
+    const url  = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  } catch(e) {
+    showToast('Помилка: ' + e.message);
+    console.error(e);
+  }
+}
+// ══════════════════════════════════════════
 
 // ── ГЕНЕРАЦІЯ PDF ──
 function applyPreviewScale() {
