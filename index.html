@@ -966,6 +966,7 @@ window.openModal  = id => document.getElementById(id).classList.add('active');
 window.closeModal = id => document.getElementById(id).classList.remove('active');
 
 function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escNl(s) { return esc(s).replace(/\n/g,'<br>'); }
 
 function formatDateFull(ts) {
   if (!ts) return '—';
@@ -1986,10 +1987,10 @@ window.printMeeting = async function() {
     ? `<tr><td colspan="5" style="padding:10px;text-align:center;color:#999;border:1px solid #ccc;">Пунктів немає</td></tr>`
     : localItems.map((it, i) => `<tr>
         <td style="text-align:center;${i%2?'background:#f8f8f8;':''}">${it.number}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.description||'')}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.executor||'')}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.decision||'')}</td>
-        <td style="${i%2?'background:#f8f8f8;':''}">${esc(it.note||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${escNl(it.description||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${escNl(it.executor||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${escNl(it.decision||'')}</td>
+        <td style="${i%2?'background:#f8f8f8;':''}">${escNl(it.note||'')}</td>
       </tr>`).join('');
 
   const sigs = localAttendees.length === 0
