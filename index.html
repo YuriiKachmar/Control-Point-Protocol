@@ -2730,7 +2730,6 @@ async function checkDailyControl() {
     const uid = currentUser.uid;
     const projSnap = await getDocs(collection(db,'users',uid,'projects'));
     const controlled = [];
-    showToast('Проектів: ' + projSnap.size, 3000);
 
     for (const p of projSnap.docs) {
       const mSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings'));
@@ -2744,8 +2743,6 @@ async function checkDailyControl() {
               meetingNum:  m.data().number,
               description: data.description,
               executor:    data.executor,
-              projectId:   p.id,
-              meetingId:   m.id,
             });
           }
         });
@@ -2753,11 +2750,9 @@ async function checkDailyControl() {
     }
 
     localStorage.setItem('cp_control_check', today);
-    showToast('На контролі: ' + controlled.length, 3000);
-
     if (controlled.length === 0) return;
     showControlBanner(controlled);
-  } catch(e) { showToast('Помилка: ' + e.message, 5000); }
+  } catch(e) { console.warn('Control check error:', e); }
 }
 
 function showControlBanner(items) {
