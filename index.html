@@ -59,7 +59,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   font-family: inherit; white-space: nowrap; line-height: 1.4;
   color: inherit;
 }
-.icon-btn img { width: 28px; height: 28px; vertical-align: middle; display: block; }
+
 
 /* Хедер екрану 1 — темний */
 #screen-home .app-header { background: #2D2D2D; }
@@ -605,7 +605,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
   <div class="app-header neutral">
     <div class="app-header-left">
       <div>
-        <div class="app-header-title"><img src="icon-192.png">Control Point <strong>PROTOCOL</strong></div>
+        <div class="app-header-title"><img src="icon-192.png" style="width:22px;height:22px;border-radius:5px;vertical-align:middle;margin-right:6px;">Control Point <strong>PROTOCOL</strong></div>
         <div class="app-header-sub">Протоколи нарад</div>
       </div>
     </div>
@@ -628,7 +628,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-project" class="screen">
   <div class="app-header neutral" id="header-project">
     <div class="app-header-left">
-      <button class="back-btn" onclick="goHome()"><img src="icon-back.png">Назад</button>
+      <button class="back-btn" onclick="goHome()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     </div>
     <div style="position:absolute;left:0;right:0;text-align:center;pointer-events:none;">
       <div class="app-header-title" id="project-header-title">Усі протоколи</div>
@@ -636,7 +636,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     </div>
     <div class="app-header-right">
       <button class="icon-btn" onclick="showAllControlScreen()">
-        <img src="icon-control.png">
+        <img src="icon-control.png" style="width:20px;height:20px;vertical-align:middle;">
       </button>
       <button class="icon-btn" onclick="openProjectSettings()"><imgsrc="icon-settings.png"></button>
     </div>
@@ -648,7 +648,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <!-- ЕКРАН 3 — ПРОТОКОЛ -->
 <div id="screen-meeting" class="screen">
   <div id="meeting-header" class="protocol-header">
-    <button class="back-btn" onclick="leaveMeeting()"><img src="icon-back.png">Назад</button>
+    <button class="back-btn" onclick="leaveMeeting()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     <div class="protocol-header-center">
       <div class="protocol-header-num"  id="meeting-header-num">Протокол №—</div>
       <div class="protocol-header-date" id="meeting-header-date">—</div>
@@ -656,7 +656,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     </div>
     <div class="protocol-header-btns">
       <button class="icon-btn" onclick="openSendScreen()"><imgsrc="icon-send.png"></button>
-      <button class="icon-btn" onclick="showControlScreen()" title="Контроль"><img src="icon-control.png"></button>
+      <button class="icon-btn" onclick="showControlScreen()" title="Контроль"><img src="icon-control.png" style="width:20px;height:20px;vertical-align:middle;"></button>
       <button class="icon-btn" onclick="openMeetingSettings()"><imgsrc="icon-settings.png"></button>
     </div>
   </div>
@@ -704,7 +704,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-settings" class="screen">
   <div class="app-header neutral">
     <div class="app-header-left">
-      <button class="back-btn" onclick="goHome()"><img src="icon-back.png">Назад</button>
+      <button class="back-btn" onclick="goHome()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     </div>
     <div class="app-header-right">
       <div class="app-header-title">Налаштування загальні <img src="icon-settings.png" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;"></div>
@@ -735,7 +735,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-print" class="screen">
   <div class="app-header neutral" id="header-print">
     <div class="app-header-left">
-      <button class="back-btn" onclick="leavePrintScreen()"><img src="icon-back.png">Назад</button>
+      <button class="back-btn" onclick="leavePrintScreen()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     </div>
     <div class="app-header-right">
       <div>
@@ -755,7 +755,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-analytics" class="screen">
   <div class="app-header neutral">
     <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-project')"><img src="icon-back.png">Назад</button>
+      <button class="back-btn" onclick="showScreen('screen-project')"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     </div>
     <div class="app-header-right">
       <div class="app-header-title">Аналітика 📊</div>
@@ -770,7 +770,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-project-settings" class="screen">
   <div class="app-header neutral" id="header-project-settings">
     <div class="app-header-left">
-      <button class="back-btn" onclick="leaveProjectSettings()"><img src="icon-back.png">Назад</button>
+      <button class="back-btn" onclick="leaveProjectSettings()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     </div>
     <div class="app-header-right">
       <div>
@@ -835,7 +835,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 <div id="screen-meeting-settings" class="screen">
   <div class="app-header neutral" id="header-meeting-settings">
     <div class="app-header-left">
-      <button class="back-btn" onclick="leaveMeetingSettings()"><img src="icon-back.png">Назад</button>
+      <button class="back-btn" onclick="leaveMeetingSettings()"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
     </div>
     <div class="app-header-right">
       <div>
@@ -2889,7 +2889,7 @@ async function checkDailyControl() {
 }
 
 function showControlBanner(items) {
-  const ctrlSVG = `<img src="icon-control.png">`;
+  const ctrlSVG = `<img src="icon-control.png" style="width:20px;height:20px;vertical-align:middle;">`;
   const { box, addCloseBtn } = createModal(`${items.length} пункт${items.length===1?'':items.length<5?'и':'ів'} на контролі`, ctrlSVG);
 
   items.forEach(it => {
