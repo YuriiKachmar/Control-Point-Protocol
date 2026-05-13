@@ -717,7 +717,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     </div>
     <div class="settings-section">
       <div class="settings-label">Резервне копіювання</div>
-      <div class="settings-row" onclick="testControlCheck()"><span>🔔 Перевірити контроль (тест)</span><span class="settings-val">→</span></div>
+      <div class="settings-row" onclick="manualBackup()"><span>💾 Зробити резервну копію</span><span class="settings-val">→</span></div>
       <div class="settings-row" onclick="showToast('Відновлення — в розробці')"><span>🔄 Відновити з резервної копії</span><span class="settings-val">→</span></div>
     </div>
     <div class="settings-section">
@@ -752,14 +752,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
     <button id="btn-save"  style="flex:1;max-width:180px;padding:13px 6px;background:white;color:#2563eb;border:2px solid #2563eb;border-radius:14px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,0.1);">💾 Зберегти</button>
   </div>
 </div>
-<div id="screen-analytics" class="screen">
-  <div class="app-header neutral">
-    <div class="app-header-left">
-      <button class="back-btn" onclick="showScreen('screen-project')"><img src="icon-back.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">Назад</button>
-    </div>
-    <div class="app-header-right">
-      <div class="app-header-title">Аналітика 📊</div>
-    </div>
+
   </div>
   <div class="scroll-area no-fab">
     <div class="empty-state"><div class="icon">🤖</div><p>AI аналітика — в розробці</p></div>
@@ -2802,57 +2795,7 @@ window.leavePrintScreen = function() {
 };
 
 // ── КОНТРОЛЬ — перевірка раз на добу ──
-window.testControlCheck = async function() {
-  localStorage.removeItem('cp_control_check');
-  // Показуємо вікно одразу з індикатором
-  const { box, addCloseBtn } = createModal('Пункти на контролі', '🔔 ');
-  const loading = document.createElement('div');
-  loading.style.cssText = 'text-align:center;padding:20px;color:#64748b;font-size:14px;';
-  loading.innerHTML = '<img src="icon-wait.png" style="width:24px;height:24px;vertical-align:middle;margin-right:8px;"> Завантаження...';
-  box.appendChild(loading);
-  addCloseBtn();
 
-  // Завантажуємо дані
-  try {
-    const uid = currentUser.uid;
-    const projSnap = await getDocs(collection(db,'users',uid,'projects'));
-    const controlled = [];
-    for (const p of projSnap.docs) {
-      const mSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings'));
-      for (const m of mSnap.docs) {
-        const iSnap = await getDocs(collection(db,'users',uid,'projects',p.id,'meetings',m.id,'items'));
-        iSnap.forEach(i => {
-          const data = i.data();
-          if (data.control) controlled.push({
-            projectName: p.data().name,
-            meetingNum:  m.data().number,
-            description: data.description,
-            executor:    data.executor,
-          });
-        });
-      }
-    }
-    loading.remove();
-    if (controlled.length === 0) {
-      const empty = document.createElement('div');
-      empty.style.cssText = 'text-align:center;padding:20px;color:#64748b;font-size:14px;';
-      empty.textContent = '✅ Немає пунктів на контролі';
-      box.insertBefore(empty, box.lastChild);
-    } else {
-      controlled.forEach(it => {
-        const row = document.createElement('div');
-        row.style.cssText = 'padding:8px 0;border-bottom:1px solid #f1f5f9;';
-        row.innerHTML = `
-          <div style="font-size:10px;color:#C17058;font-weight:700;">${esc(it.projectName)} · Протокол №${it.meetingNum}</div>
-          <div style="font-size:13px;font-weight:700;color:#1e293b;margin-top:2px;">${esc(it.description||'—')}</div>
-          ${it.executor ? `<div style="font-size:11px;color:#64748b;margin-top:1px;">${esc(it.executor)}</div>` : ''}`;
-        box.insertBefore(row, box.lastChild);
-      });
-    }
-  } catch(e) {
-    loading.textContent = '❌ Помилка: ' + e.message;
-  }
-};
 
 async function checkDailyControl() {
   const today = new Date().toISOString().slice(0, 10);
