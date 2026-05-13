@@ -2639,7 +2639,7 @@ window.showAllControlScreen = async function() {
       if (d.control) controlled.push({ ...d, meetingNum: m.data().number, meetingDate: formatDateFull(m.data().date), meetingId: m.id });
     });
   }
-  showControlModal(controlled, `Контроль — всі протоколи (${controlled.length})`);
+  showControlModal(controlled, `Контроль — Усі протоколи (${controlled.length})`);
 };
 
 // Контроль — поточний протокол
@@ -2702,7 +2702,7 @@ function createModal(title, iconHTML = '') {
 
 function showControlModal(items, title) {
   if (items.length === 0) { showToast('Немає пунктів на контролі'); return; }
-  const ctrlSVG = `<svg viewBox="0 0 24 24" fill="none" width="18" height="18"><circle cx="12" cy="13" r="8" stroke="#C17058" stroke-width="2" stroke-dasharray="3 2"/><path d="M9 13l2 2 4-4" stroke="#C17058" stroke-width="2.2" stroke-linecap="round"/><line x1="13.5" y1="2" x2="13.5" y2="6.5" stroke="#C17058" stroke-width="2"/><path d="M13.5 2 L18 4 L13.5 6.5Z" fill="#C17058"/></svg>`;
+  const ctrlSVG = `<img src="icon-control.png" style="width:20px;height:20px;vertical-align:middle;margin-right:4px;">`;
   const { addRow, addCloseBtn } = createModal(title, ctrlSVG);
   items.forEach(it => {
     const prefix   = it.meetingNum ? 'Протокол №' + it.meetingNum + ' · ' : '';
