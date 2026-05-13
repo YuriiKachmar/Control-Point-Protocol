@@ -2729,7 +2729,7 @@ async function sendWhatsAppReminder(item) {
     if (!phone.startsWith('38') && phone.length === 10) phone = '38' + phone;
 
     const projectName = currentProject.name || '';
-    const date = item.meetingDate ? `\nДата протоколу: ${item.meetingDate}` : '';
+    const date = item.meetingDate ? `\n${item.meetingDate}` : '';
     const text = `Нагадування. Об'єкт - "${projectName}".\n${item.description}${item.decision ? '. ' + item.decision : ''}.\nПункт ${item.number}, Протокол №${item.meetingNum}${date}`;
     const url  = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
 
