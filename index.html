@@ -2075,10 +2075,7 @@ window.printMeeting = async function() {
   window.addEventListener('resize', applyPreviewScale);
 
   // ── Кнопка ДРУКУВАТИ — скидаємо всі listeners через clone ──
-  const printBtnOld = document.getElementById('btn-print');
-  const printBtn = printBtnOld.cloneNode(true);
-  printBtnOld.parentNode.replaceChild(printBtn, printBtnOld);
-  printBtn.addEventListener('click', () => window.print());
+  document.getElementById('btn-print').onclick = () => window.print();
 
   // ── Кнопка ЗБЕРЕГТИ — скидаємо стан і listeners через clone ──
   const saveBtnOld = document.getElementById('btn-save');
