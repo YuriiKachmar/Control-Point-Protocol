@@ -565,6 +565,8 @@ outline: none;
 .exec-del { background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 2px 4px; }
 </style>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 </head>
 <body>
 
@@ -898,8 +900,6 @@ outline: none;
 <!-- GLOBAL SPINNER -->
 
 <div id="global-spinner"><div class="spin-box"><img src="icon-wait.png" alt="⏳"></div></div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -2062,8 +2062,10 @@ setTimeout(applyPreviewScale, 300);
 window.addEventListener(‘resize’, applyPreviewScale);
 
 // ── Кнопка ДРУКУВАТИ — скидаємо всі listeners через clone ──
-// Кнопка друку має onclick=“window.print()” в HTML
-window.printDoc = function() { window.print(); };
+const printBtnOld = document.getElementById(‘btn-print’);
+const printBtn = printBtnOld.cloneNode(true);
+printBtnOld.parentNode.replaceChild(printBtn, printBtnOld);
+printBtn.addEventListener(‘click’, () => window.print());
 
 // ── Кнопка ЗБЕРЕГТИ — скидаємо стан і listeners через clone ──
 const saveBtnOld = document.getElementById(‘btn-save’);
