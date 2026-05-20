@@ -2328,7 +2328,14 @@ async function loadAttachmentsLocal() {
       orderBy('createdAt')
     ));
     localAttachments = [];
-    snap.forEach(d => localAttachments.push({ id: d.id, ...d.data() }));
+    snap.forEach(d => {
+      const att = { id: d.id, ...d.data() };
+      // Старі PDF що вже сконвертовані в зображення — міняємо тип
+      if (att.type === 'application/pdf' && att.dataUrl?.startsWith('data:image')) {
+        att.type = 'image/jpeg';
+      }
+      localAttachments.push(att);
+    });
   } catch(e) { localAttachments = []; }
 }
 
