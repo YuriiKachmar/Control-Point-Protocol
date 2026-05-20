@@ -2470,13 +2470,16 @@ async function uploadAttachment(file) {
 
     if (bar) bar.style.width = '90%';
 
+    // Якщо PDF — зберігаємо як image/jpeg (бо dataUrl вже є зображенням)
+    const saveType = isPdf ? 'image/jpeg' : file.type;
+
     // Зберігаємо в Firestore
     const ref = await addDoc(
       collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
-      { name: file.name, description, dataUrl, type: file.type, createdAt: serverTimestamp() }
+      { name: file.name, description, dataUrl, type: saveType, createdAt: serverTimestamp() }
     );
 
-    localAttachments.push({ id: ref.id, name: file.name, description, dataUrl, type: file.type });
+    localAttachments.push({ id: ref.id, name: file.name, description, dataUrl, type: saveType });
     progressDiv.remove();
     renderAttachments();
     showToast(`✅ ${file.name} додано`);
