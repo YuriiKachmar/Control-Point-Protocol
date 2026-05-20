@@ -565,6 +565,7 @@ body > :not(.screen):not(.modal-overlay):not(#toast):not(script):not(style) { di
 .exec-del { background: none; border: none; color: #ef4444; font-size: 14px; cursor: pointer; padding: 2px 4px; }
 </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 </head>
 <body>
 
@@ -2015,7 +2016,7 @@ window.printMeeting = async function() {
       <div style="margin-top:5px;">${attRows}</div>
     </div>`;
     for (const a of attList) {
-      if (a.type?.startsWith('image') && a.dataUrl) {
+      if ((a.type?.startsWith('image') || a.type === 'application/pdf') && a.dataUrl) {
         photoPages += `<div class="photo-page-item">
   <div style="font-size:13pt;font-weight:700;margin-bottom:4px;">Додаток ${a.num}</div>
   ${a.description && a.description !== '—' ? `<div style="font-size:10pt;color:#555;margin-bottom:12px;">${esc(a.description)}</div>` : '<div style="margin-bottom:12px;"></div>'}
@@ -2222,7 +2223,7 @@ window.printMeeting = async function() {
 
       // Фото додатків — кожне на окремій сторінці
       for (const [i,a] of localAttachments.entries()) {
-        if (a.type?.startsWith('image') && a.dataUrl) {
+        if ((a.type?.startsWith('image') || a.type === 'application/pdf') && a.dataUrl) {
           pdf.addPage(); y = tM;
           pdf.setFontSize(13); pdf.setFont('Arsenal','bold');
           pdf.text('Додаток '+(i+1), lM, y); y += 8;
@@ -2391,7 +2392,7 @@ function renderAttachments() {
         const w = window.open('', '_blank');
         if (w) {
           w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">
-            ${att.type?.startsWith('image')
+            ${(att.type?.startsWith('image') || att.type === 'application/pdf')
               ? `<img src="${att.dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;">`
               : `<p style="color:white;font-family:sans-serif;">Файл: ${esc(att.name)}</p>`}
           </body></html>`);
@@ -2448,10 +2449,14 @@ async function uploadAttachment(file) {
   try {
     let dataUrl;
     const isImage = file.type.startsWith('image');
+    const isPdf = file.type === 'application/pdf';
 
     if (isImage) {
       // Стискаємо фото через Canvas
       dataUrl = await compressImage(file, 1200, 0.75);
+    } else if (isPdf) {
+      // PDF — рендеруємо першу сторінку як зображення
+      dataUrl = await pdfToImage(file);
     } else {
       // Інші файли — конвертуємо в Base64 напряму
       dataUrl = await fileToBase64(file);
@@ -2480,6 +2485,21 @@ async function uploadAttachment(file) {
     progressDiv.remove();
     showToast('Помилка: ' + (e.message || 'невідома'));
   }
+}
+
+// PDF → зображення (перша сторінка)
+async function pdfToImage(file) {
+  const pdfjsLib = window['pdfjs-dist/build/pdf'];
+  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const arrayBuffer = await file.arrayBuffer();
+  const pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const page = await pdfDoc.getPage(1);
+  const viewport = page.getViewport({ scale: 2.0 });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  return canvas.toDataURL('image/jpeg', 0.85);
 }
 
 // Стискання зображення через Canvas
