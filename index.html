@@ -2330,15 +2330,36 @@ async function loadAttachmentsLocal() {
       collection(db,'users',uid,'projects',currentProject.id,'meetings',currentMeeting.id,'attachments'),
       orderBy('createdAt')
     ));
+    const rawAtts = [];
+    snap.forEach(d => rawAtts.push({ id: d.id, ...d.data() }));
     localAttachments = [];
-    snap.forEach(d => {
-      const att = { id: d.id, ...d.data() };
-      // Старі PDF що вже сконвертовані в зображення — міняємо тип
+    for (const att of rawAtts) {
+      // Старий PDF збережений як data:application/pdf — конвертуємо в зображення
+      if (att.dataUrl?.startsWith('data:application/pdf')) {
+        try {
+          const pdfjsLib = window['pdfjs-dist/build/pdf'];
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          const base64 = att.dataUrl.split(',')[1];
+          const binary = atob(base64);
+          const bytes = new Uint8Array(binary.length);
+          for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+          const pdfDoc = await pdfjsLib.getDocument({ data: bytes }).promise;
+          const page = await pdfDoc.getPage(1);
+          const viewport = page.getViewport({ scale: 2.0 });
+          const canvas = document.createElement('canvas');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+          att.dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+          att.type = 'image/jpeg';
+        } catch(e) { console.error('PDF convert error:', e); }
+      }
+      // Якщо тип application/pdf але dataUrl вже є зображенням
       if (att.type === 'application/pdf' && att.dataUrl?.startsWith('data:image')) {
         att.type = 'image/jpeg';
       }
       localAttachments.push(att);
-    });
+    }
   } catch(e) { localAttachments = []; }
 }
 
