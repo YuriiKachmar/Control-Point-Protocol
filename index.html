@@ -1183,7 +1183,6 @@ async function saveMeeting(projId) {
 
 // ── MEETING SCREEN ──
 async function openMeeting(id, data) {
-  showSpinner();
   currentMeeting = { id, ...data };
   const palette = currentProject.palette || { bg:'#2D2D2D', text:'#fff', sub:'#aaa' };
   const h = document.getElementById('meeting-header');
@@ -1200,6 +1199,9 @@ async function openMeeting(id, data) {
   document.getElementById('meeting-header-date').textContent = formatDateFull(data.date);
   document.getElementById('meeting-header-loc').textContent  = data.location || '—';
   document.getElementById('attachments-title').textContent   = `📎 Додатки до протоколу №${data.number}`;
+  // Показуємо екран одразу — без очікування
+  showScreen('screen-meeting');
+  showSpinner();
   await Promise.all([loadItemsLocal(), loadAttendeesLocal(), loadAttachmentsLocal()]);
   if (!currentMeeting || currentMeeting.id !== id) { hideSpinner(); return; }
   _deletingAttIdx = null;
@@ -1207,7 +1209,6 @@ async function openMeeting(id, data) {
   renderAttendees();
   renderAttachments();
   hideSpinner();
-  showScreen('screen-meeting');
 }
 
 window.leaveMeeting = async function() {
