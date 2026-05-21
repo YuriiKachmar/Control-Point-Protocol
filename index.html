@@ -1307,7 +1307,7 @@ async function saveActiveItem() {
   _savingItem = true;
   if (activeItemIdx === null) { _savingItem = false; return; }
   const row = document.querySelector('.item-row.active');
-  if (!row) return;
+  if (!row) { _savingItem = false; activeItemIdx = null; return; }
   const textareas = row.querySelectorAll('.item-cell textarea:not(.executor-input)');
   const execInput = row.querySelector('.executor-input');
   const item = localItems[activeItemIdx];
@@ -1555,7 +1555,7 @@ async function loadAttendeesLocal() {
 async function saveActiveAtt() {
   if (activeAttIdx === null) return;
   const row = document.querySelector('.att-row.active');
-  if (!row) return;
+  if (!row) { _savingAtt = false; activeAttIdx = null; return; }
   const ins = row.querySelectorAll('input');
   const att = localAttendees[activeAttIdx];
   if (!att) return;
