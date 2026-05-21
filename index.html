@@ -2231,7 +2231,10 @@ window.printMeeting = async function() {
             pdf.setFontSize(10); pdf.setFont('Arsenal','normal');
             pdf.text(a.description, lM, y); y += 8;
           }
-          try { pdf.addImage(a.dataUrl,'JPEG',lM,y,w,170,'','FAST'); } catch(e){}
+          try {
+            const fmt = a.dataUrl.startsWith('data:image/png') ? 'PNG' : 'JPEG';
+            pdf.addImage(a.dataUrl, fmt, lM, y, w, 0);
+          } catch(e){ console.error('addImage error:', e, a.dataUrl?.substring(0,50)); }
         }
       }
 
