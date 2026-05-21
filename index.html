@@ -2667,13 +2667,13 @@ window.showAllControlScreen = async function() {
   const uid = currentUser.uid;
   const mSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings'));
   const controlled = [];
-  for (const m of mSnap.docs) {
+  await Promise.all(mSnap.docs.map(async m => {
     const iSnap = await getDocs(collection(db,'users',uid,'projects',currentProject.id,'meetings',m.id,'items'));
     iSnap.forEach(i => {
       const d = i.data();
       if (d.control) controlled.push({ ...d, meetingNum: m.data().number, meetingDate: formatDateFull(m.data().date), meetingId: m.id });
     });
-  }
+  }));
   showControlModal(controlled, `Контроль — Усі протоколи (${controlled.length})`);
 };
 
