@@ -2913,22 +2913,10 @@ function showControlBanner(items) {
     if (it.executor) {
       const waBtn = row.querySelector('.ctrl-wa-btn');
       waBtn.addEventListener('click', async () => {
-        try {
-          const uid  = currentUser.uid;
-          const snap = await getDocs(collection(db,'users',uid,'projects',it.projectId,'executors'));
-          let phone = null;
-          snap.forEach(d => {
-            const ex = d.data();
-            if (ex.name && ex.name.trim() === it.executor.trim() && ex.phone) {
-              phone = ex.phone.replace(/\D/g,'');
-            }
-          });
-          if (!phone) { showToast('Номер телефону виконавця не знайдено'); return; }
-          if (!phone.startsWith('38') && phone.length === 10) phone = '38' + phone;
-          const text = `Нагадування. Об'єкт - "${it.projectName}".\n${it.description}${it.decision ? '. ' + it.decision : ''}.\nПротокол №${it.meetingNum}, Пункт ${it.number}\n${it.meetingDate}`;
-          const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
-          if (isTouch) window.location.href = url; else window.open(url,'_blank');
-        } catch(e) { showToast('Помилка: ' + e.message); }
+        const savedProject = currentProject;
+        currentProject = { id: it.projectId, name: it.projectName };
+        await sendWhatsAppReminder(it);
+        currentProject = savedProject;
       });
     }
     box.appendChild(row);
