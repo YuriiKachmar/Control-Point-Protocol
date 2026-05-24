@@ -2877,11 +2877,13 @@ async function checkDailyControl() {
           if (data.control) {
             controlled.push({
               projectName:   p.data().name,
+              projectId:     p.id,
               meetingNum:    m.data().number,
               description:   data.description,
               executor:      data.executor,
-              executorPhone: data.executorPhone || '',
               decision:      data.decision || '',
+              number:        data.number,
+              meetingDate:   formatDateFull(m.data().date),
             });
           }
         });
@@ -2910,11 +2912,23 @@ function showControlBanner(items) {
       ${it.executor ? `<button class="ctrl-wa-btn" style="flex-shrink:0;background:#25d366;color:white;border:none;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;"><img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:13px;height:13px;vertical-align:middle;margin-right:3px;">Нагадати</button>` : ''}`;
     if (it.executor) {
       const waBtn = row.querySelector('.ctrl-wa-btn');
-      waBtn.addEventListener('click', () => {
-        const phone = (it.executorPhone||'').replace(/\D/g,'');
-        const msg = `Нагадування. Об'єкт - "${it.projectName}".\n${esc(it.description||'')}. ${esc(it.decision||'')}.\nПротокол №${it.meetingNum}`;
-        const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
-        if (isTouch) window.location.href = url; else window.open(url,'_blank');
+      waBtn.addEventListener('click', async () => {
+        try {
+          const uid  = currentUser.uid;
+          const snap = await getDocs(collection(db,'users',uid,'projects',it.projectId,'executors'));
+          let phone = null;
+          snap.forEach(d => {
+            const ex = d.data();
+            if (ex.name && ex.name.trim() === it.executor.trim() && ex.phone) {
+              phone = ex.phone.replace(/\D/g,'');
+            }
+          });
+          if (!phone) { showToast('Номер телефону виконавця не знайдено'); return; }
+          if (!phone.startsWith('38') && phone.length === 10) phone = '38' + phone;
+          const text = `Нагадування. Об'єкт - "${it.projectName}".\n${it.description}${it.decision ? '. ' + it.decision : ''}.\nПротокол №${it.meetingNum}, Пункт ${it.number}\n${it.meetingDate}`;
+          const url = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+          if (isTouch) window.location.href = url; else window.open(url,'_blank');
+        } catch(e) { showToast('Помилка: ' + e.message); }
       });
     }
     box.appendChild(row);
