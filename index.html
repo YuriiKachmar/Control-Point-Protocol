@@ -2437,19 +2437,15 @@ function renderAttachments() {
     row.querySelector('.att-type-icon').addEventListener('click', e => {
       e.stopPropagation();
       if (att.dataUrl) {
-        const { box, addCloseBtn } = createModal(att.description || att.name || 'Додаток', '📎 ');
-        if (att.type?.startsWith('image') || att.type === 'application/pdf') {
-          const img = document.createElement('img');
-          img.src = att.dataUrl;
-          img.style.cssText = 'width:100%;max-height:70vh;object-fit:contain;display:block;border-radius:8px;';
-          box.appendChild(img);
-        } else {
-          const p = document.createElement('p');
-          p.style.cssText = 'color:#64748b;text-align:center;padding:16px;';
-          p.textContent = `Файл: ${att.name}`;
-          box.appendChild(p);
+        const w = window.open('', '_blank');
+        if (w) {
+          w.document.write(`<html><body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh;">
+            ${(att.type?.startsWith('image') || att.type === 'application/pdf')
+              ? `<img src="${att.dataUrl}" style="max-width:100%;max-height:100vh;object-fit:contain;">`
+              : `<p style="color:white;font-family:sans-serif;">Файл: ${esc(att.name)}</p>`}
+          </body></html>`);
+          w.document.close();
         }
-        addCloseBtn('Закрити');
       }
     });
 
